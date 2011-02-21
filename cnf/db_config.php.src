@@ -1,0 +1,12 @@
+<?php  
+	define ("DBHOST",		"#DB_HOST#");
+	define ("DBNAME",		"#DB_NAME#");
+	define ("DBUSER",		"#DB_USER#");
+	define ("DBPASS",		"#DB_PASS#");
+	define ("PREFIX",		"ks_");
+	
+	define('KS_RELEASE',1);
+	define('KS_MAIL_DEBUG',0);
+	define('KS_LOG_DB_ERRORS',1);
+	$ks_db = new mysql(KS_DEBUG);
+?>

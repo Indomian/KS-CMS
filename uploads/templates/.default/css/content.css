@@ -1,0 +1,29 @@
+
+h1 {color:#D21616;}
+h2 {color:#D21616;}
+h3 {color:#D21616;}
+h4 {color:#D21616;}
+h5 {color:#D21616;}
+h6 {color:#D21616;}
+
+
+p img {border-color: #777;}
+.content_table {border-color: #E77518;}
+.content_table th {color:#fff; background:#EF8A21;}
+.content_table_even_row td {background:#FFF3B5;}
+
+
+.sep {border-color: #999;}
+
+.small {font-size: 11px;}
+.grey {color:#999;}  
+
+ul, 
+ol {padding: 0 0 4px 30px; margin: 0;}
+
+ul li, 
+ol li {padding: 0 0 5px;}
+
+ul ul, 
+ol ol {padding: 5px 0 0 30px;}
+

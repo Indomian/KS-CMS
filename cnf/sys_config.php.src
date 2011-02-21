@@ -1,0 +1,29 @@
+<?php
+/**
+ * Конфигурационный файл модуля "main"
+ */
+
+$ks_config = array
+(
+	'home_url' => "#DOMAIN#",
+	'home_title' => "#TITLE#",
+	'home_descr' => "#DESCRIPTION#",
+	'home_keywrds' => "#KEYWORDS#",
+	'admin_email' => "#ADMIN_EMAIL#",
+	'time_format' => "j F Y H:i",
+	'SEF_URL' => "1",
+	'DB_CLASS' => "mysql",
+	'LANG' => "ru",
+	'debugmode' => "1",
+	'copyright' => "Copyright 2009 Kolos-Studio",
+	'start_adminpage' => "light",
+	'text_ident_length' => "20",
+	'highlight_new_elements' => "all",
+	'highlight_time' => "300",
+	'highlight_color' => "fff74b",
+	'highlight_odd_row_color' => "70808D",
+	'user_inactive_time' => "2000",
+	'emailFrom' => "#ADMIN_EMAIL#"
+);
+
+?>

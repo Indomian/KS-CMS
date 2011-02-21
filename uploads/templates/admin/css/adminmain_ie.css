@@ -1,0 +1,39 @@
+/*Styles for MSIE*/
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+*
+* html - MSIE 6
+[class].className - MSIE
+without prefix - MSIE 6, MSIE7.
+*
+* * * * * * * * * * * * * * * * * * * * * * * * * */
+
+/** html body{behavior:url("css/csshover.htc");}*/
+* html body{behavior:url("csshover.htc");}
+
+* html #Ruler {display: block; height:1px;line-height:1px;visibility:hidden;left:0;position:absolute;top:0;width:100%;}
+
+
+
+* html .wrap {
+width: expression((document.getElementById('Ruler')) ? ((document.getElementById('Ruler').clientWidth > 1500) ? '1500px' : ((document.getElementById('Ruler').clientWidth < 1000) ? '1000px' : '100%')) : '100%');
+}
+
+
+* html .png {background: none; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src=images/image.png,sizingMethod=crop);}
+
+
+/*hasLayout*/
+.wrap,
+.top_menu ul,
+.manage,
+.pages,
+.tabs,
+.form_buttons {zoom:1;}
+
+.top_links ul li a, .tabs a, .tabs span {float: left;}
+
+.tabs span {cursor: pointer;}
+
+.tree  p {position: relative; overflow: hidden; zoom:1;}

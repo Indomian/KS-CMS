@@ -1,0 +1,11 @@
+php_flag magic_quotes_gpc off
+php_flag register_globals off
+
+RewriteEngine on
+RewriteBase    /
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-l
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)(\.html|\/)$ index.php?%{QUERY_STRING}&path=/$1$2
+
