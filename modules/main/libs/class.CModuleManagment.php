@@ -763,26 +763,34 @@ abstract class CModuleManagment extends CObject
 	private function SelfInstall()
 	{
 		global $ks_db,$KS_FS;
-		if(file_exists(MODULES_DIR.'/main/install/install.php'))
+		try
 		{
-			include MODULES_DIR.'/main/install/install.php';
-			if(!$this->IsModule('interfaces'))
+			if(file_exists(MODULES_DIR.'/main/install/install.php'))
 			{
-				$this->Install('interfaces');
+				include MODULES_DIR.'/main/install/install.php';
+				if(!$this->IsModule('interfaces'))
+				{
+					$this->Install('interfaces');
+				}
+				if(!$this->IsModule('navigation'))
+				{
+					$this->Install('navigation');
+				}
+				$this->RecountDBStructure();
+				$this->RecountTextStructure();
+				$obConfig=new CConfigParser('main');
+				$obConfig->LoadConfig();
+				include_once(CONFIG_DIR.'/db_structure.php');
+				$ks_db->CheckDB($arStructure);
+				$obConfig->Set('go_install',0);
+				$obConfig->WriteConfig();
+				CUrlParser::redirect('/admin.php');
 			}
-			if(!$this->IsModule('navigation'))
-			{
-				$this->Install('navigation');
-			}
-			$this->RecountDBStructure();
-			$this->RecountTextStructure();
-			$obConfig=new CConfigParser('main');
-			$obConfig->LoadConfig();
-			include_once(CONFIG_DIR.'/db_structure.php');
-			$ks_db->CheckDB($arStructure);
-			$obConfig->Set('go_install',0);
-			$obConfig->WriteConfig();
-			CUrlParser::redirect('/admin.php');
+		}
+		catch(CError $e)
+		{
+			echo $e->getMessage();
+			die();
 		}
 	}
 }
