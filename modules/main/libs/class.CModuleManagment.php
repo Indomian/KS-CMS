@@ -69,6 +69,8 @@ abstract class CModuleManagment extends CObject
 
 	function GetText($code)
 	{
+		if(!is_object($this->obLanguage)) return $code;
+		if(!($this->obLanguage instanceof CLanguage)) return $code;
 		return $this->obLanguage->Text($code);
 	}
 
@@ -80,6 +82,8 @@ abstract class CModuleManagment extends CObject
 
 	function GetErrorText($code)
 	{
+		if(!is_object($this->obLanguageError)) return $code;
+		if(!($this->obLanguageError instanceof CLanguage)) return $code;
 		return $this->obLanguageError->Text($code);
 	}
 
