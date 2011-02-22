@@ -780,6 +780,10 @@ abstract class CModuleManagment extends CObject
 				}
 			}
 		}
+		else
+		{
+			throw new CError('MAIN_MODULE_NOT_FOUND',0,$module);
+		}
 	}
 
 	/**

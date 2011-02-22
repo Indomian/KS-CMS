@@ -1,10 +1,10 @@
 <?php
 /**
  * @file install.php
- * Файл выполняющий операции по установке модуля catsubcat
+ * Файл выполняющий операции по установке модуля "Комментарии"
  * Файл проекта kolos-cms.
  *
- * Создан 08.10.10
+ * @since 27.10.2010
  *
  * @author blade39 <blade39@kolosstudio.ru>
  * @version 2.5.4-14
@@ -14,20 +14,17 @@ if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 global $ks_db,$KS_EVENTS_HANDLER;
 
-$module_name='catsubcat';
+$module_name='wave';
 $sContent='';
 
 include 'description.php';
 require_once MODULES_DIR.'/main/libs/class.CUserGroup.php';
 require_once MODULES_DIR.'/main/libs/class.CAccess.php';
-include MODULES_DIR.'/'.$module_name.'/install/db_structure.php';
-include MODULES_DIR.'/'.$module_name.'/libs/class.CCategory.php';
+include MODULES_DIR.'/wave/install/db_structure.php';
 
 //Список таблиц модуля
 $arDBList=array(
-	'catsubcat_catsubcat',
-	'catsubcat_element',
-	'catsubcat_links'
+	'wave_posts',
 );
 //Получаем список таблиц системы
 $arTables=$ks_db->ListTables();
@@ -49,20 +46,6 @@ if(array_key_exists('go',$_POST))
 			$ks_db->AddTable($sTable,$arStructure[$sTable]);
 		}
 	}
-	//Проверяем наличие корневого элемента
-	$obCategory=new CCategory();
-	if(!($arRoot=$obCategory->GetRecord(array('id'=>'0','parent_id'=>'0','text_ident'=>''))))
-	{
-		$ks_db->query('SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO"');
-		$arFields=array(
-			'id'=>0,
-			'parent_id'=>0,
-			'active'=>1,
-			'text_ident'=>'',
-			'title'=>'Index',
-		);
-		$obCategory->Save('',$arFields);
-	}
 	//Прописываем уровни доступа для всех групп
 	$USERGROUP=new CUserGroup;
 	$arAccess['groups']=$USERGROUP->GetList(array('title'=>'asc'));
@@ -78,20 +61,20 @@ if(array_key_exists('go',$_POST))
 			}
 			else
 			{
-				$obAccess->Set($value['id'],$module_name,7);
+				$obAccess->Set($value['id'],$module_name,8);
 			}
 		}
    	}
 
 	$arModule=array(
 		'name'=>$arDescription['title'],
-		'URL_ident'=>$module_name,
+		'URL_ident'=>'',
 		'directory'=>$module_name,
 		'include_global_template'=>1,
 		'active'=>1,
-		'orderation'=>1,
+		'orderation'=>5,
 		'hook_up'=>0,
-		'allow_url_edit'=>1,
+		'allow_url_edit'=>0,
 		'id'=>-1,
 	);
 	$this->AddAutoField('id');
@@ -99,21 +82,21 @@ if(array_key_exists('go',$_POST))
 	//Устанавливаем файлы административного интерфейса
 	if($_POST['installTemplates']==1)
 	{
-		if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/catsubcat/install/templates/.default/'))
+		if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/wave/install/templates/.default/'))
 		{
-			if(!file_exists(TEMPLATES_DIR.'/.default/catsubcat/'))
-				$KS_FS->makedir(TEMPLATES_DIR.'/.default/catsubcat/');
+			if(!file_exists(TEMPLATES_DIR.'/.default/wave/'))
+				$KS_FS->makedir(TEMPLATES_DIR.'/.default/wave/');
 			foreach($arFiles as $sFile)
 			{
-				$KS_FS->CopyFile(MODULES_DIR.'/catsubcat/install/templates/.default/'.$sFile,TEMPLATES_DIR.'/.default/catsubcat/'.$sFile,'');
+				$KS_FS->CopyFile(MODULES_DIR.'/wave/install/templates/.default/'.$sFile,TEMPLATES_DIR.'/.default/wave/'.$sFile,'');
 			}
 		}
 	}
-	if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/catsubcat/install/templates/admin/'))
+	if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/wave/install/templates/admin/'))
 	{
 		foreach($arFiles as $sFile)
 		{
-			$KS_FS->CopyFile(MODULES_DIR.'/catsubcat/install/templates/admin/'.$sFile,SYS_TEMPLATES_DIR.'/admin/'.$sFile,'');
+			$KS_FS->CopyFile(MODULES_DIR.'/wave/install/templates/admin/'.$sFile,SYS_TEMPLATES_DIR.'/admin/'.$sFile,'');
 		}
 	}
 	$this->AddNotify(SYSTEM_MODULE_INSTALL_OK,$arDescription['title'],NOTIFY_MESSAGE);

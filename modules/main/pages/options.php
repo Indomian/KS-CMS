@@ -53,7 +53,7 @@ class CmainAIoptions extends CModuleAdmin
 		{
 			foreach($arModules as $arModule)
 			{
-				$this->obModules->CopyModuleTemplates($arModules['directory']);
+				$this->obModules->CopyModuleTemplates($arModule['directory']);
 			}
 		}
 	}

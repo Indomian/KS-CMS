@@ -18,7 +18,6 @@
 		</tr>
 	</table>
 </div>
-{if $list}
 {include file='admin/navigation_pagecounter.tpl' pages=$pages}
 {strip}
 <div class="users">
@@ -31,6 +30,7 @@
     		<th width="20%">{#field_script#}</th>
     		<th></th>
 		</tr>
+		{if $list}
 		{foreach from=$list item=oItem key=oKey name=fList}
     	<tr {if $smarty.foreach.fList.iteration is even}class="odd"{/if}>
     		<td>{$oItem.id}</td>
@@ -50,16 +50,15 @@
     		</td>
     	</tr>
 		{/foreach}
+		{else}
+		<tr>
+			<td colspan="6">{#nothing_selected#}</td>
+		</tr>
+		{/if}
     </table>
 </div>
 {/strip}
 {include file='admin/navigation_pagecounter.tpl' pages=$pages}
-{else}
-<br>
-<h4>{#no_fields_added#}</h4>
-<br>
-{/if}
-
 {strip}
 <dl class="def" style="background:#FFF6C4 url('{#images_path#}/big_icons/settings.gif') left 50% no-repeat;{if $smarty.cookies.showHelpBar==1}display:none;{/if}">
 	<dt>{#titles#}</dt>

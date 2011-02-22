@@ -470,9 +470,13 @@ function Translit($input, $is_filename = false)
 	return str_replace(array_keys($arLetters),array_values($arLetters),str_replace($arBad,"",mb_strtolower($input,'UTF-8')));
 }
 
+/**
+ * Функция проверяет строку на пустоту.
+ * @todo Определить пустоту точнее
+ */
 function IsEmpty($item)
 {
-	return $item!='';
+	return $item=='';
 }
 
 /**

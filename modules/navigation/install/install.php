@@ -78,6 +78,8 @@ $this->Save('',$arModule);
 //Устанавливаем файлы административного интерфейса
 if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/navigation/install/templates/.default/'))
 {
+	if(!file_exists(TEMPLATES_DIR.'/.default/navigation/'))
+		$KS_FS->makedir(TEMPLATES_DIR.'/.default/navigation/');
 	foreach($arFiles as $sFile)
 	{
 		$KS_FS->CopyFile(MODULES_DIR.'/navigation/install/templates/.default/'.$sFile,TEMPLATES_DIR.'/.default/navigation/'.$sFile,'');

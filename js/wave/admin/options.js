@@ -1,0 +1,27 @@
+$(document).ready(function(){
+	$('select[name=mode]').change(function(e){
+		if($(this).val()=='tree')
+		{
+			$('input[name=max_depth]').parent().parent().show();
+		}
+		else
+		{
+			$('input[name=max_depth]').parent().parent().hide();
+		}
+	});
+	$('select[name=use_ratings]').change(function(e){
+		if($(this).val()=='usefullness')
+		{
+			$('input[name=usefullness_useless_min]').parent().parent().show();
+			$('input[name=usefullness_dvr]').parent().parent().show();
+			$('input[name=usefullness_dsv]').parent().parent().show();
+		}
+		else
+		{
+			$('input[name=usefullness_useless_min]').parent().parent().show();
+			$('input[name=usefullness_dvr]').parent().parent().show();
+			$('input[name=usefullness_dsv]').parent().parent().show();
+		}
+	});
+});
+

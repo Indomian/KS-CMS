@@ -77,6 +77,8 @@ $this->Save('',$arModule);
 //Устанавливаем файлы административного интерфейса
 if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/interfaces/install/templates/.default/'))
 {
+	if(!file_exists(TEMPLATES_DIR.'/.default/interfaces/'))
+		$KS_FS->makedir(TEMPLATES_DIR.'/.default/interfaces/');
 	foreach($arFiles as $sFile)
 	{
 		$KS_FS->CopyFile(MODULES_DIR.'/interfaces/install/templates/.default/'.$sFile,TEMPLATES_DIR.'/.default/interfaces/'.$sFile,'');

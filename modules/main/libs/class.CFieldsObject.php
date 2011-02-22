@@ -177,6 +177,7 @@ class CFieldsObject extends CFilesObject
 	 */
 	function GetUserFields($arFilter=false)
 	{
+		$this->LoadUserFields();
 		if(is_array($arFilter))
 		{
 			$arResult=array();
