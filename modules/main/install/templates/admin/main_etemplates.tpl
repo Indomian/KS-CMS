@@ -11,17 +11,23 @@
     		<th width="40%">{#field_template#}</th>
     		<th width="0%"></th>
 		</tr>
-		{foreach from=$data item=oItem key=oKey name=fList}
-    	<tr {if $smarty.foreach.fList.iteration is even}class="odd"{/if}>
-    		<td>{$oItem.title}</td>
-    		<td>{$oItem.file_id}</td>
-    		<td>
-    			<div style="width:60px; text-align: center;">
-    				<a href="{get_url _CLEAR="CU_order.*" ACTION=edit id=$oItem.file_id}"><img src="{#images_path#}/icons2/edit.gif" alt="{#edit#}" title="{#edit#}" /></a>
-    			</div>
-    		</td>
+		{if $data}
+			{foreach from=$data item=oItem key=oKey name=fList}
+			<tr {if $smarty.foreach.fList.iteration is even}class="odd"{/if}>
+				<td>{$oItem.title}</td>
+				<td>{$oItem.file_id}</td>
+				<td>
+					<div style="width:60px; text-align: center;">
+						<a href="{get_url _CLEAR="CU_order.*" ACTION=edit id=$oItem.file_id}"><img src="{#images_path#}/icons2/edit.gif" alt="{#edit#}" title="{#edit#}" /></a>
+					</div>
+				</td>
+			</tr>
+			{/foreach}
+		{else}
+		<tr>
+			<td colspan="3">{#nothing_selected#}</td>
 		</tr>
-		{/foreach}
+		{/if}
 	</table>
 </div>
 {include file='admin/navigation_pagecounter.tpl' pages=$pages}

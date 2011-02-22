@@ -758,6 +758,31 @@ abstract class CModuleManagment extends CObject
 	}
 
 	/**
+	 * Метод выполняет копирование шаблонов из установочного каталога в рабочий каталог.
+	 */
+	public function CopyModuleTemplates($module)
+	{
+		global $KS_FS;
+		if($this->IsModule($module))
+		{
+			if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module.'/install/templates/.default/'))
+			{
+				foreach($arFiles as $sFile)
+				{
+					$KS_FS->CopyFile(MODULES_DIR.'/'.$module.'/install/templates/.default/'.$sFile,TEMPLATES_DIR.'/.default/'.$module.'/'.$sFile,'');
+				}
+			}
+			if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module.'/install/templates/admin/'))
+			{
+				foreach($arFiles as $sFile)
+				{
+					$KS_FS->CopyFile(MODULES_DIR.'/'.$module.'/install/templates/admin/'.$sFile,SYS_TEMPLATES_DIR.'/admin/'.$sFile,'');
+				}
+			}
+		}
+	}
+
+	/**
 	 * Данный метод выполняет автоматическую установку системы, в случае если она не была установлена
 	 */
 	private function SelfInstall()

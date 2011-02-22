@@ -183,6 +183,10 @@
     				<td>{Title field="drop_images_cache"}</td>
     				<td><input type="submit" name="act_drop_images_cache" value="{#action_drop_images_cache#}"/></td>
     			</tr>
+    			<tr>
+    				<td>{Title field="update_templates"}</td>
+    				<td><input type="submit" name="act_update_templates" value="{#action_update_templates#}"/></td>
+    			</tr>
     		</table>
     	</div>
     	{/strip}{/ksTab}

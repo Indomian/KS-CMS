@@ -46,6 +46,18 @@ class CmainAIoptions extends CModuleAdmin
 		}
 	}
 
+	function CopyTemplates()
+	{
+		$this->obModules->CopyModuleTemplates('main');
+		if($arModules=$this->obModules->GetList(false,array('active'=>1)))
+		{
+			foreach($arModules as $arModule)
+			{
+				$this->obModules->CopyModuleTemplates($arModules['directory']);
+			}
+		}
+	}
+
 	function CheckTables()
 	{
 		$obConfig=new CConfigParser('main');
@@ -95,6 +107,11 @@ class CmainAIoptions extends CModuleAdmin
 		{
 			$this->DropImagesCache();
 			$this->obModules->AddNotify('MAIN_OPTIONS_IMAGES_CACHE_CLEARED','',NOTIFY_MESSAGE);
+		}
+		elseif(array_key_exists('act_update_templates',$_POST))
+		{
+			$this->CopyTemplates();
+			$this->obModules->AddNotify('MAIN_OPTIONS_TEMPLATES_COPIED','',NOTIFY_MESSAGE);
 		}
 		elseif($_SERVER['REQUEST_METHOD']=='POST' && $_POST['action']=='save')
 		{

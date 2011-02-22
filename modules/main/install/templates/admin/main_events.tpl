@@ -96,6 +96,8 @@
 			</td>
 		</tr>
 		{/foreach}
+		{else}
+			<tr><td colspan="7">{#nothing_selected#}</td></tr>
 		{/if}
 	</table>
 </div>

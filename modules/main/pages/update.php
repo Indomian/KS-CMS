@@ -3,21 +3,21 @@
  * @file update.php
  * Страница работы системы обновления
  * Файл проекта kolos-cms.
- * 
+ *
  * Создан 18.02.2010
  *
  * @author blade39 <blade39@kolosstudio.ru>
  * @version 2.5.4
  * @todo
  */
-/*Обязательно вставляем во все файлы для защиты от взлома*/ 
+/*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 include_once MODULES_DIR.'/main/libs/class.CHTTPInterface.php';
 require_once MODULES_DIR.'/main/libs/class.CConfigParser.php';
 global $arVersion,$smarty,$KS_FS;
 $page='_update';
-$smarty->config_load('admin.conf','main_update');
+
 try
 {
 	if($_SERVER['REQUEST_METHOD']=='POST')
@@ -144,7 +144,7 @@ try
 				}
 				else
 				{
-					throw new CError('SYSTEM_UPDATE_NOTHING_DOWNLOAD');	
+					throw new CError('SYSTEM_UPDATE_NOTHING_DOWNLOAD');
 				}
 			}
 			catch(CDataError $e)
@@ -192,7 +192,7 @@ try
 						}
 					}
 					if(count($_SESSION['update']['download'])==0)
-					{	
+					{
 						$arResult['step']='precopy';
 						$arResult['status']=$smarty->get_config_vars('status_copy')!=''?$smarty->get_config_vars('status_copy'):'status_copy';
 						$_SESSION['update']['setup']=2;
@@ -200,7 +200,7 @@ try
 				}
 				catch(CError $e)
 				{
-					$arResult['error']=$e->__toString();	
+					$arResult['error']=$e->__toString();
 				}
 				echo json_encode($arResult);
 				die();
