@@ -2,10 +2,12 @@
 
 if(!defined('KS_ENGINE')){  die("Hacking attempt!");}
 
+include_once MODULES_DIR.'/main/libs/class.CAdminModuleManagment.php';
+
 /**
  * Класс обеспечивает упрощенную выборку данных при редактировании модулей в административном интерфейсе
  */
-class CUGModules extends CModuleAdmin
+class CUGModules extends CAdminModuleManagment
 {
 	function __construct()
 	{

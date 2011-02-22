@@ -12,6 +12,7 @@ Original Code by BlaDe39 (c) 2008
 Назначение: управление группами пользователей*/
 
 require_once MODULES_DIR.'/main/libs/class.CUserGroup.php';
+require_once MODULES_DIR.'/main/libs/class.CUGModules.php';
 require_once MODULES_DIR.'/main/libs/class.CAccess.php';
 
 global $KS_URL;
@@ -75,7 +76,7 @@ elseif ($action=='save')
 			foreach($_POST['CUG_level'] as $key=>$value)
 			{
 				$obAccess->Set($id,$key,min($value));
-			}	
+			}
 		}
 		CUrlParser::Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','id')));
 	}
