@@ -67,6 +67,12 @@ if(array_key_exists('go',$_POST))
 			$KS_FS->Remove(SYS_TEMPLATES_DIR.'/admin/'.$sFile);
 		}
 	}
+	//Удаляем файлы яваскрипта
+	if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/catsubcat/install/js/'))
+	{
+		if(file_exists(ROOT_DIR.JS_DIR.'/catsubcat/'))
+			$KS_FS->Remove(ROOT_DIR.JS_DIR.'/catsubcat/');
+	}
 	if(intval($_POST['deleteTemplates'])>0)
 	{
 		if(file_exists(TEMPLATES_DIR.'/.default/catsubcat/'))

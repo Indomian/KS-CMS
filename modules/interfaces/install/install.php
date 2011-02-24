@@ -91,6 +91,18 @@ if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/interfaces/install/templates/admin
 		$KS_FS->CopyFile(MODULES_DIR.'/interfaces/install/templates/admin/'.$sFile,SYS_TEMPLATES_DIR.'/admin/'.$sFile,'');
 	}
 }
+//Устанавливаем скрипты модуля
+if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/interfaces/install/js/'))
+{
+	if(!file_exists(ROOT_DIR.JS_DIR))
+		$KS_FS->makedir(ROOT_DIR.JS_DIR);
+	if(!file_exists(ROOT_DIR.JS_DIR.'/interfaces/'))
+		$KS_FS->makedir(ROOT_DIR.JS_DIR.'/interfaces/');
+	foreach($arFiles as $sFile)
+	{
+		$KS_FS->CopyFile(MODULES_DIR.'/interfaces/install/js/'.$sFile,ROOT_DIR.JS_DIR.'/interfaces/'.$sFile,'');
+	}
+}
 $this->AddNotify(SYSTEM_MODULE_INSTALL_OK,'interfaces',NOTIFY_MESSAGE);
 
 

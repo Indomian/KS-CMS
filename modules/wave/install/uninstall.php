@@ -26,6 +26,7 @@ if(!$this->IsModule('wave')) throw new CError('MAIN_MODULE_NOT_REGISTERED');
 //Список таблиц модуля
 $arDBList=array(
 	'wave_posts',
+	'wave_rating_locks',
 );
 
 //Определяем режим работы
@@ -51,6 +52,13 @@ if(array_key_exists('go',$_POST))
 			$KS_FS->Remove(SYS_TEMPLATES_DIR.'/admin/'.$sFile);
 		}
 	}
+	//Удаляем файлы яваскрипта
+	if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/wave/install/js/'))
+	{
+		if(file_exists(ROOT_DIR.JS_DIR.'/wave/'))
+			$KS_FS->Remove(ROOT_DIR.JS_DIR.'/wave/');
+	}
+	//Удаляем пользовательские шаблоны (если необходимо)
 	if(intval($_POST['deleteTemplates'])>0)
 	{
 		if(file_exists(TEMPLATES_DIR.'/.default/wave/'))

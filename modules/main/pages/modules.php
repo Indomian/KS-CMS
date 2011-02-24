@@ -66,8 +66,8 @@ class CmainAImodules extends CModuleAdmin
 			break;
 			case "edit":
 				$data=$this->obModules->GetRecord(array('id'=>$_REQUEST['CM_id']));
-				$this->smarty->obModules->assign('SITE', array('home_url' => "http://" . $_SERVER['HTTP_HOST']));
-				$this->smarty->obModules->assign('data',$data);
+				$this->smarty->assign('SITE', array('home_url' => "http://" . $_SERVER['HTTP_HOST']));
+				$this->smarty->assign('data',$data);
 				$page='_modules_edit';
 			break;
 			case "save":

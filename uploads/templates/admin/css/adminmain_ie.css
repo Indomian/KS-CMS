@@ -10,7 +10,7 @@ without prefix - MSIE 6, MSIE7.
 * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /** html body{behavior:url("css/csshover.htc");}*/
-* html body{behavior:url("csshover.htc");}
+* html body{behavior:url("/js/main/csshover.htc");}
 
 * html #Ruler {display: block; height:1px;line-height:1px;visibility:hidden;left:0;position:absolute;top:0;width:100%;}
 

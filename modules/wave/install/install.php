@@ -25,6 +25,7 @@ include MODULES_DIR.'/wave/install/db_structure.php';
 //Список таблиц модуля
 $arDBList=array(
 	'wave_posts',
+	'wave_rating_locks',
 );
 //Получаем список таблиц системы
 $arTables=$ks_db->ListTables();
@@ -92,11 +93,24 @@ if(array_key_exists('go',$_POST))
 			}
 		}
 	}
+	//Устанавливаем системные шаблоны
 	if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/wave/install/templates/admin/'))
 	{
 		foreach($arFiles as $sFile)
 		{
 			$KS_FS->CopyFile(MODULES_DIR.'/wave/install/templates/admin/'.$sFile,SYS_TEMPLATES_DIR.'/admin/'.$sFile,'');
+		}
+	}
+	//Устанавливаем скрипты модуля
+	if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/wave/install/js/'))
+	{
+		if(!file_exists(ROOT_DIR.JS_DIR))
+			$KS_FS->makedir(ROOT_DIR.JS_DIR);
+		if(!file_exists(ROOT_DIR.JS_DIR.'/wave/'))
+			$KS_FS->makedir(ROOT_DIR.JS_DIR.'/wave/');
+		foreach($arFiles as $sFile)
+		{
+			$KS_FS->CopyFile(MODULES_DIR.'/wave/install/js/'.$sFile,ROOT_DIR.JS_DIR.'/wave/'.$sFile,'');
 		}
 	}
 	$this->AddNotify(SYSTEM_MODULE_INSTALL_OK,$arDescription['title'],NOTIFY_MESSAGE);

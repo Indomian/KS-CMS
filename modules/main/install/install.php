@@ -165,4 +165,14 @@ if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/main/install/templates/admin/'))
 		$KS_FS->CopyFile(MODULES_DIR.'/main/install/templates/admin/'.$sFile,SYS_TEMPLATES_DIR.'/admin/'.$sFile,'');
 	}
 }
+//Устанавливаем скрипты модуля
+if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/main/install/js/'))
+{
+	if(!file_exists(ROOT_DIR.JS_DIR))
+		$KS_FS->makedir(ROOT_DIR.JS_DIR);
+	foreach($arFiles as $sFile)
+	{
+		$KS_FS->CopyFile(MODULES_DIR.'/main/install/js/'.$sFile,ROOT_DIR.JS_DIR.'/'.$sFile,'');
+	}
+}
 $this->AddNotify(SYSTEM_MODULE_INSTALL_OK,'main',NOTIFY_MESSAGE);
