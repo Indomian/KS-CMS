@@ -8,8 +8,7 @@
     	<link rel="stylesheet" href="{$templates_files_folder}/{$glb_tpl}/css/default.css" type="text/css" />
 		<link rel="stylesheet" href="{$templates_files_folder}/{$glb_tpl}/css/template.css" type="text/css" />
 		<link rel="stylesheet" href="{$templates_files_folder}/{$glb_tpl}/css/content.css" type="text/css" />
-    	<script type="text/javascript" src="/js/main.js"></script>
-    	<script type="text/javascript" src="/js/jquery/jquery.js"></script>
+    	<script type="text/javascript" src="/js/main/main.js"></script>
     	{MainHeadStrings}
   	</head>
   	<body>

@@ -348,12 +348,12 @@ class CModuleHookUp extends CModuleManagment
 		{
 			if(file_exists(ROOT_DIR.JS_DIR.$widget.'.js'))
 			{
-				$this->AddHeadString('<script type="text/javascript" src="'.$widget.'.js'.'"></script>');
+				$this->UseJavaScript($widget.'.js',12);
 			}
 		}
 		else
 		{
-			$this->AddHeadString('<script type="text/javascript" src="'.JS_DIR.$sJsFile.'"></script>');
+			$this->UseJavaScript($sJsFile,13);
 		}
 		return $sResult;
 	}

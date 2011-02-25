@@ -201,7 +201,7 @@ class CAjax extends CAjaxCommon
 			{
 				$content.='function ksAjax'.$this->hash.'(){
 						$(\'a[rel='.$this->hash.']\').click(function(e){
-							if(e.isDefaultPrevented()) 
+							if(e.isDefaultPrevented())
 							{
 								return;
 							}
@@ -231,7 +231,7 @@ class CAjax extends CAjaxCommon
 						ajaxShadow("'.$this->hash.'");
 						$.post(url,data,function(data)
 							{
-								$("#'.$this->hash.'").html(data);							
+								$("#'.$this->hash.'").html(data);
 								ajaxHideShadow("'.$this->hash.'");
 							});
 						return false;}';
@@ -248,11 +248,11 @@ class CAjax extends CAjaxCommon
 	{
 		global $KS_MODULES;
 		if(parent::$bIsLoad) return true;
-		$KS_MODULES->AddHeadString('<script type="text/javascript" src="/js/jquery/jquery.js"></script>');
-		$KS_MODULES->AddHeadString('<script type="text/javascript" src="/js/ajax.js"></script>');
+		$KS_MODULES->UseJavaScript('/jquery/jquery.js',1);
+		$KS_MODULES->UseJavaScript('/interfaces/ajax.js');
 		parent::$bIsLoad=true;
 	}
-	
+
 	/**
 	 * Метод подгружает яваскрипт библиотеки критичные для данного виджета,
 	 * системные библиотеки не подключаются.

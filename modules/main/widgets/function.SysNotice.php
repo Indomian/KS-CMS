@@ -56,8 +56,7 @@ function smarty_function_SysNotice($params,&$smarty)
 		try
 		{
 			$smarty->assign('list',$arResult);
-			$sResult=$KS_MODULES->RenderTemplate($smarty,'/main/SysNotice',$params['global_template'],$params['tpl']);
-			return $sResult;
+			return $KS_MODULES->RenderTemplate($smarty,'/main/SysNotice',$params['global_template'],$params['tpl']);
 		}
 		catch(CError $e)
 		{

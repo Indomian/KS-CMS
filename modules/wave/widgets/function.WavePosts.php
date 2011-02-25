@@ -27,83 +27,106 @@ function smarty_function_WavePosts($params,&$subsmarty)
 	$arData=array();
 	/* Проверка общих прав на просмотр тем */
 	$arData['level'] = $USER->GetLevel('wave');
-	if ($arData['level'] > KS_ACCESS_WAVE_VIEW) throw new CAccessError("WAVE_ACCESS_VIEW", 403);
-	if($params['hash']=='') throw new CDataError("WAVE_HASH_REQUIRED");
+	if ($arData['level'] > KS_ACCESS_WAVE_VIEW)
+		throw new CAccessError("WAVE_ACCESS_VIEW", 403);
+	if($params['hash']=='')
+		throw new CDataError("WAVE_HASH_REQUIRED");
 	$params['count']=intval($params['count'])>0?intval($params['count']):10;
 	$params['order']=$params['order']=='desc'?'desc':'asc';
 	$obPostsAPI=CWaveAPI::get_instance();
 	$arPost=array();
 	try
 	{
-		if($_SERVER['REQUEST_METHOD']=='POST' && $KS_URL->CheckPostHash())
+		if($arData['level']<KS_ACCESS_WAVE_VIEW)
 		{
-			if($arData['level']<KS_ACCESS_WAVE_VIEW)
+			if($_SERVER['REQUEST_METHOD']=='POST')
 			{
 				if(array_key_exists('addpost',$_POST))
-				{
+					$action='addpost';
+				elseif(array_key_exists('hide',$_POST))
+					$action='hide';
+				elseif(array_key_exists('show',$_POST))
+					$action='show';
+				elseif(array_key_exists('delete',$_POST))
+					$action='delete';
+			}
+			else
+			{
+				if(in_array($_GET['WV_a'],array('addpost','hide','show','delete')))
+					$action=$_GET['WV_a'];
+			}
+			switch($action)
+			{
+				case 'addpost':
 					//Операция по добавлению сообщения
 					$bError=false;
 					$arPost=array(
-						'content'=>EscapeHTML($_POST['WV_content']),
+						'content'=>EscapeHTML($_REQUEST['WV_content']),
 					);
 					if(!$USER->IsLogin())
 					{
-						$arPost['user_email']=EscapeHTML($_POST['WV_user_email']);
-						$arPost['user_name']=EscapeHTML($_POST['WV_user_name']);
+						if($KS_MODULES->GetConfigVar('wave','use_captcha',0)==1)
+						{
+							if (!CCaptcha::CheckCaptcha($_POST['c']))
+							{
+								$bError=$KS_MODULES->AddNotify("WAVE_WRONG_CAPTCHA");
+							}
+						}
+						$arPost['user_email']=EscapeHTML($_REQUEST['WV_user_email']);
+						$arPost['user_name']=EscapeHTML($_REQUEST['WV_user_name']);
 						$arPost['user_id']=-1;
-						if($arPost['user_name']=='')
-							$bError=$KS_MODULES->AddNotify("WV_NAME_ERROR");
 						if(strlen($arPost['user_email'])>0 && !IsEmail($arPost['user_email']))
-							$bError=$KS_MODULES->AddNotify("WV_MAIL_ERROR");
+							$bError=$KS_MODULES->AddNotify("WAVE_MAIL_ERROR");
 					}
 					else
 					{
 						$arPost['user_email']=$USER->Email();
-						$arPost['user_name']=$_POST['WV_user_name']==''?$USER->userdata['title']:EscapeHTML($_POST['WV_user_name']);
+						$arPost['user_name']=$_REQUEST['WV_user_name']==''?$USER->userdata['title']:EscapeHTML($_POST['WV_user_name']);
 						$arPost['user_id']=$USER->ID();
 					}
-					if($arPost['content']=='')
-						$bError=$KS_MODULES->AddNotify("WAVE_TEXT_ERROR");
 					if(!$bError)
 					{
-						$id=$obPostsAPI->AddAnswer($params['hash'],intval($_POST['parent_id']),$arPost);
-						if($arData['level']>=KS_ACCESS_WAVE_ADD_GUEST)
-						{
-							$KS_MODULES->AddNotify("WAVE_ADD_OK",'',NOTIFY_MESSAGE);
-						}
+						$id=$obPostsAPI->AddAnswer($params['hash'],intval($_REQUEST['WV_parent_id']),$arPost);
+						$KS_MODULES->AddNotify("WAVE_ADD_OK",'',NOTIFY_MESSAGE);
+						$KS_URL->redirect();
 					}
 					else
 					{
 						throw new CDataError('WAVE_FIELDS_ERROR');
 					}
-				}
-				elseif(array_key_exists('hide',$_POST))
-				{
-					$obPosts->Hide(intval($_POST['WV_id']));
-				}
-				elseif(array_key_exists('show',$_POST))
-				{
-					$obPosts->Show(intval($_POST['WV_id']));
-				}
-				elseif(array_key_exists('delete',$_POST))
-				{
-					$obPosts->Delete(intval($_POST['WV_id']));
-				}
-			}
-			else
-			{
-				throw new CAccessError('WAVE_ACCESS_POST');
+				break;
+				case 'hide':
+					if($obPostsAPI->Hide(intval($_REQUEST['WV_id'])))
+					{
+						$KS_MODULES->AddNotify("WAVE_HIDE_OK",'',NOTIFY_MESSAGE);
+					}
+					$KS_URL->redirect();
+				break;
+				case 'show':
+					if($obPostsAPI->Show(intval($_REQUEST['WV_id'])))
+					{
+						$KS_MODULES->AddNotify("WAVE_SHOW_OK",'',NOTIFY_MESSAGE);
+					}
+					$KS_URL->redirect();
+				break;
+				case 'delete':
+					if($obPostsAPI->Delete(intval($_REQUEST['WV_id'])))
+					{
+						$KS_MODULES->AddNotify("WAVE_DELETE_OK",'',NOTIFY_MESSAGE);
+					}
+					$KS_URL->redirect();
+				break;
 			}
 		}
 	}
 	catch(CDataError $e)
 	{
-		$res=$e->__toString();
+		$KS_MODULES->AddNotify($e->getMessage());
 		$subsmarty->assign('post',$arPost);
 	}
 	catch(CError $e)
 	{
-		$res=$e->__toString();
+		$KS_MODULES->AddNotify($e->getMessage());
 	}
 
 	$obPosts=$obPostsAPI->Posts();
@@ -122,7 +145,21 @@ function smarty_function_WavePosts($params,&$subsmarty)
 	$obPages = new CPageNavigation($obPosts,false,$params['count']);
 	$arOrder=array('left_margin'=>$params['order'],'date_add'=>$params['order']);
 	$iCount=$obPosts->Count($arFilter);
-	$arPosts=$obPosts->GetList($arOrder,$arFilter,$obPages->GetLimits($iCount),$arSelect);
+	if($arPosts=$obPosts->GetList($arOrder,$arFilter,$obPages->GetLimits($iCount),$arSelect))
+	{
+		foreach($arPosts as $key=>$arPost)
+		{
+			$arPosts[$key]['access']=$obPostsAPI->GetPostRights($arPost);
+		}
+	}
+	if(!$USER->IsLogin())
+	{
+		if($KS_MODULES->GetConfigVar('wave','use_captcha',0)==1)
+		{
+			$subsmarty->assign('use_captcha',1);
+		}
+	}
+	$subsmarty->assign('fields',$obPostsAPI->GetFormFields());
 	$subsmarty->assign('posts',$arPosts);
 	$subsmarty->assign('data',$arData);
 	$subsmarty->assign('pages',$obPages->GetPages());

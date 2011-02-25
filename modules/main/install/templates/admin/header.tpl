@@ -11,7 +11,7 @@
 		<link rel="stylesheet" href="/uploads/templates/admin/css/ui.all.css" type="text/css" />
 		<link rel="stylesheet" href="/uploads/templates/admin/css/imgareaselect-animated.css" type="text/css" />
 		<script type="text/javascript" src="/js/jquery/jquery.js"></script>
-		<script type="text/javascript" src="/js/floatmessage.js"></script>
+		<script type="text/javascript" src="/js/main/floatmessage.js"></script>
 		<script type="text/javascript" src="/js/main/admin.js"></script>
 		<script type="text/javascript" src="/js/main/ksWindow.js"></script>
 		{*Здесь подключается тинимце*}

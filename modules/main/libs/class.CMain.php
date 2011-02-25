@@ -410,6 +410,18 @@ class CObject extends CBaseList
 	}
 
 	/**
+	 * Метод возвращает запись по её номеру, если есть возможность запись возвращается из кэша
+	 */
+	function GetById($id)
+	{
+		if(is_array(CObject::$arCache))
+			if(array_key_exists($this->sTable,CObject::$arCache))
+				if(array_key_exists($id,CObject::$arCache[$this->sTable]))
+					return CObject::$arCache[$this->sTable][$id];
+		return $this->GetRecord(array('id'=>$id));
+	}
+
+	/**
 	 * Метод возвращает значения полей из массива данных
 	 *
 	 * Метод позволяет построить данные по правильной структуре исходя из переданных в

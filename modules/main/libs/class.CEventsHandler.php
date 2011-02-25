@@ -33,7 +33,7 @@
  	 *
  	 * @var string
  	 */
- 	var $config_file;
+ 	protected $config_file;
 
  	/**
  	 * Конфигурационный массив
@@ -51,7 +51,7 @@
  	 * BlaDe39 : 'bOnce' - поле указывающее на то что обработчик одноразовый
  	 * @var array
  	 */
- 	var $events;
+ 	protected $events;
 
  	/**
  	 * Поле, указывающее на то, в каком виде метод CEventsHandler::Execute() будет возвращать ответ
@@ -70,21 +70,21 @@
  	 *
  	 * @var string
  	 */
- 	var $actual_module;
+ 	protected $actual_module;
 
  	/**
  	 * Имя актуального (последнего) события, по которому выполняются обработчики
  	 *
  	 * @var string
  	 */
- 	var $actual_event;
+ 	protected $actual_event;
 
  	/**
  	 * Результат последнего выполнения метода CEventsHandler::Execute()
  	 *
  	 * @var boolean
  	 */
- 	var $actual_result;
+ 	protected $actual_result;
 
  	/**
  	 * Конструктор объекта класса, осуществляет подключение файла с конфигурационным массивом
@@ -164,6 +164,63 @@
 	public function PopMode()
 	{
 		$this->return_type=array_pop($this->arModeStack);
+	}
+
+	/**
+	 * Метод проверяет наличие обработчика для указанного модуля и события
+	 * В целом проверяется реальное наличие обработчика (т.е. возможность его вызвать),
+	 * а не только его регистрация в файле обработчиков
+	 */
+	public function HasHandler($module,$event)
+	{
+		if(array_key_exists($module,$this->events))
+		{
+			if(array_key_exists($event,$this->events[$module]))
+			{
+				$arHandlers=$this->events[$module][$event];
+				$bHasFile=false;
+				$bHasFunc=false;
+				foreach($arHandlers as $arHandler)
+				{
+					if (isset($arHandler['hFile']) && $arHandler['hFile']!='')
+ 					{
+						/* Полное имя файла-обработчика */
+ 						$hFileName = MODULES_DIR . '/' . $this->actual_module . '/events/' . $handler['hFile'];
+ 						if (file_exists($hFileName))
+ 						{
+ 							$bHasFile=true;
+						}
+						elseif(file_exists($arHandler['hFile']))
+						{
+							$bHasFile=true;
+						}
+					}
+					/* Указана функция-обработчик */
+					if (isset($handler['hFunc']))
+					{
+						if(is_array($handler['hFunc']))
+						{
+							if(is_object($handler['hFunc'][0]))
+							{
+								$bHasFunc = true;
+							}
+							elseif(is_string($handler['hFunc'][0]))
+							{
+								if(class_exists($handler['hFunc'][0]))
+									if(method_exists($handler['hFunc'][0], $handler['hFunc'][1]))
+										$bHasFunc = true;
+							}
+						}
+						elseif (function_exists($handler['hFunc']))
+						{
+							$bHasFunc = true;
+						}
+					}
+					if($bHasFile || $bHasFunc) return true;
+				}
+			}
+		}
+		return false;
 	}
 
  	/**

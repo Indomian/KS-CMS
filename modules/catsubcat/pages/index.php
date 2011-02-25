@@ -168,7 +168,12 @@ class CcatsubcatAIindex extends CModuleAdmin
 				unset($_POST['CSC_date_add']);
 			/* Сохранение/обновление записи */
 			if($iError>0) throw new CDataError('CATSUBCAT_FIELDS_ERROR');
-			if($id = $this->obEditable->Save("CSC_", $_POST))
+			$id=$this->obEditable->Save("CSC_", $_POST);
+			if($id===false)
+			{
+				throw new CError('CATSUBCAT_SAVE_ERROR');
+			}
+			else
 			{
 				//Операции выполняемые после сохранения записи в базе данных
 				$data = $this->obEditable->GetById($id);

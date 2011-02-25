@@ -158,9 +158,9 @@ class CmainAImodules extends CModuleAdmin
 				$page='_modules_uninstall';
 			break;
 			case "def":
-				if($USER->is_admin())
+				if($this->obUser->is_admin())
 				{
-					if($arModule=$this->GetRecord(array('URL_ident'=>'default')))
+					if($arModule=$this->obModules->GetRecord(array('URL_ident'=>'default')))
 					{
 						$this->obModules->Update($arModule['id'],array('URL_ident'=>$arModule['directory']));
 					}

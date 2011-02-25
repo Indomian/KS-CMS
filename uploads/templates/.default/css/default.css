@@ -100,7 +100,7 @@ height:auto;
 .footer_menu ul li img {display: inline; float: left; width: 10px; height: 10px; background:#369; margin: 0 0 0 -15px;}
 
 /*?=poll
-------------------- */    
+------------------- */
 .poll {padding: 0 0 20px;}
 .poll_question {padding: 0 0 7px;}
 
@@ -110,7 +110,7 @@ height:auto;
 
 .poll_bar {overflow: hidden; padding: 0 0 7px; font-size: 11px; //zoom:1;}
 .poll_line_p {float: left; width: 79%;}
-.poll_line, 
+.poll_line,
 .poll_line div {height: 14px; float: left;}
 .poll_line {}
 .poll_line div {float: right; width: 10px; }
@@ -167,7 +167,7 @@ height:auto;
 .blog_tags {font-size: 11px; color:#c33;}
 .blog_tags a {color:#c33;}
 .blog_tags a:hover {color:#333;}
- 
+
 .voting{list-style: none; padding: 0; position:relative;margin:0 0 1em;width:78px;height:13px;overflow:hidden;}
 .voting LI{float:left;}
 .voting A{position:absolute;top:0;left:0;display:block;height:13px;text-indent:-9999px;}
@@ -314,17 +314,17 @@ height:auto;
 .block_alt1 {//zoom:1;}
 .block_alt2 {}
 .block_alt3 {}
-.block_alt4 {//zoom:1;} 
+.block_alt4 {//zoom:1;}
 
 
 
 /*?=content_gal_image
--------------------------*/ 
+-------------------------*/
 .content_gal_image {width: 554px; padding: 0 0 12px;}
 .content_gal_image_in {position: relative; overflow: hidden; //zoom:1;}
 .content_gal_image_in img {vertical-align: top;}
 .content_gal_image_arrow_left,
-.content_gal_image_arrow_right {position: absolute; top: 50%; margin: -29px 0 0; width: 42px; height: 58px;} 
+.content_gal_image_arrow_right {position: absolute; top: 50%; margin: -29px 0 0; width: 42px; height: 58px;}
 .content_gal_image_arrow_right {right: 2px; background: url('../images/gal/next.png');}
 .content_gal_image_arrow_left {left: 2px; background: url('../images/gal/prev.png');}
 
@@ -466,4 +466,57 @@ div.dropDown{
 
 div.dropDown a{
 	display:block;
+}
+
+/*Комментарии*/
+div.comment
+{
+	border-top:1px dashed black;
+	clear:both;
+}
+
+div.comment-header span.comment-header-date
+{
+	float:right;
+	color:#777;
+	font-size:smaller;
+}
+
+ul.comment-menu
+{
+	height:19px;
+	padding:0;
+	display:block;
+}
+
+ul.comment-menu li
+{
+	list-style:none;
+	float:left;
+	padding:2px 5px;
+}
+
+div.level1
+{
+	margin-left:0px;
+}
+
+div.level2
+{
+	margin-left:40px;
+}
+
+div.level3
+{
+	margin-left:80px;
+}
+
+div.level4
+{
+	margin-left:120px;
+}
+
+div.level5
+{
+	margin-left:160px;
 }

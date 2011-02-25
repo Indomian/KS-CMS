@@ -23,14 +23,17 @@ class CWaveAPI extends CBaseAPI
 	static private $obInstance;
 	private $obPosts;
 	private $obVoteLocks;
+	private $sMode;
 
 	/**
 	 * Метод заменяющий конструктор. Используется для инициализации.
 	 */
 	private function init()
 	{
+		global $KS_MODULES;
 		$this->obPosts=new CWavePosts();
 		$this->obVoteLocks=new CObject('wave_rating_locks');
+		$this->sMode=$KS_MODULES->GetConfigVar('wave','mode','list');
 	}
 
 	/**
@@ -54,6 +57,68 @@ class CWaveAPI extends CBaseAPI
 	function Posts()
 	{
 		return $this->obPosts;
+	}
+
+	/**
+	 * Метод возвращает права текущего пользователя на доступ к различным функциям определённого поста
+	 * @param $id mixed номер поста или тело поста
+	 */
+	function GetPostRights($id)
+	{
+		global $KS_EVENTS_HANDLER,$KS_MODULES,$USER;
+
+		if(!is_array($id))
+		{
+			$arPost=$this->GetById($id);
+		}
+		else
+		{
+			$arPost=$id;
+		}
+		if(!$arPost) throw new CError('WAVE_POST_NOT_FOUND');
+		$arAccess=array(
+			'canAnswer'=>false,
+			'canEdit'=>false,
+			'canDelete'=>false,
+			'canModerate'=>false,
+		);
+		if($this->sMode!='list')
+		{
+			if($this->sMode=='tree')
+			{
+				if($arPost['depth']<$KS_MODULES->GetConfigVar('wave','max_depth',100))
+					$arAccess['canAnswer']=$USER->GetLevel('wave')<=KS_ACCESS_WAVE_ANSWER;
+			}
+			elseif($this->sMode=='answer')
+			{
+				if($arPost['depth']==1)
+				{
+					$arAccess['canAnswer']=$USER->GetLevel('wave')<=KS_ACCESS_WAVE_ANSWER;
+					if($KS_EVENTS_HANDLER->HasHandler('wave','onGetAnswerRight'))
+					{
+						$arCheckArray=array(
+							'parent'=>$arPost,
+							'new'=>false,
+						);
+						$arAccess['canAnswer']=$KS_EVENTS_HANDLER->Execute("wave", "onGetAnswerRight",$arCheckArray);
+					}
+				}
+			}
+		}
+		if($USER->ID()>0)
+		{
+			if($USER->GetLevel('wave')>KS_ACCESS_WAVE_MODERATE)
+			{
+				$arAccess['canEdit']=$arPost['user_id']==$USER->ID();
+			}
+			else
+			{
+				$arAccess['canEdit']=true;
+				$arAccess['canDelete']=true;
+				$arAccess['canModerate']=true;
+			}
+		}
+		return $arAccess;
 	}
 
 	/**
@@ -81,6 +146,7 @@ class CWaveAPI extends CBaseAPI
 				$arFields['ext_'.$arField['title']]=$arInFields['ext_'.$arField['title']];
 			}
 		}
+		if($this->CheckRequiredFields($arFields)>0) throw new CDataError('WAVE_FIELDS_ERROR');
 		//Если код родительского сообщения больше 0 то ищем его
 		if($parent_id>0)
 		{
@@ -95,10 +161,11 @@ class CWaveAPI extends CBaseAPI
 						'parent'=>$arParentPost,
 						'new'=>$arFields,
 					);
-					if(!$KS_EVENTS_HANDLER->Execute("wave", "onGetAnswerRight",$arCheckArray)) throw new CError('WAVE_ACCESS_ANSWER_DENIED');
+					if(!$KS_EVENTS_HANDLER->Execute("wave", "onGetAnswerRight",$arCheckArray))
+						throw new CError('WAVE_ACCESS_ANSWER_DENIED');
 					if($arChild=$this->obPosts->GetRecord(array('parent_id'=>$arParentPost['id'])))
 					{
-						return $this->UpdatePost($arChild['id'],$arFields);
+						return $this->obPosts->Update($arChild['id'],$arFields);
 					}
 				}
 				if($arParentPost['depth']+1>$KS_MODULES->GetConfigVar('wave','max_depth',10))
@@ -155,11 +222,79 @@ class CWaveAPI extends CBaseAPI
 	}
 
 	/**
+	 * Метод возвращает список полей которые могут выводиться при редактировании
+	 * поста
+	 */
+	function GetPostFields()
+	{
+		global $KS_MODULES;
+		$arStandartFields=array(
+			array(
+				'title'=>'content',
+				'description'=>$KS_MODULES->GetText('field_content')
+			),
+			array(
+				'title'=>'user_name',
+				'description'=>$KS_MODULES->GetText('field_user_name')
+			),
+			array(
+				'title'=>'user_email',
+				'description'=>$KS_MODULES->GetText('field_user_email')
+			),
+			array(
+				'title'=>'captcha',
+				'description'=>$KS_MODULES->GetText('field_captcha')
+			),
+		);
+		$arUserFields=$this->obPosts->GetUserFields();
+		$arWavePosts=array_merge($arStandartFields,$arUserFields);
+		return $arWavePosts;
+	}
+
+	/**
+	 * Метод возвращает список полей вывода которые настроены в административной части
+	 */
+	function GetFormFields()
+	{
+		global $KS_MODULES;
+		$arConfig=$KS_MODULES->GetConfigArray('wave');
+		$arFields=$this->GetPostFields();
+		$arResult=array();
+		foreach($arFields as $arField)
+		{
+			if($arConfig['field_show_'.$arField['title']]==1)
+				$arResult[$arField['title']]=$arConfig['field_title_'.$arField['title']]!=''?$arConfig['field_title_'.$arField['title']]:$arField['description'];
+		}
+		return $arResult;
+	}
+
+	/**
+	 * Метод проверяет заполненность обязательных полей
+	 */
+	function CheckRequiredFields($arData)
+	{
+		global $KS_MODULES;
+		$arConfig=$KS_MODULES->GetConfigArray('wave');
+		$arFields=$this->GetPostFields();
+		$bError=0;
+		foreach($arFields as $arField)
+		{
+			if($arField['title']=='captcha') continue;
+			if($arConfig['field_necessary_'.$arField['title']]==1)
+				if(IsEmpty($arData[$arField['title']]))
+				{
+					$bError+=$KS_MODULES->AddNotify('WAVE_EMPTY_NECESSARY_FIELD',$arConfig['field_title_'.$arField['title']]!=''?$arConfig['field_title_'.$arField['title']]:$arField['description']);
+				}
+		}
+		return $bError;
+	}
+
+	/**
 	 * Метод удаляет сообщение и всех его потомков
 	 */
 	function Delete($id)
 	{
-		global $USER;
+		global $USER,$KS_MODULES;
 		if($USER->GetLevel('wave')<=KS_ACCESS_WAVE_MODERATE)
 		{
 			if($arPost=$this->obPosts->GetRecord(array('id'=>$id)))
@@ -171,10 +306,17 @@ class CWaveAPI extends CBaseAPI
 				);
 				if($arPosts=$this->obPosts->GetList(false,$arFilter))
 				{
-					pre_print($arPosts);
-					die();
+					if($KS_MODULES->GetConfigVar('wave','use_ratings','no')=='usefullness')
+					{
+						$this->obVoteLocks->DeleteItems(array('->comment_id'=>array_keys($arPosts)));
+					}
+					$this->obPosts->DeleteItems(array('->id'=>array_keys($arPosts)));
 				}
-				return $this->obPosts->DeleteItems(array($arPost['id']));
+				if($KS_MODULES->GetConfigVar('wave','use_ratings','no')=='usefullness')
+				{
+					$this->obVoteLocks->DeleteItems(array('comment_id'=>$arPost['id']));
+				}
+				return $this->obPosts->DeleteItems(array('id'=>$arPost['id']));
 			}
 			else
 			{

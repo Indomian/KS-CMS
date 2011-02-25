@@ -26,6 +26,8 @@ define('BIG_STEP',10);
 
 class CWavePosts extends CFieldsObject
 {
+	private $arPostsCache;
+
 	function __construct($sTable='wave_posts')
 	{
 		parent::__construct($sTable);
@@ -41,8 +43,18 @@ class CWavePosts extends CFieldsObject
 				$this->arFields[]='ext_'.$item['title'];
 			}
 		}
+		$this->arPostsCache=array();
 		//Устанавливаем папку для загрузки
 		$this->sUploadPath='wave/';
+	}
+
+	/**
+	 * Метод обрабатывает запись при выборке
+	 */
+	protected function _ParseItem(&$arItem)
+	{
+		CObject::$arCache[$this->sTable][$arItem['id']]=$arItem;
+		return true;
 	}
 
 	/**
@@ -76,6 +88,7 @@ class CWavePosts extends CFieldsObject
 		$id=parent::Save($prefix,$data);
 		if($arPost=$this->GetRecord(array('id'=>$id)))
 		{
+			$this->_ParseItem($arPost);
 			$this->RecountTree($arPost['hash']);
 			if(!$KS_EVENTS_HANDLER->Execute('wave','onAfterAdd',$arPost))
 				throw new CError('MAIN_HANDLER_ERROR','wave:onAfterAdd');

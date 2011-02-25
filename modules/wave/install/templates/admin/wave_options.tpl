@@ -35,7 +35,7 @@
 						<td>
 							<select name="use_ratings">
 								<option value="no"{if $data.use_ratings=='no'} selected="selected"{/if}>{#not_use_ratings#}</option>
-								<option value="usefullness"{if $data.use_ratings=='usefullness'} selected="selected"{/if}>{#use_ratings_usefullness#}</option>
+								<option value="usefullness" disabled="disabled"{if $data.use_ratings=='usefullness'} selected="selected"{/if}>{#use_ratings_usefullness#}</option>
 							</select>
 						</td>
 					</tr>
