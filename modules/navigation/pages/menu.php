@@ -77,7 +77,7 @@ class CnavigationAImenu extends CModuleAdmin
 		}
 		else
 		{
-			$arData=$oElement->GetById($this->iParentId);
+			$arData=$this->oElement->GetById($this->iParentId);
 			$this->iParentId = $arData['parent_id'];
 		}
 		$arResult['ITEMS'] = Array();

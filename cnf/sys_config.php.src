@@ -15,7 +15,7 @@ $ks_config = array
 	'DB_CLASS' => "mysql",
 	'LANG' => "ru",
 	'debugmode' => "1",
-	'copyright' => "Copyright 2009 Kolos-Studio",
+	'copyright' => "Copyright 2011 Kolos-Studio",
 	'start_adminpage' => "light",
 	'text_ident_length' => "20",
 	'highlight_new_elements' => "all",
@@ -23,7 +23,9 @@ $ks_config = array
 	'highlight_color' => "fff74b",
 	'highlight_odd_row_color' => "70808D",
 	'user_inactive_time' => "2000",
-	'emailFrom' => "#ADMIN_EMAIL#"
+	'emailFrom' => "#ADMIN_EMAIL#",
+	'go_install'=>0,
+	'update_db'=>0,
 );
 
 ?>
