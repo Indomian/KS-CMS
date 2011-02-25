@@ -26,7 +26,12 @@ abstract class CModuleManagment extends CObject
 
 	function __construct()
 	{
-		global $ks_config;
+		global $ks_config,$KS_FS;
+		if($ks_config['go_install']==1)
+		{
+			//Если самоустановка, то надо скопировать структуру БД
+			$KS_FS->CopyFile(MODULES_DIR.'/main/install/db_structure.php',CONFIG_DIR.'/db_structure.php','');
+		}
 		parent::__construct('main_modules');
 		if(!is_array($_SESSION['notifies'])) $_SESSION['notifies']=array();
 		$this->arNotifies=$_SESSION['notifies'];
