@@ -5,7 +5,7 @@
 	<div class="text_line text_line_with_an_image">
 		<span class="text_line_image">
 			<a href="{$oItem.full_path}{$oItem.text_ident}.html">
-			{widget name=interfaces action=Pic width="87" height="89" src="/uploads/`$oItem.img`" alt=$oItem.title class="img"}
+			{widget action=Pic width="87" height="89" src="/uploads/`$oItem.img`" alt=$oItem.title class="img"}
 			</a>
 		</span>
 		<div class="header_holder_with_line">
