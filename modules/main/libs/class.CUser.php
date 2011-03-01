@@ -63,7 +63,7 @@ class CUser extends CBaseUser
 
 		$this->userdata = array();
 		$this->arAccessLevels = array();
-		$this->sUploadPath = 'users/';
+		$this->sUploadPath = '/users';
 		$this->fType = 'elm';
 		$this->sWidth=0; //максимальная высота аватара
 		$this->sHeight=0; //максимальная ширина аватара
@@ -545,7 +545,7 @@ class CUser extends CBaseUser
                     $obPhoto = new ImageResizer("/uploads/".$data['img']);
 			    	//дирректорию не создаем, затираем старый файл
                     $obPhoto->isCreateDir =false;
-                    $obPhoto->Resize($this->sWidth, $this->sHeight, $this->sRatio,$this->sRatio_wb,"/uploads/".$this->sUploadPath);
+                    $obPhoto->Resize($this->sWidth, $this->sHeight, $this->sRatio,$this->sRatio_wb,"/uploads".$this->sUploadPath);
 				}
 			}
 

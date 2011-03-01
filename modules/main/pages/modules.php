@@ -85,7 +85,7 @@ class CmainAImodules extends CModuleAdmin
 						}
 						if($data=$this->obModules->GetRecord(array('id'=>$_REQUEST['CM_id'])))
 						{
-							$id = $this->Save('CM_');
+							$id = $this->obModules->Save('CM_');
 							if(!array_key_exists('update',$_REQUEST))
 							{
 								CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl(Array('ACTION','CM_id')));

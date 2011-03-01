@@ -45,7 +45,7 @@ class CWavePosts extends CFieldsObject
 		}
 		$this->arPostsCache=array();
 		//Устанавливаем папку для загрузки
-		$this->sUploadPath='wave/';
+		$this->sUploadPath='/wave';
 	}
 
 	/**

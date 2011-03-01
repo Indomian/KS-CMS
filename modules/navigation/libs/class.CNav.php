@@ -23,12 +23,12 @@ class CNavTypes extends CObject
 		$id=intval($id);
 		return $this->GetRecord(array('id'=>$id));
 	}
-	
+
 	function GetByTextIdent($text_ident)
 	{
 		return $this->GetRecord(array('text_ident' => $text_ident));
 	}
-	
+
 	function GetScriptList($arOrder=false,$arFilter=false)
 	{
 		if(file_exists(MODULES_DIR.'/navigation/menu_scripts/.description.php'))
@@ -53,7 +53,7 @@ class CNavTypes extends CObject
 		}
 		return $arResult;
 	}
-	
+
 	/**
 	 * Возвращает список элементов меню, заданного текстовым идентификатором $text_ident, который составляется
 	 * выбранным для этого типа меню скриптом
@@ -68,13 +68,13 @@ class CNavTypes extends CObject
 		if (!count($menu_params))
 			throw new CError('NAVIGATION_MENU_TYPE_NOT_FOUND');
 		$script_fullname = MODULES_DIR . '/navigation/menu_scripts/' . $menu_params['script_name'] . '.php';
-		if (file_exists($script_fullname)) 
+		if (file_exists($script_fullname))
 	  		include($script_fullname);
-	 	else 
+	 	else
 	 		throw new CError('NAVIGATION_MENU_SCRIPT_REQUIRED');
 	 	return $output;
 	}
-	
+
 	/**
 	 * метод возвращает описание последнего полученного типа меню
 	 */
@@ -116,6 +116,7 @@ class CNavElement extends CFieldsObject
 		$this->arFields=Array('id','orderation','type_id','parent_id','link','anchor','target','img');
 		//Подключаем работу с пользовательскими полями.
 		$this->sFieldsModule='navigation';
+		$this->sUploadPath='/navigation';
         if (class_exists(CFields))
         {
             $this->bFields=true;
@@ -154,12 +155,12 @@ class CNavElement extends CFieldsObject
 			}
 		}
 	}
-	
+
 	/**
 	 * @copydoc CObject::DeleteItems
 	 * Также удаляет все подчиненные элементы
 	 */
-	  
+
 	function DeleteItems($arFilter)
 	{
 		global $ks_db;
@@ -180,11 +181,11 @@ class CNavElement extends CFieldsObject
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Возвращает в виде массива все дочерние элементы меню из имеющегося списка элементов $search_items
 	 * для родительского элемента $parent_id, причём за каждым дочерним элементом массива сразу же следуют
-	 * его дочерние элементы 
+	 * его дочерние элементы
 	 * @param $type_id - id меню
 	 * @param $parent_id - id родительского элемента меню
 	 * @param &$search_items - ссылка на массив элементов меню, в котором ищутся дочерние
@@ -217,7 +218,7 @@ class CNavElement extends CFieldsObject
 		}
 		return $daughter_items;
 	}
-	
+
 	/**
 	 * Возвращает элементы меню в виде массива
 	 * @param $type_id - id меню
@@ -234,12 +235,12 @@ class CNavElement extends CFieldsObject
 		$menu_items_all = $this->GetList($arOrder, $arFilter);
 		if (!$expand)
 			return $menu_items_all;
-			
+
 		// сортируем пункты меню с вложениями
 		$start_parent_id = 0;
 		return $this->GetDaughterMenuItems($type_id, $start_parent_id, $menu_items_all);
 	}
-	
+
 	/**
 	 * Функция возвращает ассоциативный массив, содержащий id элемента меню и id его родительского элемента меню
 	 * для страницы с URL $link

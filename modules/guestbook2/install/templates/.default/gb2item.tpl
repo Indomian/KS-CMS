@@ -1,0 +1,1 @@
+{widget name=guestbook2 action=GB2Posts id=$element_id count=10}

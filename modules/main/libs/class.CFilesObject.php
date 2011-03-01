@@ -67,12 +67,12 @@ class CFilesObject extends CObject
 				if($_FILES[$key]['size'] > 0)
 				{
 					$file_ext = substr($_FILES[$key]['name'], strrpos($_FILES[$key]['name'], "."));
-					if(!file_exists(UPLOADS_DIR.'/'.$this->sUploadPath))
+					if(!file_exists(UPLOADS_DIR.$this->sUploadPath))
 					{
-						$KS_FS->makedir(UPLOADS_DIR.'/'.$this->sUploadPath);
+						$KS_FS->makedir(UPLOADS_DIR.$this->sUploadPath);
 					}
-					$filename = $this->sUploadPath.$this->_GenFileName($_FILES[$key]['name']);
-					$upload_to = UPLOADS_DIR.'/'.$filename;
+					$filename = $this->sUploadPath.'/'.$this->_GenFileName($_FILES[$key]['name']);
+					$upload_to = UPLOADS_DIR.$filename;
 					move_uploaded_file($_FILES[$key]['tmp_name'], $upload_to);
 					chmod($upload_to, 0644);
 					$sResult = $filename;
@@ -178,8 +178,8 @@ class CFilesObject extends CObject
 					$arItem=$this->GetRecord(array('id'=>$input[$prefix . 'id']));
 					if(is_array($arItem)&&($arItem['id']==$input[$prefix . 'id']))
 					{
-						if (file_exists(UPLOADS_DIR.'/'.$arItem[$key]))
-							unlink(UPLOADS_DIR.'/'.$arItem[$key]);
+						if (file_exists(UPLOADS_DIR.$arItem[$key]))
+							unlink(UPLOADS_DIR.$arItem[$key]);
 					}
 				}
 				$sResult="";
@@ -203,7 +203,7 @@ class CFilesObject extends CObject
 				{
 					if($item[$field]!='')
 					{
-						@unlink(UPLOADS_DIR.'/'.$item['img']);
+						@unlink(UPLOADS_DIR.$item['img']);
 					}
 				}
 			}

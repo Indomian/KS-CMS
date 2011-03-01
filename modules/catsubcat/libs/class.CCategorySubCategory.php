@@ -51,7 +51,7 @@ class CCategorySubCategory extends CRestorable
 			}
 		}
 		//Устанавливаем папку для загрузки
-		$this->sUploadPath='catsubcat/';
+		$this->sUploadPath='/catsubcat';
 		$this->Init();
 	}
 

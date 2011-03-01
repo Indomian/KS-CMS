@@ -30,8 +30,6 @@ if(array_key_exists('go',$_POST))
 	$showButtons=0;
 	//Удаляем запись о модуле
 	$this->DeleteItems(array('directory'=>$module_name));
-	//Сообщаем что все ок
-	$this->AddNotify(SYSTEM_MODULE_UNINSTALL_OK,$arDescription['title'],NOTIFY_MESSAGE);
 	//Удаляем файлы административных шаблонов
 	if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/sitemap/install/templates/admin/'))
 	{
@@ -53,7 +51,8 @@ if(array_key_exists('go',$_POST))
 			$KS_FS->Remove(TEMPLATES_DIR.'/.default/sitemap/');
 		}
 	}
-
+	//Сообщаем что все ок
+	$this->AddNotify(SYSTEM_MODULE_UNINSTALL_OK,$arDescription['title'],NOTIFY_MESSAGE);
 }
 else
 {
