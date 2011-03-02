@@ -3,14 +3,14 @@
  * @file function.GB2Posts.php
  * Виджет выполняющий работу по отображению и добавлению сообщений гостевой книги.
  * Файл проекта kolos-cms.
- * 
+ *
  * Создан: 24.11.2008
  * Изменен: 13.09.2010
  *
  * @author blade39 <blade39@kolosstudio.ru>
  * @version 2.5.4-13
  */
-/*Обязательно вставляем во все файлы для защиты от взлома*/ 
+/*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 include_once MODULES_DIR.'/guestbook2/libs/class.CGB2Api.php';
 include_once MODULES_DIR.'/interfaces/libs/CInterface.php';
@@ -28,7 +28,7 @@ function smarty_function_GB2Posts($params,&$subsmarty)
 {
 	global $global_template,$USER,$ks_db,$KS_MODULES,$KS_URL;
 	//Проверка и инициализация аякса
-	if($params['isAjax']=='Y') 
+	if($params['isAjax']=='Y')
 	{
 		/*Ключ о том это аякс запрос или нет*/
 		$oldAjax=false;
@@ -69,6 +69,7 @@ function smarty_function_GB2Posts($params,&$subsmarty)
 			{
 				if(array_key_exists('addpost',$_POST))
 				{
+					$bError=0;
 					//Операция по добавлению сообщения
 					$arPost=array();
 					if($arData['level']==KS_ACCESS_GB2_ANSWER_GUEST)
@@ -81,40 +82,55 @@ function smarty_function_GB2Posts($params,&$subsmarty)
 						$arPost['category_id']=intval($_POST['GB_cat']);
 					else
 						$arPost['category_id']=0;
-					
+
 					if(!$USER->IsLogin())
 					{
 						$arPost['user_email']=$_POST['GB_user_email'];
 						$arPost['user_name']=$_POST['GB_user_name'];
 						$arPost['user_id']=-1;
-						
+
 						if($arPost['user_name']=='')
-							throw new CDataError("GB2_NAME_ERROR");
+							$bError=$KS_MODULES->AddNotify("GB2_NAME_ERROR");
 						if (!ereg("^([a-z0-9_.\-]+)(@)([a-z0-9_.\-]+)((\.[a-z0-8_-]+)+)$", $arPost['user_email']))
-							throw new CDataError("GB2_MAIL_ERROR");
-					
+							$bError=$KS_MODULES->AddNotify("GB2_MAIL_ERROR");
+
 					}
 					else
 					{
 						$arPost['user_email']=$USER->Email();
 						$arPost['user_name']=$USER->userdata['title'];
 						$arPost['user_id']=$USER->ID();
-						
+
 					}
 					if($arPost['content']=='')
-						throw new CDataError("GB2_TEXT_ERROR");
-					
-					if($arData['showCaptcha']==1)
+						$bError=$KS_MODULES->AddNotify("GB2_TEXT_ERROR");
+
+					if(!$USER->isLogin() && $arData['showCaptcha']==1)
 					{
 						if (!CCaptcha::CheckCaptcha($_POST['c']))
-							throw new CDataError("USER_CAP_ERROR");			
+							$bError=$KS_MODULES->AddNotify("USER_CAP_ERROR");
 					}
-				
-					$id=$obGB2->AddPost($arPost);
-					if($arData['level']==KS_ACCESS_GB2_ANSWER_GUEST)
+
+					if($bError==0)
 					{
-						throw new CError("GB2_ADD_OK");
+						if($id=$obGB2->AddPost($arPost))
+						{
+							if($arData['level']==KS_ACCESS_GB2_ANSWER_GUEST)
+							{
+								$KS_MODULES->AddNotify("GB2_ADD_MODERATE_OK",'',NOTIFY_MESSAGE);
+							}
+							else
+							{
+								$KS_MODULES->AddNotify("GB2_ADD_OK",'',NOTIFY_MESSAGE);
+							}
+							$KS_URL->Redirect();
+						}
+						else
+						{
+							$KS_MODULES->AddNotify('GB2_POST_ADD_ERROR');
+						}
 					}
+					$subsmarty->assign('post',$arPost);
 				}
 				elseif(array_key_exists('hide',$_POST))
 				{
@@ -145,7 +161,7 @@ function smarty_function_GB2Posts($params,&$subsmarty)
 	{
 		$res=$e;
 	}
-	
+
 	//Получаем список сообщений
 	$arFilter=array();
 	if($arData['level']>KS_ACCESS_GB2_REPLY)
@@ -157,7 +173,7 @@ function smarty_function_GB2Posts($params,&$subsmarty)
 	$obPages = new CPageNavigation($obGB2->obPosts,false,$params['count']);
 	$arOrder=array('date_shown'=>'desc');
 	$arPosts=$obGB2->GetPosts($arOrder,$arFilter,$obPages);
-	
+
 	$subsmarty->assign('posts',$arPosts);
 	$subsmarty->assign('categories',$arCategories);
 	$subsmarty->assign('currentCat',$arFilter['category_id']);
@@ -171,7 +187,7 @@ function smarty_function_GB2Posts($params,&$subsmarty)
 		echo $sResult;
 		die();
 	}
-	return $sResult;		
+	return $sResult;
 }
 
 function widget_params_GB2Posts()

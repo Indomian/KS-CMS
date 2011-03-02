@@ -3,7 +3,7 @@
  * @file main.inc.php
  * Файл модуля Гостевая книга 2.0
  * Файл проекта kolos-cms.
- * 
+ *
  * Создан: 08.09.2009
  * Изменения: 13.09.2010
  *
@@ -15,7 +15,7 @@ if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 //Задаем название модуля
 $module='guestbook2';
 //Определяем глобальные переменные которые могут понадобиться внутри модуля
-global $USER,$KS_IND_matches,$smarty,$KS_IND_dir;
+global $USER,$KS_IND_matches,$smarty,$KS_IND_dir,$global_template;
 
 //Получаем переменные прав на доступ к модулю и разделам модуля
 $access_level=$USER->GetLevel($module);
@@ -47,7 +47,7 @@ else
 		 * на правильность и на права доступа, если что-то не так, лучше отдать ошибку.
 		 */
 		$root_path=$this->GetSitePath($module);
-		if($root_path!='/') 
+		if($root_path!='/')
 		{
 			if($this->IsActive('navigation'))
 				CNNavChain::get_instance()->Add($this->GetTitle($module),$root_path);
@@ -61,25 +61,25 @@ else
 			$iBase=1;
 			if(count($KS_IND_matches[1])>1) throw new CError('SYSTEM_FILE_NOT_FOUND');
 		}
-		
+
 		if(is_numeric($KS_IND_matches[3]))
 		{
 			$smarty->assign('element_id',intval($KS_IND_matches[3]));
-			$res=$this->RenderTemplate($smarty,'/guestbook2/gb2item',$global_template,$module_parameters['tpl']);
+			$res=$this->RenderTemplate($smarty,'/guestbook2/gb2item',$this->GetTemplate(),$module_parameters['tpl']);
 		}
 		elseif(count($KS_IND_matches[1])>2)
 		{
-			$res=$this->RenderTemplate($smarty,'/guestbook2/gb2inner',$global_template,$module_parameters['tpl']);
+			$res=$this->RenderTemplate($smarty,'/guestbook2/gb2inner',$this->GetTemplate(),$module_parameters['tpl']);
 		}
 		else
 		{
-			$res=$this->RenderTemplate($smarty,'/guestbook2/gb2index',$global_template,$module_parameters['tpl']);
+			$res=$this->RenderTemplate($smarty,'/guestbook2/gb2index',$this->GetTemplate(),$module_parameters['tpl']);
 		}
 		$smarty->assign('TITLE',$this->GetTitle($module));
 	}
 	catch(CAccessError $e)
 	{
-		$res=$e->getMessage();	
+		$res=$e->getMessage();
 	}
 	catch(CError $e)
 	{

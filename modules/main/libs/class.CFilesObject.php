@@ -20,11 +20,11 @@ class CFilesObject extends CObject
 	protected $arFileFields;	/*!<поля значения которых - файлы.*/
 	public $sUploadPath; 	/*!<Путь для загрузки файлов через функцию save.*/
 
-	function __construct($sTable='')
+	function __construct($sTable='',$sUploadPath='')
 	{
 		parent::__construct($sTable);
 		$this->arFileFields=array();
-		$this->sUploadPath='';
+		$this->sUploadPath=$sUploadPath;
 	}
 
 	/**

@@ -25,6 +25,26 @@ class CFieldsObject extends CFilesObject
 	protected $arUserFields;
 	protected $bFields;			/**<Флаг указывает на наличие пользовательских полей*/
 
+	function __construct($sTable,$sUploadPath='',$sModule=false)
+	{
+		parent::__construct($sTable,$sUploadPath);
+		if($sModule!=false)
+		{
+			$this->sFieldsModule=$sModule;
+			//Подключаем работу с пользовательскими полями.
+			if (class_exists(CFields))
+			{
+				$this->bFields=true;
+				$obFields=new CFields();
+				$this->arUserFields=$obFields->GetFields($this->sFieldsModule,$this->sTable);
+				foreach($this->arUserFields as $item)
+				{
+					$this->arFields[]='ext_'.$item['title'];
+				}
+			}
+		}
+	}
+
 	/**
 	 * Метод обрабатывает одно поле перед сохранением в базу данных
 	 * @param $prefix - префикс имени поля в массиве данных

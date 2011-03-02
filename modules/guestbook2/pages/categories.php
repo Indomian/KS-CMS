@@ -87,13 +87,13 @@ class Cguestbook2AIcategories extends CModuleAdmin
 		catch(CDataError $e)
 		{
 			$arOrder=$this->GetDataFromPost('OS_',$_POST);
-			$this->smarty->assign('last_error',$e->getMessage());
+			$this->smarty->assign('last_error',$e->__toString());
 			$page=$this->EditForm($arOrder);
 		}
 		catch(CError $e)
 		{
 			$arOrder=$this->GetDataFromPost('OS_',$_POST);
-			$this->smarty->assign('last_error',$e->getMessage());
+			$this->smarty->assign('last_error',$e->__toString());
 			$page=$this->EditForm($arOrder);
 		}
 		return $page;

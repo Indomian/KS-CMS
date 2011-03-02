@@ -64,6 +64,7 @@ class Cguestbook2AIrecords extends CModuleAdmin
 				if(strlen($_POST['OS_answer'])>0)
 				{
 					$this->obGB2->AddAnswer($id,$_POST['OS_answer']);
+					$this->obModules->AddNotify('GB2_ANSWER_ADD_OK','',NOTIFY_MESSAGE);
 				}
 			}
 			if(!array_key_exists('update',$_REQUEST))

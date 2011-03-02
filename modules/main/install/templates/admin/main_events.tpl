@@ -71,10 +71,9 @@
     		</td>
     		<td>{$oItem.id}</td>
     		<td>
-	    		<a onclick="showContent('{$oItem.id}'); return false;" href="#">
-					<img width="13" height="13" id="plus_{$oItem.id}" alt="icon" src="{#images_path#}/icons_menu/plus.gif"/>
-				</a>
-				{$oItem.title}
+	    		<a onclick="showContent('{$oItem.id}'); return false;" href="#"><img width="13" height="13" id="plus_{$oItem.id}" alt="icon" src="{#images_path#}/icons_menu/plus.gif"/></a>
+				&nbsp;
+				<a onclick="showContent('{$oItem.id}'); return false;" href="#">{$oItem.title}</a>
 			</td>
     		<td>{$oItem.address}</td>
     		<td>

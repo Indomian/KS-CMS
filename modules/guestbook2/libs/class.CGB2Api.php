@@ -3,14 +3,14 @@
  * \file class.CGB2Api.php
  * Сюда сделать описание файла
  * Файл проекта kolos-cms.
- * 
+ *
  * Создан 07.12.2009
  *
  * \author blade39
- * \version 
+ * \version
  * \todo
  */
-/*Обязательно вставляем во все файлы для защиты от взлома*/ 
+/*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 //==================== Блок констант для уровней доступа ==============================
@@ -24,10 +24,7 @@ define('KS_ACCESS_GB2_VIEW',9);
 define('KS_ACCESS_GB2_DENIED',10);
 
 //==================== Блок инклудов требуемых библиотек ==============================
-include_once(MODULES_DIR . "/guestbook2/libs/class.CGB2Answers.php");
-include_once(MODULES_DIR . "/guestbook2/libs/class.CGB2Posts.php");
-include_once(MODULES_DIR . "/guestbook2/libs/class.CGB2Categories.php");
-
+include_once(MODULES_DIR . "/main/libs/class.CBaseAPI.php");
 
 class CGB2API extends CBaseAPI
 {
@@ -37,9 +34,9 @@ class CGB2API extends CBaseAPI
 	public $obPosts;
 	public $obAnswers;
 	public $obCategories;
-	
+
 	static private $instance;
-	
+
 	/**
 	 * This implements the 'singleton' design pattern
    	 *
@@ -47,25 +44,25 @@ class CGB2API extends CBaseAPI
      */
   	static function get_instance()
   	{
-	    if (!self::$instance) 
+	    if (!self::$instance)
 	    {
     		self::$instance = new CGB2API();
       		self::$instance->startup();  // init AFTER object was linked with self::$instance
     	}
 	    return self::$instance;
   	}
-	
+
 	function __construct()
 	{
 	}
-	
+
 	private function startup()
 	{
-		$this->obPosts=new CGB2Posts();
-		$this->obAnswers=new CGB2Answers();
-		$this->obCategories=new CGB2Categories();
+		$this->obPosts=new CFieldsObject('gb2_posts','/guestbook2','guestbook2');
+		$this->obAnswers=new CFieldsObject('gb2_answers','/guestbook2','guestbook2');
+		$this->obCategories=new CFieldsObject('gb2_categories','/guestbook2','guestbook2');
 	}
-	
+
 	/**
 	 * Метод возращает поля сообщения
 	 */
@@ -73,7 +70,7 @@ class CGB2API extends CBaseAPI
 	{
 		return $this->obPosts->arFields;
 	}
-	
+
 	/**
 	 * Метод возвращает список полей категории
 	 */
@@ -81,7 +78,7 @@ class CGB2API extends CBaseAPI
 	{
 		return $this->obCategories->arFields;
 	}
-	
+
 	/**
 	 * Метод возращает поля ответа
 	 */
@@ -89,13 +86,13 @@ class CGB2API extends CBaseAPI
 	{
 		return $this->obAnswers->arFields;
 	}
-	
+
 	/**
 	 * Метод добавляет сообщение в базу данных
 	 */
 	public function AddPost($arPost)
 	{
-		global $KS_MODULES;
+		global $KS_MODULES,$KS_EVENTS_HANDLER;
 		$this->obPosts->AddAutoField('id');
 		$arPost['date_shown']=time();
 		if($KS_MODULES->GetConfigVar('guestbook2','use_tags')==0)
@@ -108,9 +105,15 @@ class CGB2API extends CBaseAPI
 			if($arPost['category_id']==0)
 				throw new CDataError('GB2_CANT_GO_EMPTY_CATEGORY');
 		}
-		$this->obPosts->Save('',$arPost);
+		if($id=$this->obPosts->Save('',$arPost))
+		{
+			$arPost['id']=$id;
+			$KS_EVENTS_HANDLER->Execute('guestbook2', 'onPostAdd', $arFields);
+			return $id;
+		}
+		return false;
 	}
-	
+
 	/**
 	 * Метод выполняет скрытие поста
 	 */
@@ -118,7 +121,7 @@ class CGB2API extends CBaseAPI
 	{
 		$this->obPosts->Update($id,array('active'=>0));
 	}
-	
+
 	/**
 	 * Метод выполняет отображение поста
 	 */
@@ -126,7 +129,7 @@ class CGB2API extends CBaseAPI
 	{
 		$this->obPosts->Update($id,array('active'=>1));
 	}
-	
+
 	/**
 	 * Метод возвращает список категорий
 	 */
@@ -142,7 +145,7 @@ class CGB2API extends CBaseAPI
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Метод получает данные о сообщении
 	 */
@@ -156,7 +159,7 @@ class CGB2API extends CBaseAPI
 		}
 		return false;
 	}
-	
+
 	public function UpdatePost($post_id,$prefix,$data)
 	{
 		if($arPost=$this->GetPost($post_id))
@@ -165,13 +168,13 @@ class CGB2API extends CBaseAPI
 			$this->obPosts->Save($prefix,$data);
 		}
 	}
-	
+
 	/**
 	 * Метод добавляет ответ к сообщению пользователя
 	 */
 	public function AddAnswer($post_id,$answer)
 	{
-		global $USER;
+		global $USER,$KS_EVENTS_HANDLER;
 		if($arPost=$this->GetPost($post_id))
 		{
 			$arData=$this->obAnswers->GetRecord(array('post_id'=>$post_id));
@@ -183,7 +186,11 @@ class CGB2API extends CBaseAPI
 					'date'=>time(),
 				);
 				$this->obPosts->Update($post_id,array('date_answer'=>time()));
-				$this->obAnswers->Update($arData['id'],$arFields);
+				if($this->obAnswers->Update($arData['id'],$arFields))
+				{
+					$arFields['id']=$arData['id'];
+					$KS_EVENTS_HANDLER->Execute('guestbook2', 'onAnswerUpdate', $arFields);
+				}
 			}
 			else
 			{
@@ -194,11 +201,15 @@ class CGB2API extends CBaseAPI
 					'post_id'=>$post_id,
 				);
 				$this->obPosts->Update($post_id,array('date_answer'=>time()));
-				$this->obAnswers->Save('',$arFields);
+				if($id=$this->obAnswers->Save('',$arFields))
+				{
+					$arFields['id']=$id;
+					$KS_EVENTS_HANDLER->Execute('guestbook2', 'onAnswerAdd', $arFields);
+				}
 			}
 		}
 	}
-	
+
 	/**
 	 * Метод возвращает список сообщений и ответов на них отфильтрованных и с постраничной навигацией
 	 */
@@ -238,7 +249,7 @@ class CGB2API extends CBaseAPI
 		}
 		return $arData;
 	}
-	
+
 	/**
 	 * Метод выполняет удаление постов с указанными номерами
 	 */
@@ -251,7 +262,20 @@ class CGB2API extends CBaseAPI
 		$this->obPosts->DeleteItems(array('->id'=>$id));
 		$this->obAnswers->DeleteItems(array('->post_id'=>$id));
 	}
-	
+
+	/**
+	 * Метод возвращает полный путь к разделу с указанным номером
+	 */
+	function GetCategoryUrl($id)
+	{
+		global $KS_MODULES;
+		if($arCategory=$this->obCategories->GetById($id))
+		{
+			return $KS_MODULES->GetSitePath('guestbook2').$arCategory['text_ident'].'/';
+		}
+		return $KS_MODULES->GetSitePath('guestbook2');
+	}
+
 	/**
 	 * Метод выполняет удаление категорий с указанными номерами
 	 */
