@@ -2,6 +2,7 @@
 
 if (!defined('KS_ENGINE')) die("Hacking attempt!");
 include_once MODULES_DIR.'/main/libs/class.CUsersCommon.php';
+include_once MODULES_DIR.'/main/libs/interface.User.php';
 include_once MODULES_DIR.'/photogallery/libs/class.ImageResizer.php';
 
 define('PASSWORD_CHARS','abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890');
@@ -18,9 +19,8 @@ define('PASSWORD_CHARS','abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123
  * Убрана автоматическая авторизация по параметру в URL
  */
 
-class CUser extends CBaseUser
+class CUser extends CBaseUser implements User
 {
-	public $userdata;
 	protected $is_login;
 	private $arAllowExt=array('jpg','jpeg','png');
 	private $arUserVars;
@@ -178,6 +178,14 @@ class CUser extends CBaseUser
 		/* Вызов обработчика при обновлении времени жизни сессии */
 		$onSessionUpdateParams = $this->userdata;
 		$KS_EVENTS_HANDLER->Execute('main', 'onUserSessionUpdate', $onSessionUpdateParams);
+	}
+
+	/**
+	 * Метод возвращает кэшированные данные пользователя
+	 */
+	function GetUserData()
+	{
+		return $this->userdata;
 	}
 
 	/**

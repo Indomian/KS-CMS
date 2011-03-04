@@ -30,7 +30,7 @@ abstract class CBaseList extends CBaseObject
 	/**
 	 * Массив со списком полей в списке. Необходимо для проверки при выполнении запросов.
 	 */
-	public $arFields;
+	protected $arFields;
 
 	abstract protected function _ParseItem(&$item);
 	abstract public function GetList($arOrder=false,$arFilter=false,$limit=false,$arSelect=false,$arGroupBy=false);
@@ -48,6 +48,14 @@ abstract class CBaseList extends CBaseObject
 	 * @sa CObject::GetList(), CObject::_GenWhere()
 	 */
 	abstract function Count($arFilter = false, $fGroup = false);
+
+	/**
+	 * Метод возвращает список полей текущего объекта
+	 */
+	function GetFields()
+	{
+		return $this->arFields;
+	}
 
 	/**
 	 * Метод создает массив данных из данных переданных в пост с префиксом.

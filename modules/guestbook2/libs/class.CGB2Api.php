@@ -68,7 +68,7 @@ class CGB2API extends CBaseAPI
 	 */
 	public function GetPostFields()
 	{
-		return $this->obPosts->arFields;
+		return $this->obPosts->GetFields();
 	}
 
 	/**
@@ -76,7 +76,7 @@ class CGB2API extends CBaseAPI
 	 */
 	public function GetCategoryFields()
 	{
-		return $this->obCategories->arFields;
+		return $this->obCategories->GetFields();
 	}
 
 	/**
@@ -84,7 +84,7 @@ class CGB2API extends CBaseAPI
 	 */
 	public function GetAnswerFields()
 	{
-		return $this->obAnswers->arFields;
+		return $this->obAnswers->GetFields();
 	}
 
 	/**
@@ -219,7 +219,8 @@ class CGB2API extends CBaseAPI
 		$iCount=$this->obPosts->Count($arFilter);
 		$arFilter['<?'.$this->obPosts->sTable.'.user_id']=$USER->sTable.'.id';
 		$arSelect=$this->GetPostFields();
-		foreach($USER->arFields as $sItem)
+		$arFields=$USER->GetFields();
+		foreach($arFields as $sItem)
 			$arSelect[]=$USER->sTable.'.'.$sItem;
 		$arData=$this->obPosts->GetList($arOrder,$arFilter,$obPages->GetLimits($iCount),$arSelect);
 		$arID2Key=array();
@@ -239,7 +240,7 @@ class CGB2API extends CBaseAPI
 			}
 			$arAFilter['<?'.$this->obAnswers->sTable.'.user_id']=$USER->sTable.'.id';
 			$arSelect=$this->GetAnswerFields();
-			foreach($USER->arFields as $sItem)
+			foreach($arFields as $sItem)
 				$arSelect[]=$USER->sTable.'.'.$sItem;
 			$arAnswers=$this->obAnswers->GetList(array('id'=>'asc'),$arAFilter,false,$arSelect);
 			foreach($arAnswers as $arItem)

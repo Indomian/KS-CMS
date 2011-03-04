@@ -81,7 +81,8 @@ function smarty_function_WavePosts($params,&$subsmarty)
 					else
 					{
 						$arPost['user_email']=$USER->Email();
-						$arPost['user_name']=$_REQUEST['WV_user_name']==''?$USER->userdata['title']:EscapeHTML($_POST['WV_user_name']);
+						$arUser=$USER->GetUserData();
+						$arPost['user_name']=$_REQUEST['WV_user_name']==''?$arUser['title']:EscapeHTML($_POST['WV_user_name']);
 						$arPost['user_id']=$USER->ID();
 					}
 					if(!$bError)
@@ -139,8 +140,9 @@ function smarty_function_WavePosts($params,&$subsmarty)
 		$arFilter['active']=1;
 	if(is_array($params['filter']))
 		$arFilter=array_merge($arFilter,$params['filter']);
-	$arSelect=$obPosts->arFields;
-	foreach($USER->arFields as $sField)
+	$arSelect=$obPosts->GetFields();
+	$arFields=$USER->GetFields();
+	foreach($arFields as $sField)
 		$arSelect[]=$USER->sTable.'.'.$sField;
 	$obPages = new CPageNavigation($obPosts,false,$params['count']);
 	$arOrder=array('left_margin'=>$params['order'],'date_add'=>$params['order']);

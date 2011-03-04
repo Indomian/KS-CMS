@@ -1,7 +1,7 @@
 <?php
 /**
  * Класс обеспечивает работу с адресами системы
- * 
+ *
  * @since 1.0
  *
  * @author BlaDe39 <blade39@kolosstudio.ru>
@@ -17,7 +17,7 @@ class CUrlParser
 	static protected $bHasHash;
 	/**
 	 * Конструктор, инициализирует внутренние переменные
-	 * 
+	 *
 	 */
 	function __construct()
 	{
@@ -52,7 +52,7 @@ class CUrlParser
 		$smarty->register_function("gen_post_hash",array($this,"_smarty_gen_post_hash"));
 		$smarty->register_function("redirect",array($this,"_smarty_redirect"));
 	}
-	
+
 	/**
 	 * Метод выполняет обработку URL адреса, отделяет его основную часть от get переменных
 	 * и формирует данные находящиеся в get параметрах
@@ -130,7 +130,7 @@ class CUrlParser
 		global $USER;
 		if(!CUrlParser::$bHasHash)
 		{
-			$_SESSION['POST_HASH']=md5(serialize($USER->userdata).time().rand(0,1000));
+			$_SESSION['POST_HASH']=md5(serialize($USER->GetUserData()).time().rand(0,1000));
 			CUrlParser::$bHasHash=true;
 		}
 		if($params['name']=='') $params['name']="post_hash";
@@ -141,7 +141,7 @@ class CUrlParser
 	{
 		$this->items[$param_name]=$value;
 	}
-	
+
 	function SetPath($path)
 	{
 		$this->path = $path;
@@ -164,7 +164,7 @@ class CUrlParser
 		}
         return $this->path.$path;
 	}
-	
+
 	/**
 	 * Метод выполняет обработку параметров get
 	 * @param $params array новые параметры get строки, а также _CLEAR массив параметров для удаления
@@ -217,13 +217,13 @@ class CUrlParser
 		}
 		return $uri;
 	}
-	
+
 	/**
 	 * Метод пытается выполнить редирект по адресу хранящемуся в $_SERVER['backurl'];
 	 */
 	function GoBack()
 	{
-		if($_SESSION['backurl']!='') 
+		if($_SESSION['backurl']!='')
 		{
 			$arUrl=$this->ParseUrl($_SESSION['backurl']);
 			$arParams=array();
@@ -239,7 +239,7 @@ class CUrlParser
 			}
 		}
 	}
-	
+
 	/**
 	 * Метод возвращает список параметров get в виде hidden полей input
 	 */
@@ -254,7 +254,7 @@ class CUrlParser
 		}
         return $path;
 	}
-	
+
 	/*Возвращает для смарти обработанную строку GET запроса без адреса страницы*/
 	/*todo: посмотреть можно ли оптимизировать :)*/
 	function _smarty_get_get($params)
@@ -266,7 +266,7 @@ class CUrlParser
 		}
         return $path;
 	}
-	
+
 	function _smarty_get_posturl($params)
 	{
 		$newpath=$this->_smarty_get_url($params);
@@ -282,7 +282,7 @@ class CUrlParser
 	function _smarty_redirect($params)
 	{
 		if($params['url']=='') $params['url']=$this->GetUrl();
-		$this->redirect($params['url']);		
+		$this->redirect($params['url']);
 	}
 
 	function GetUrl($clearList=0)
@@ -296,7 +296,7 @@ class CUrlParser
 		}
 		return join("&",$uri);
 	}
-	
+
 	/**
 	 * Метод возвращает путь к текущей странице
 	 */
@@ -304,13 +304,13 @@ class CUrlParser
 	{
 		return $this->path;
 	}
-	
+
 	/**
 	 * Функция redirect выполняет перевод на страницу указанную в параметре. Переход осуществляется
 	 * путем установки заголовка Location.
 	 * @param $URL -- урл на который требуется перейти.
 	 */
-	function redirect($URL='') 
+	function redirect($URL='')
 	{
 		$ar = CUrlParser::AjaxReq();
 		if(array_key_exists('ajaxreq',$ar))
@@ -322,7 +322,7 @@ class CUrlParser
 		header("Location: $URL");
    		die();
  	}
-	
+
 	function AjaxReq()
 	{
 		$array = array();
@@ -341,7 +341,7 @@ class CUrlParser
 		}
 		return $array;
 	}
-	
+
 	function GetJS($array)
 	{
 		echo "<html>

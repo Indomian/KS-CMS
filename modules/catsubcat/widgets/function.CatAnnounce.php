@@ -2,14 +2,14 @@
 
 /**
  * Виджет отображения анонсов текстовых страниц
- * 
+ *
  * Выводит анонсы нескольких страниц в зависимости от выбранных страниц
- * 
+ *
  * @filesource function.CatAnnounce.php
  * @author North-E <pushkov@kolosstudio.ru>, BlaDe39 <blade39@kolosstudio.ru>
  * @version 1.1
  * @since 01.06.2009
- * 
+ *
  * 1. Добавлена выборка из вложенных разделов.
  * 2. Добавлена постраничная навигация
  * 3. BlaDe39: добавлена поддержка работы в режиме Аякс
@@ -19,7 +19,7 @@ require_once MODULES_DIR.'/interfaces/libs/class.CAjax.php';
 
 /**
  * Функция, возвращающая шаблон анонсов
- * 
+ *
  * @param array $params Массив входных параметров для виджета
  * @param object $subsmarty Ссылка на объект Смарти
  * @return string
@@ -31,7 +31,7 @@ function smarty_function_CatAnnounce($params, &$subsmarty)
 	try
 	{
 		//Проверка и инициализация аякса
-		if($params['isAjax']=='Y') 
+		if($params['isAjax']=='Y')
 		{
 			/*Ключ о том это аякс запрос или нет*/
 			$oldAjax=false;
@@ -52,10 +52,10 @@ function smarty_function_CatAnnounce($params, &$subsmarty)
 		$arUserGroups=$USER->GetGroups();
 		//Проверяем права на доступ к самому модулю
 		if($access_level>8) throw new CAccessError("CATSUBCAT_NOT_VIEW_ANNOUNCE");
-		/* Подключаем необходимые библиотеки */	
+		/* Подключаем необходимые библиотеки */
 		$module_directory = MODULES_DIR . "/catsubcat/";
 		include_once($module_directory . "libs/class.CCategoryEdit.php");
-		/* Подключаем необходимые библиотеки */	
+		/* Подключаем необходимые библиотеки */
 		$arFilterOperations=array(
 			'eq'=>'=',
 			'ne'=>'!=',
@@ -67,12 +67,13 @@ function smarty_function_CatAnnounce($params, &$subsmarty)
 		);
 		/* Создаём объект для работы с разделами */
 		$obCategory = new CCategory();
-				
+
 		/* Создаём объект для работы с элементами*/
 		$obElement = new CElement();
-		foreach($obElement->arFields as $item)
+		$arFields=$obElement->GetFields();
+		foreach($arFields as $item)
 			if($item!='id')	$arFilterFields[$item]='[a-z0-9_\-\.]+';
-			
+
 		/* Берём параметры, которые нам необходимы для работы виджета */
 		$select_all = false;
 		if ($params['parent_id'] == "all")
@@ -83,23 +84,23 @@ function smarty_function_CatAnnounce($params, &$subsmarty)
 		else
 			$parent_id = intval($params['parent_id']);
 		$params['shift']=intval($params['shift']);
-			
+
 		/* Количество анонсируемых страниц или количество анонсируемых текстовых страниц на страницу (для постраничной навигации)*/
 		$announces_count = $params['announces_count'];
-		
+
 		/* Принцип сортировки */
 		$orderby = $params['sort_by'];
 		$orderdir= $params['sort_order']=='asc'?'asc':'desc';
-	
+
 		/* Смотрим, найден ли активный родительский элемент - если нет, то нужно отдать в Смарти ошибку */
 		if ($parent_id >= 0)
-		{		
+		{
 			/* Определяем принцип сортировки элементов */
 			if ($orderby != "random")
 				$arElOrder = array($orderby => $orderdir);
 			else
 				$arElOrder = array("RAND()" => $orderdir);
-			
+
 			/* Определяем принцип выборки */
 			if ($select_all)
 				$arElFilter = array("active" => 1);
@@ -117,14 +118,14 @@ function smarty_function_CatAnnounce($params, &$subsmarty)
 					{
 						$arElFilter = array("active" => 1);
 					}
-				} 
+				}
 				else
 				{
 					/* Анонсируемые страницы выбираются только из указанного раздела */
 					$arElFilter = array("parent_id" => $parent_id, "active" => 1);
 				}
 			}
-			
+
 		//Если надо фильтруем записи по времени
 		if($_GET['year']!=0)
 		{
@@ -153,7 +154,7 @@ function smarty_function_CatAnnounce($params, &$subsmarty)
 				$arElFilter['<date_add']=mktime(23,59,59,12,31,$_GET['year']);
 			}
 		}
-			
+
 			/**
 			 * Ищем пользовательские требования к фильтру и используем их если надо
 			 */
@@ -185,30 +186,30 @@ function smarty_function_CatAnnounce($params, &$subsmarty)
 			}
 			/* Устанавливаем количество выбираемых элементов */
 			$arLimit = intval($announces_count);
-			
+
 			/* Массив выбираемых полей */
 			//$arSelect = array("id", "parent_id", "text_ident", "title", "description", "img", "date_add", "views_count");
-			$arSelect=$obElement->arFields;
-			
+			$arSelect=$obElement->GetFields();
+
 			/* Использование постраничной навигации */
 			if ($params["use_page_navigation"] == "Y")
 			{
 				/* Подключаем библиотеку для работы с постраничной навигацией */
 				include_once MODULES_DIR . '/interfaces/libs/CInterface.php';
-				
+
 				/* Определяем общее количество выбираемых элементов */
 				$elements_count = $obElement->Count($arElFilter);
-				
+
 				/* Создаём объект для работы с постраничной навигацией */
 				$obPages = new CPageNavigation($obElement, $elements_count, $announces_count);
-				
+
 				/* Получаем массив для постраничной навигации (будем использовать в Смарти) */
 				$pages = $obPages->GetPages();
-				
+
 				/* Устанавливаем новые переделы для выборки элементов */
 				$arLimit = $obPages->GetLimits();
 			}
-		
+
 			//Проверяем надо ли сдвигать результат или нет
 			if($params['shift']>0)
 			{
@@ -222,8 +223,8 @@ function smarty_function_CatAnnounce($params, &$subsmarty)
 					$arLimit=array($params['shift'],$arLimit);
 				}
 			}
-		
-			
+
+
 			/* Получаем массив анонсируемых страниц */
 			$announces = $obElement->GetList($arElOrder, $arElFilter, $arLimit,$arSelect);
 			$data=array();
@@ -234,7 +235,7 @@ function smarty_function_CatAnnounce($params, &$subsmarty)
 					{
 						/* Кидаем в массив дату добавления в отформатированном виде */
 						$announces[$announce_key]['date'] = date("d.m.Y", $announce['date_add']);
-						
+
 						/* Определяем полный путь к разделу, содержащему элемент */
 						/* Определяем полный путь к разделу, содержащему элемент */
 						if(!array_key_exists($announce['parent_id'],$arFullPath))
@@ -248,7 +249,7 @@ function smarty_function_CatAnnounce($params, &$subsmarty)
 						if($data['lastBuildDate']<$announce['date_edit'])
 							$data['lastBuildDate'] = $announce['date_edit'];
 					}
-			
+
 			/* Отправляем данные для Смарти */
 			$subsmarty->assign("announces", $announces);
 			$subsmarty->assign("announces_count", count($announces));
@@ -263,15 +264,15 @@ function smarty_function_CatAnnounce($params, &$subsmarty)
 		}
 		else
 			$subsmarty->assign("announce_error", "CATSUBCAT_SECTION_NOT_ACTIVE");
-			
+
 		$sResult=$KS_MODULES->RenderTemplate($subsmarty,'/catsubcat/CatAnnounce',$params['global_template'],$params['tpl']);
-		//Заканчиваем работу в режиме аякса	
+		//Заканчиваем работу в режиме аякса
 		if($params['isAjax']=='Y') $sResult=$obAjax->GetCode($sResult,$oldAjax);
 		if($oldAjax)
 		{
 			echo $sResult;
 			die();
-		}			
+		}
 		return $sResult;
 	}
 	catch (CAccessError $e)
@@ -291,14 +292,14 @@ function widget_params_CatAnnounce($params)
 {
 	/* Подключение необходимой библиотеки */
 	include_once(MODULES_DIR . "/catsubcat/libs/class.CCategoryEdit.php");
-	
+
 	/* Создание объекта для работы с разделами текстовых страниц */
 	$obCategory = new CCategory();
 	$obElement=new CElement();
-	
+
 	/* Строим дерево всех разделов текстовых страниц для вывода их в качестве списка */
 	$expanded_tree = $obCategory->GetExpandedTree();
-	
+
 	/* Формируем данные для списка дерева разделов */
 	$parent_select = array("all" => "Из всех разделов");
 	if (is_array($expanded_tree) && count($expanded_tree))
@@ -309,12 +310,12 @@ function widget_params_CatAnnounce($params)
 				$spaces .= "&nbsp;";
 			$parent_select[$leaf["id"]] = $spaces . $leaf["title"];
 		}
-	
+
 	/* Массив с возможными значениями количества анонсов в блоке */
 	$announces_values = array();
 	for ($i = 1; $i <= 10; $i++)
 		$announces_values[$i] = $i;
-	
+
 	/**
 	 * Определяем возможные поля для сортировки и фильтрации записей
 	 */
@@ -326,7 +327,7 @@ function widget_params_CatAnnounce($params)
 		'date_edit'=>'Дата редактирования',
 		'orderation'=>'По номеру сортировки',
 	);
-	
+
 	if(class_exists('CFields'))
 	{
 		$obFields=new CFields();
@@ -335,7 +336,7 @@ function widget_params_CatAnnounce($params)
 		{
 			foreach($arFields as $arItem)
 			{
-				$arFilterFields[$arItem['title']]=$arItem['description'];		
+				$arFilterFields[$arItem['title']]=$arItem['description'];
 			}
 		}
 	}
@@ -422,7 +423,7 @@ function widget_params_CatAnnounce($params)
 		(
 			"title" => "Сортировать по",
 			"type" => "select",
-			"value" => $arSortFields		
+			"value" => $arSortFields
 		),
 		'sort_order'=>array(
 			'title'=>'Направление сортировки',
@@ -435,7 +436,7 @@ function widget_params_CatAnnounce($params)
 			'value'=>array('Y'=>'да','N'=>'нет'),
 		)
 	));
-	
+
 	return array
 	(
 		"fields" => $arFields

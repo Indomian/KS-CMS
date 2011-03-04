@@ -60,10 +60,12 @@ class CmainAIoptions extends CModuleAdmin
 
 	function CheckTables()
 	{
+		$this->obModules->RecountDBStructure();
 		$obConfig=new CConfigParser('main');
 		$obConfig->LoadConfig();
 		$obConfig->Set('update_db',1);
 		$obConfig->WriteConfig();
+		$this->obModules->AddNotify('MAIN_OPTIONS_TABLES_UPDATED','',NOTIFY_MESSAGE);
 		CUrlParser::Redirect('/admin.php?module=main&modpage=options');
 	}
 
@@ -101,7 +103,6 @@ class CmainAIoptions extends CModuleAdmin
 		elseif(array_key_exists('act_check_tables',$_POST))
 		{
 			$this->CheckTables();
-			$this->obModules->AddNotify('MAIN_OPTIONS_CACHE_CLEARED','',NOTIFY_MESSAGE);
 		}
 		elseif(array_key_exists('act_drop_images_cache',$_POST))
 		{

@@ -127,7 +127,8 @@ class Cguestbook2AIrecords extends CModuleAdmin
 		$this->obGB2->obPosts->Count($arFilter);
 		$obPages = new CPageNavigation($this->obGB2->obPosts);
 		$arSelect=$arSortFields;
-		foreach($this->obUser->arFields as $sItem)
+		$arFields=$this->obUser->GetFields();
+		foreach($arFields as $sItem)
 			$arSelect[]=$this->obUser->sTable.'.'.$sItem;
 		$arOrders=$this->obGB2->obPosts->GetList(array($sOrderField=>$sOrderDir),$arFilter,$obPages->GetLimits(),$arSelect);
 		$this->smarty->assign('ITEMS',$arOrders);

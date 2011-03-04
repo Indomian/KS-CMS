@@ -27,6 +27,8 @@ $arDBList=array(
 	'main_fields',
 	'main_events',
 	'main_eventtemplates',
+	'geography_countries',
+	'geography_cities',
 	'usergroups',
 	'usergroups_levels',
 	'users_grouplinks',

@@ -68,7 +68,7 @@ class CUsersCommon extends CBaseAccess
 class CBaseUser extends CUsersCommon
 {
 	var $groups_list;
-
+	protected $userdata;
 
 	/**
 	 * Массив со списком групп к которым принадлежит данный пользователь.
@@ -203,18 +203,19 @@ class CBaseUser extends CUsersCommon
 			$query="DELETE FROM ".PREFIX.$this->sLinksTable." WHERE user_id='".$arUser['id']."'";
 			$this->obDB->query($query);
 			$query="INSERT INTO " . PREFIX.$this->sLinksTable." (user_id, group_id, date_start, date_end) VALUES ";
+			$arQueries=array();
 			foreach($arGroups as $group)
 			{
 				if(is_numeric($group))
 				{
-					$query.="('".$arUser['id']."','".$group."','0', '0')";
+					$arQueries[]="('".$arUser['id']."','".$group."','0', '0')";
 				}
 				elseif(is_array($group))
 				{
-					$query.="('".$arUser['id']."','".$group['id']."','".$group['date_from']."', '".$group['date_to']."')";
+					$arQueries[]="('".$arUser['id']."','".$group['id']."','".$group['date_from']."', '".$group['date_to']."')";
 				}
 			}
-			$this->obDB->query($query);
+			$this->obDB->query($query.join(',',$arQueries));
 		}
 	}
 }

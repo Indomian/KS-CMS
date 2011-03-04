@@ -97,8 +97,9 @@ function smarty_function_GB2Posts($params,&$subsmarty)
 					}
 					else
 					{
+						$arUser=$USER->GetUserData();
 						$arPost['user_email']=$USER->Email();
-						$arPost['user_name']=$USER->userdata['title'];
+						$arPost['user_name']=$arUser['title'];
 						$arPost['user_id']=$USER->ID();
 
 					}

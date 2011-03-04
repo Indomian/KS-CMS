@@ -18,6 +18,7 @@ if($this->obUser->IsLogin())
 		if ($access == 0) $this->AddMenuItem(MenuItem("EVENTS","MAIN","module=main&modpage=events",$this->GetText('menu_email_sended'),'email_template.gif '),"GLOBAL");
 		if ($access == 0) $this->AddMenuItem(MenuItem("OPTIONS","MAIN","module=main&modpage=options",$this->GetText('menu_sys_config'),'options.gif '),"GLOBAL");
 		if ($access == 0) $this->AddMenuItem(MenuItem("UPDATE","MAIN","module=main&modpage=update",$this->GetText('menu_update'),'options.gif '),"GLOBAL");
+		if ($access == 0) $this->AddMenuItem(MenuItem("UPDATE","MAIN","module=main&modpage=geography",$this->GetText('menu_geography'),'item.gif '),"GLOBAL");
 	}
 }
 ?>
