@@ -131,7 +131,7 @@ class CAdminModuleManagment extends CModuleManagment
 				$page='';
 				if(!file_exists(MODULES_DIR.'/'.$module.'/admin.inc.php'))
 				{
-					if(!preg_match('#[a-z0-9]*#',$_GET['page'])) throw new CError('SYSTEM_WRONG_ADMIN_PATH',1001);
+					if($_GET['page']!='' && !preg_match('#^[a-z0-9_]+$#',$_GET['page'])) throw new CError('SYSTEM_WRONG_ADMIN_PATH',1001);
 					$access_level=$USER->GetLevel($module);
 					if($access_level>0) throw new CAccessError('SYSTEM_NOT_ACCESS_MODULE');
 					if(file_exists(MODULES_DIR.'/'.$module.'/pages/'.$_GET['page'].'.php'))

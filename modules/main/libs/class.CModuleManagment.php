@@ -292,6 +292,85 @@ abstract class CModuleManagment extends CObject
 	}
 
 	/**
+	 * Метод выполняет удаление всех файлов модуля из соответсвующих каталогов
+	 */
+	private function DeleteAllModuleFiles($module_name)
+	{
+		global $KS_FS;
+		if(file_exists(MODULES_DIR.'/'.$module_name))
+		{
+			//Удаляем файлы административных шаблонов
+			if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/templates/admin/'))
+			{
+				foreach($arFiles as $sFile)
+				{
+					$KS_FS->Remove(SYS_TEMPLATES_DIR.'/admin/'.$sFile);
+				}
+			}
+			//Удаляем файлы яваскрипта
+			if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/js/'))
+			{
+				if(file_exists(ROOT_DIR.JS_DIR.'/'.$module_name.'/'))
+					$KS_FS->Remove(ROOT_DIR.JS_DIR.'/'.$module_name.'/');
+			}
+			if(file_exists(TEMPLATES_DIR.'/.default/'.$module_name.'/'))
+			{
+				$KS_FS->Remove(TEMPLATES_DIR.'/.default/'.$module_name.'/');
+			}
+		}
+	}
+
+	/**
+	 * Метод выполняет установку всех файлов указанного модуля в соответствующие каталоги,
+	 * в случае необходимости модуль создаёт новые каталоги
+	 */
+	private function InstallAllModuleFiles($module_name)
+	{
+		global $KS_FS;
+		if(file_exists(MODULES_DIR.'/'.$module_name))
+		{
+			//Устанавливаем файлы административного интерфейса
+			if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/templates/.default/'))
+			{
+				if(!file_exists(TEMPLATES_DIR.'/.default/'.$module_name.'/'))
+					$KS_FS->makedir(TEMPLATES_DIR.'/.default/'.$module_name.'/');
+				foreach($arFiles as $sFile)
+				{
+					$KS_FS->CopyFile(MODULES_DIR.'/'.$module_name.'/install/templates/.default/'.$sFile,TEMPLATES_DIR.'/.default/'.$module_name.'/'.$sFile,'');
+				}
+			}
+			if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/templates/admin/'))
+			{
+				foreach($arFiles as $sFile)
+				{
+					$KS_FS->CopyFile(MODULES_DIR.'/'.$module_name.'/install/templates/admin/'.$sFile,SYS_TEMPLATES_DIR.'/admin/'.$sFile,'');
+				}
+			}
+			if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/templates/events/'))
+			{
+				if(!file_exists(SYS_TEMPLATES_DIR.'/admin/eventTemplates/'))
+					$KS_FS->makedir(SYS_TEMPLATES_DIR.'/admin/eventTemplates/');
+				foreach($arFiles as $sFile)
+				{
+					$KS_FS->CopyFile(MODULES_DIR.'/'.$module_name.'/install/templates/events/'.$sFile,SYS_TEMPLATES_DIR.'/admin/eventTemplates/'.$sFile,'');
+				}
+			}
+			//Устанавливаем скрипты модуля
+			if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/js/'))
+			{
+				if(!file_exists(ROOT_DIR.JS_DIR))
+					$KS_FS->makedir(ROOT_DIR.JS_DIR);
+				if(!file_exists(ROOT_DIR.JS_DIR.'/'.$module_name.'/'))
+					$KS_FS->makedir(ROOT_DIR.JS_DIR.'/'.$module_name.'/');
+				foreach($arFiles as $sFile)
+				{
+					$KS_FS->CopyFile(MODULES_DIR.'/'.$module_name.'/install/js/'.$sFile,ROOT_DIR.JS_DIR.'/'.$module_name.'/'.$sFile,'');
+				}
+			}
+		}
+	}
+
+	/**
 	 * Метод выполняет подключение установочного файла для установки
 	 * нового модуля
 	 */
