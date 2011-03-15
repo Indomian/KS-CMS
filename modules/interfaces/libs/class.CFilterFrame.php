@@ -179,6 +179,19 @@ class CFilterFrame extends CFrame
 						$KS_URL->Set('ff'.$key.'['.$key.']',$val);
 					}
 				}
+				elseif($value['METHOD']=='<>')
+				{
+					if(strlen($value['VALUE'][0])>0)
+					{
+						$arResult['>'.$key]=$value['VALUE'][0];
+						$KS_URL->Set('ff'.$key.'[0]',$value['VALUE'][0]);
+					}
+					if(strlen($value['VALUE'][1])>0)
+					{
+						$arResult['<'.$key]=$value['VALUE'][1];
+						$KS_URL->Set('ff'.$key.'[1]',$value['VALUE'][1]);
+					}
+				}
 				elseif($value['METHOD']!='=')
 				{
 					$arResult[$value['METHOD'].$key]=$value['VALUE'];

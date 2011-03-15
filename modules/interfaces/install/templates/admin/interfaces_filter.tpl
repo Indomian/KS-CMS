@@ -51,6 +51,10 @@
 						$(document).ready(function(){ldelim}$(document).trigger("InitCalendar");{rdelim});
 					</script>
 					</td>
+				{elseif $oItem.METHOD=='<>'}
+					<td>{#from#} <input type="text" id="ff{$oItem.FIELD}_1" readonly="readonly" name="ff{$oItem.FIELD|replace:".":"^"}[]" value="{$oItem.VALUE[0]}" style="width:100px;" class="form_input"/>
+					{#to#} <input type="text" id="ff{$oItem.FIELD}_2" readonly="readonly" name="ff{$oItem.FIELD|replace:".":"^"}[]" value="{$oItem.VALUE[1]}" style="width:100px;" class="form_input" title="{#select_date#}"/>
+					</td>
 				{else}
 					<td><input type="text" name="ff{$oItem.FIELD|replace:".":"^"}" value="{$oItem.VALUE|htmlspecialchars:2:"UTF-8":false}" class="text_field"></td>
 				{/if}

@@ -107,16 +107,15 @@ if (!defined('KS_MAIN_INIT'))
 	require_once MODULES_DIR.'/main/libs/class.CEvents.php';
 	$obEvents=new CEvents();
 
-
-
 	/* Работа с аякс */
 	require_once MODULES_DIR.'/interfaces/libs/class.CAjax.php';
 	//Язык
 	require_once "libs/class.CLanguageSmarty.php";
 
-
 	/* Подключение других модулей */
+	$KS_MODULES->SetUser($USER);
 	$KS_MODULES->AutoInit();
+	$KS_MODULES->InitTemplates();
 	$site_config = $KS_MODULES->GetConfigArray("main");
 	$smarty->assign('SITE', $site_config);
 

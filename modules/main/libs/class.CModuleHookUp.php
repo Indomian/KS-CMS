@@ -25,10 +25,17 @@ class CModuleHookUp extends CModuleManagment
 	 */
 	private function init()
 	{
-		global $KS_IND_matches;
 		$this->arWidgetStack=array();
 		$this->sTemplate='.default';
 		$this->sScheme='index';
+	}
+
+	/**
+	 * Метод инициализирует шаблон с которым будет работать система
+	 */
+	public function InitTemplates()
+	{
+		global $KS_IND_matches;
 		if($sTemplate=$this->select_global_template($KS_IND_matches[0]))
 		{
 			$arTemplate=explode(':',$sTemplate);

@@ -47,7 +47,7 @@ class CPageNavigation extends CInterface
 		{
 			$this->iVisible=$_REQUEST['n'];
 		}
-		if($this->iVisible<1) $this->iVisible=10;
+		if($this->iVisible<1) $this->iVisible=20;
 		if($Current!=false)
 		{
 			$this->iCurrent=$Current-1;

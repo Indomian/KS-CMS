@@ -246,6 +246,14 @@ function IsTextIdent($str)
 	return preg_match('#^[a-z0-9\-_]+$#i',$str);
 }
 
+/**
+ * Функция проверяет является ли введенная строка именем файла в формате системы
+ */
+function IsFilename($str)
+{
+	return preg_match('#^[a-z0-9\-_.]+$#i',$str);
+}
+
 function IsIp($ip){
 	//проверим длину и вхождение посторонних символов
 	if(strlen($ip)<7 || preg_match("#[^0-9\.]+#mi",$ip))return false;
@@ -485,6 +493,11 @@ function IsEmpty($item)
 function EscapeHTML($sHtml)
 {
 	return htmlspecialchars($sHtml,ENT_QUOTES,'utf-8',true);
+}
+
+function ShorterString($sString,$length)
+{
+	return mb_substr($sString,0,$length,'utf-8');
 }
 
 /**

@@ -1,6 +1,6 @@
 /**
  * В этом файле находятся функции яваскрипта работающего с настройкой привязок шаблонов
- * 
+ *
  */
 //Определяем утилиты для всех разделов che.ru
 CTemplates.prototype=new Object();
@@ -38,20 +38,15 @@ CTemplates.prototype.SetRegValue=function(tdId,id)
 
 CTemplates.prototype.SetUserGroupValue=function(tdId,id)
 {
-	alert('функция не было протестирована!!! если вы видите данное сообщение, значит вы создали условия при которых вызывается эта функция!');
-	$.get(url: "/admin.php?module=main&modpage=templates&ACTION=getgroups&tdId="+tdId+"&id="+id, {},
-		success: function(json)
+	$.get("/admin.php?module=main&modpage=templates&ACTION=getgroups&tdId="+tdId+"&id="+id, {},
+		function(json)
 		{
 			if((json.tdId!='')&&(document.getElementById(json.tdId)))
 			{
 				$('#'+json.tdId).empty().append(json.html);
 			}
 		},
-		error: function(){
-			alert("Ошибка запроса!");
-		},
-		dataType : 'json';
-	);
+		'json');
 
 	/*
 	//Оригинал запроса на аяксе.
