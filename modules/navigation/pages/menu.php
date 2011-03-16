@@ -165,7 +165,10 @@ class CnavigationAImenu extends CModuleAdmin
 			case "save":
 				$this->oElement->AddAutoField('id');
 				$this->oElement->AddFileField('img');
-				if($id=$this->oElement->Save('CSC_'))
+
+				$_POST['CSC_active']=intval($_POST['CSC_active']);
+
+				if($id=$this->oElement->Save('CSC_',$_POST))
 				{
 					$iParentId = $this->oElement->GetByID($id);
 					$iParentId = intval($iParentId['parent_id']);
@@ -192,6 +195,51 @@ class CnavigationAImenu extends CModuleAdmin
 					$this->iParentId = $arData['parent_id'];
 					$KS_URL->Set('CSC_parid',$arData['parent_id']);
 					$KS_URL->Redirect("admin.php?".$KS_URL->GetUrl(Array('ACTION')).'&CSC_parid='.$iParentId);
+				}
+				else
+				{
+					$this->obModules->AddNotify('NAVIGATION_MENU_ITEM_NOT_FOUND');
+				}
+			break;
+			case "hide":
+
+				if($arData=$this->oElement->GetById($this->iId))
+				{
+					$arData['active']=0;
+					if($id=$this->oElement->Save('',$arData))
+					{
+						$this->obModules->AddNotify('NAVIGATION_MENU_ITEM_NOT_ACTIVE','',NOTIFY_MESSAGE);
+						$this->iParentId = $arData['parent_id'];
+						$KS_URL->Set('CSC_parid',$arData['parent_id']);
+						$KS_URL->Redirect("admin.php?".$KS_URL->GetUrl(Array('ACTION')));
+					}
+					else
+					{
+						throw new CError('SYSTEM_SAVE_ERROR');
+					}
+
+				}
+				else
+				{
+					$this->obModules->AddNotify('NAVIGATION_MENU_ITEM_NOT_FOUND');
+				}
+			break;
+			case "show":
+				if($arData=$this->oElement->GetById($this->iId))
+				{
+					$arData['active']=1;
+					if($id=$this->oElement->Save('',$arData))
+					{
+						$this->obModules->AddNotify('NAVIGATION_MENU_ITEM_ACTIVE','',NOTIFY_MESSAGE);
+						$this->iParentId = $arData['parent_id'];
+						$KS_URL->Set('CSC_parid',$arData['parent_id']);
+						$KS_URL->Redirect("admin.php?".$KS_URL->GetUrl(Array('ACTION')));
+					}
+					else
+					{
+						throw new CError('SYSTEM_SAVE_ERROR');
+					}
+
 				}
 				else
 				{

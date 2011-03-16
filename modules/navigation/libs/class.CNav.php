@@ -110,26 +110,9 @@ class CNavElement extends CFieldsObject
 	/**
 	 * Конструктор элемента навигации
 	 */
-	function __construct($sTable="navigation_menu_elements")
+	function __construct($sTable="navigation_menu_elements",$sUploadPath='/navigation',$sModule='navigation')
 	{
-		parent::__construct($sTable);
-		$this->arFields=Array('id','orderation','type_id','parent_id','link','anchor','target','img');
-		//Подключаем работу с пользовательскими полями.
-		$this->sFieldsModule='navigation';
-		$this->sUploadPath='/navigation';
-        if (class_exists(CFields))
-        {
-            $this->bFields=true;
-            $obFields=new CFields();
-            $this->arUserFields=$obFields->GetFields($this->sFieldsModule,$this->sTable);
-            foreach($this->arUserFields as $item)
-            {
-                $this->arFields[]='ext_'.$item['title'];
-            }
-        }
-		$this->items=0;
-		$this->visible=-1;
-		$this->pages=Array();
+		parent::__construct($sTable,$sUploadPath,$sModule);
 	}
 
 	function GetById($id)
@@ -229,7 +212,7 @@ class CNavElement extends CFieldsObject
 	{
 		$menu_items_all = array();
 		$arOrder = array('parent_id' => 'asc', 'orderation' => 'asc');
-		$arFilter = array('type_id' => $type_id);
+		$arFilter = array('type_id' => $type_id, 'active'=>1);
 		if (!$expand)
 			$arFilter['parent_id'] = 0;
 		$menu_items_all = $this->GetList($arOrder, $arFilter);

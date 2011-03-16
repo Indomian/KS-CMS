@@ -5,7 +5,14 @@
 	{if $oItem.ITEMS!=''}{assign var="image_name" value='minus'}{else}{assign var="image_name" value='plus'}{/if}
 	<li id="item{$oItem.id}" class="treeItem" _ks_typeid="{$dataList.SECTION.id}" onmouseover = "ShowButtons();">
 		<span id="btn{$oItem.id}" style="overflow: hidden; display: none; float: right;" width="100%">
-			<a title="{#edit#}" href="{get_url ACTION=edit CSC_elmid=$oItem.id}">
+			{if $oItem.active}
+            <a href="{get_url ACTION=hide CSC_elmid=$oItem.id}" title="{#hide#}">
+            <img src="{#images_path#}/icons2/active1.gif" width="16" height="16" alt="{#hide#}" /></a>&nbsp;
+            {else}
+            <a href="{get_url ACTION=show CSC_elmid=$oItem.id}" title="{#show#}">
+            <img src="{#images_path#}/icons2/active0.gif" width="16" height="16" alt="{#show#}" /></a>&nbsp;
+            {/if}
+            <a title="{#edit#}" href="{get_url ACTION=edit CSC_elmid=$oItem.id}">
 				<img width="16" height="16" alt="{#edit#}" src="{#images_path#}/icons2/edit.gif"/>
 			</a>
 			<a title="{#delete#}" onclick="return confirm('{#delete_confirm#}');" href="{get_url ACTION=delete CSC_elmid=$oItem.id}">

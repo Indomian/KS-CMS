@@ -26,51 +26,26 @@
     					<th width="70%">{#header_value#}</th>
     				</tr>
     				<tr>
-    					<td><div id="hint_anchor"
-    						style="cursor: pointer;"
-    						onmouseover="floatMessage.showMessage(document.getElementById('hint_anchor'),
-    						'{#field_anchor_hint#}');">{#field_anchor#}</div>
-    					</td>
+    					<td>{Title field="anchor"}</td>
     					<td><input type="text" name="CSC_anchor" value="{$data.anchor|htmlspecialchars:2:"UTF-8":false}" style="width:95%" class="form_input"/></td>
     				</tr>
     				<tr>
-    					<td>
-    					<div id="hint_link"
-    						style="cursor: pointer;"
-    						onmouseover="floatMessage.showMessage(document.getElementById('hint_link'),
-    						'{#field_link_hint#}');">{#field_link#}</div>
-    					</td>
-    					<td><input type="text" name="CSC_link" value="{$data.link}" style="width:95%" class="form_input"/>
-    					</td>
+    					<td>{Title field="link"}</td>
+    					<td><input type="text" name="CSC_link" value="{$data.link}" style="width:95%" class="form_input"/></td>
     				</tr>
     				<tr>
-    					<td>
-    					<div id="hint_orderation"
-    						style="cursor: pointer;"
-    						onmouseover="floatMessage.showMessage(document.getElementById('hint_orderation'),
-    						'{#field_orderation_hint#}');">{#field_orderation#}</div>
-    					</td>
+    					<td>{Title field="orderation"}</td>
     					<td><input type="text" name="CSC_orderation" size="3" value="{$data.orderation|intval}" class="form_input"/></td>
     				</tr>
     				<tr>
-    					<td>
-    					<div id="hint_img"
-    						style="cursor: pointer;"
-    						onmouseover="floatMessage.showMessage(document.getElementById('hint_img'),
-    						'{#field_img_hint#}');">{#field_img#}</div>
-    					</td>
+    					<td>{Title field="img"}</td>
     					<td><input type="file" name="CSC_img" value="" style="width:95%" class="form_input"/><br>
     						{if $data.img!=""}<img src="/uploads/{$data.img}"><br/>
     						<input type="checkbox" name="CSC_img_del" value="1"/> Удалить{/if}
     					</td>
     				</tr>
     				<tr>
-    					<td>
-    					<div id="hint_target"
-    						style="cursor: pointer;"
-    						onmouseover="floatMessage.showMessage(document.getElementById('hint_target'),
-    						'{#field_target_hint#}');">{#field_target#}</div>
-    					</td>
+    					<td>{Title field="target"}</td>
     					<td><select name="CSC_target" style="width:100%">
         					<option value="" {if $data.target eq ""}selected="selected"{/if}>[{#open_unset#}]</option>
         					<option value="_blank" {if $data.target eq "_blank"}selected="selected"{/if}>[{#open_new#}]</option>
@@ -78,6 +53,10 @@
         					</select>
     					</td>
     				</tr>
+    				<tr>
+						<td>{Title field="active"}</td>
+						<td><input type="checkbox" name="CSC_active" value="1" {if $data.active==1}checked="checked"{/if}/></td>
+					</tr>
     			</table>
     		</div>
 		{/strip}{/ksTab}

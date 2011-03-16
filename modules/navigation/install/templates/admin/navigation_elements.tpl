@@ -28,9 +28,20 @@ function showData(oData)
             {
             	li.onmouseover = ShowButtons;
             }
+			
+			if(oData[i].active==1)
+			{
+				activeHTML="{/literal}<a href=\"{get_url ACTION=hide}&CSC_elmid="+oData[i].id+"\" title=\"{#hide#}\">" +
+    			"<img src=\"{#images_path#}/icons2/active1.gif\" width=\"16\" height=\"16\" alt=\"{#hide#}\"/></a>&nbsp;{literal}";
+			}
+			else
+			{
+				activeHTML="{/literal}<a href=\"{get_url ACTION=show}&CSC_elmid="+oData[i].id+"\" title=\"{#show#}\">" +
+	   			"<img src=\"{#images_path#}/icons2/active0.gif\" width=\"16\" height=\"16\" alt=\"{#show#}\"/></a>&nbsp;{literal}";
+			}
             li._ks_typeid="{/literal}{$dataList.SECTION.id}{literal}";
             li.className="treeItem";
-            li.innerHTML = "{/literal}<span style=\"display: none; float: right; overflow: hidden;\" width=\"100%\" style=\"padding-left:20px;\" id=\"btn"+oData[i].id+"\">" +
+            li.innerHTML = "{/literal}<span style=\"display: none; float: right; overflow: hidden;\" width=\"100%\" style=\"padding-left:20px;\" id=\"btn"+oData[i].id+"\">" + activeHTML +
     			"<a href=\"{get_url ACTION=edit}&CSC_elmid="+oData[i].id+"\" title=\"{#edit#}\"><img src=\"{#images_path#}/icons2/edit.gif\" width=\"16\" height=\"16\" alt=\"{#edit#}\"/></a>&nbsp;" +
     			"<a href=\"{get_url ACTION=delete}&CSC_elmid="+oData[i].id+"\" onclick=\"return confirm('{#delete_confirm#}');\"  title=\"{#delete#}\">" +
     			"<img src=\"{#images_path#}/icons2/delete.gif\" width=\"16\" height=\"16\" alt=\"{#delete#}\"/></a>" +
@@ -230,6 +241,13 @@ function HideButtons(event)
 		{if $oItem.ITEMS!=''}{assign var="image_name" value='minus'}{else}{assign var="image_name" value='plus'}{/if}
 		<li id="item{$oItem.id}" onmouseover="ShowButtons(event)" class="treeItem" _ks_typeid="{$dataList.SECTION.id}">
 			<span id="btn{$oItem.id}" style="display: none; float: right; overflow: hidden;">
+            	{if $oItem.active}
+                <a href="{get_url ACTION=hide CSC_elmid=$oItem.id}" title="{#hide#}">
+                <img src="{#images_path#}/icons2/active1.gif" width="16" height="16" alt="{#hide#}" /></a>&nbsp;
+                {else}
+                <a href="{get_url ACTION=show CSC_elmid=$oItem.id}" title="{#show#}">
+                <img src="{#images_path#}/icons2/active0.gif" width="16" height="16" alt="{#show#}" /></a>&nbsp;
+                {/if}
    				<a href="{get_url ACTION=edit CSC_elmid=$oItem.id}" title="{#edit#}">
 				<img src="{#images_path#}/icons2/edit.gif" width="16" height="16" alt="{#edit#}" /></a>&nbsp;
 				<a href="{get_url ACTION=delete CSC_elmid=$oItem.id}" onclick="return confirm('{#delete_confirm#}');" title="{#delete#}">

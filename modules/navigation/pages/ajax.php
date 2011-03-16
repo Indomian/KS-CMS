@@ -43,7 +43,7 @@ class CnavigationAIajax extends CModuleAdmin
 			'type_id' => $this->iCurSection,
 			'parent_id' => $this->iParentId
 		);
-		$arSelect = array('id', 'anchor');
+		$arSelect = array('id', 'anchor', 'active');
 		$arOrder = array('orderation'=>'asc');
 		if($arResult = $this->oElement->GetList($arOrder, $arFilter, false, $arSelect))
 		{

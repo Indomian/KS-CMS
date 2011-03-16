@@ -129,5 +129,13 @@ $arStructure=array(
 			'Default'=>'',
 			'Extra'=>'',
 		),
+		'active'=>array(
+			'Field'=>'active',
+			'Type'=>'tinyint(1)',
+			'Null'=>'NO',
+			'Key'=>'',
+			'Default'=>'1',
+			'Extra'=>'',
+		),
 	)
 );
