@@ -171,8 +171,9 @@ class CFilesObject extends CObject
 				$sResult=$_SESSION[__CLASS__][$prefix.$key];
 				unset($_SESSION[__CLASS__][$prefix.$key]);
 			}
-			if (array_key_exists($prefix . $key . '_del', $input))
+			if (array_key_exists($prefix . $key . '_del', $_REQUEST))
 			{
+
 				if($input[$prefix.'id']!='')
 				{
 					$arItem=$this->GetRecord(array('id'=>$input[$prefix . 'id']));

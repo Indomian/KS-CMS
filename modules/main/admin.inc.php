@@ -162,7 +162,7 @@ else
 	{
 		if (file_exists(MODULES_DIR . "/main/pages/" . $start_adminpage . ".php"))
 		{
-			if($start_adminpage=='options' || $start_adminpage=='eventtemplates' || $start_adminpage=='modules' || $start_adminpage=='geography')
+			if($start_adminpage=='options' || $start_adminpage=='eventtemplates' || $start_adminpage=='modules' || $start_adminpage=='geography' || $start_adminpage=='contribution')
 			{
 				$page=$this->LoadModulePage('main',$start_adminpage);
 			}

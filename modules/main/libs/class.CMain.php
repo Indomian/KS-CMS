@@ -396,6 +396,8 @@ class CObject extends CBaseList
 				$res = $ks_db->insert_id();
 			}
 		}
+		if($res)
+			unset(CObject::$arCache[$this->sTable][$res]);
 		return $res;
 	}
 
@@ -1318,6 +1320,7 @@ class CObject extends CBaseList
 			$query="UPDATE ".PREFIX.$this->sTable." SET $sQuery WHERE ".$sWhere;
 			//echo $query;
 			$this->obDB->query($query);
+			unset(CObject::$arCache[$this->sTable]);
 			return mysql_affected_rows();
 		}
 		else

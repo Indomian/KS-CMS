@@ -12,6 +12,9 @@
 				</div>
     			<ul class="footer_menu">
 					<li>
+						<a href="/admin.php?module=main&modpage=contribution">{#contribution#}</a>
+					</li>
+					<li>
 						{if $showHelp=='Y'}
 							<a href="/admin.php?module=help&{$help_url}">{#help#}</a>
 						{else}

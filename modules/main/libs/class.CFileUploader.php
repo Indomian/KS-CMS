@@ -124,7 +124,7 @@ class CFileUploader
 			}
 			$filename = $arFile['dirname'].'/'.$filename;
 			$upload_to = $this->sRootDir.$filename;
-			if(move_uploaded_file($_FILES[$this->sField]['tmp_name'], $upload_to)==0)
+			if(!move_uploaded_file($_FILES[$this->sField]['tmp_name'], $upload_to))
 			{
 				return false;
 			}

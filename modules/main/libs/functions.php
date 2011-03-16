@@ -59,6 +59,13 @@ function dec2any( $num, $base=62, $index=false ) {
     return $out;
 }
 
+function String2Time($str)
+{
+	if(preg_match('#([0-9]{2,2})\.([0-9]{2,2})\.([0-9]{4,4}) ([0-9]{2,2}):([0-9]{2,2})#',$str,$time))
+		return mktime(intval($time[4]),intval($time[5]),0,intval($time[2]),intval($time[1]),intval($time[3]));
+	return false;
+}
+
 function hex2bin($num)
 {
 	$arBins=array(
