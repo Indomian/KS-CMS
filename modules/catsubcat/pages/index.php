@@ -197,13 +197,14 @@ class CcatsubcatAIindex extends CModuleAdmin
 				$this->obModules->AddNotify('CATSUBCAT_NOTIFY_SAVE_OK','',NOTIFY_MESSAGE);
 				if(!array_key_exists('update',$_REQUEST))
 				{
-					if($sType=='cat') $KS_URL->Set('CSC_catid',$data['parent_id']);
+					//if($sType=='cat') $KS_URL->Set('CSC_catid',$data['parent_id']);
+					if($this->obEditable instanceof CCategory) $KS_URL->Set('CSC_catid',$data['parent_id']);
 					CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl(Array('ACTION','type','CSC_id')));
 				}
 				else
 				{
-					if($sType=='cat') $sAdd='&CSC_catid='.$id;
-					if($sType=='elm') $sAdd='&CSC_id='.$id.'&CSC_catid='.intval($_POST['CSC_parent_id']);
+					if($this->obEditable instanceof CCategory) $sAdd='&CSC_catid='.$id;
+					if($this->obEditable instanceof CElement) $sAdd='&CSC_id='.$id.'&CSC_catid='.intval($_POST['CSC_parent_id']);
 					CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl('ACTION','CSC_id','CSC_catid').'&ACTION=edit'.$sAdd);
 				}
 			}
