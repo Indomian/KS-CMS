@@ -14,17 +14,20 @@
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 require_once MODULES_DIR."/main/libs/class.CMain.php";
+require_once MODULES_DIR.'/main/libs/class.CFileUploader.php';
 
 class CFilesObject extends CObject
 {
 	protected $arFileFields;	/*!<поля значения которых - файлы.*/
 	public $sUploadPath; 	/*!<Путь для загрузки файлов через функцию save.*/
+	private $obUploadManager;
 
 	function __construct($sTable='',$sUploadPath='')
 	{
 		parent::__construct($sTable);
 		$this->arFileFields=array();
 		$this->sUploadPath=$sUploadPath;
+		$this->obUploadManager=false;
 	}
 
 	/**
@@ -55,9 +58,11 @@ class CFilesObject extends CObject
 	/**
 	 * Метод выполняет загрузку указанного файла
 	 * @param $key string - поле для поиска откуда грузить файл
+	 * @deprecated 17.03.2010 используйте CFileUploader::Upload
 	 */
 	protected function _DoFileUpload($key)
 	{
+		throw new CError('SYSTEM_DERECATED');
 		global $KS_FS;
 		$sResult='';
 		if (array_key_exists($key, $_FILES))
@@ -161,19 +166,27 @@ class CFilesObject extends CObject
 		/* Считаем входными данными также закачанные на сервер файлы-картинки */
 		if(in_array($key,$this->arFileFields))
 		{
-			if (array_key_exists($prefix . $key, $_FILES))
+			$obUploadManager=new CFileUploader($key,$this->sTable);
+			if($obUploadManager->IsReady())
 			{
-				$sResult=$this->_DoFileUpload($prefix.$key);
-			}
-			elseif(array_key_exists($prefix.$key,$_SESSION[__CLASS__]))
-			{
-				//Значит файл уже загружали и он лежит в папочки и прописан в сессии
-				$sResult=$_SESSION[__CLASS__][$prefix.$key];
-				unset($_SESSION[__CLASS__][$prefix.$key]);
+				$sResult=$obUploadManager->Upload($this->sUploadPath.'/'.$this->_GenFileName($obUploadManager->GetFileName()),false);
+				$obUploadManager->UploadDone();
+				if($sResult)
+				{
+					//Если загрузили файл, пробуем заменить его
+					if($input[$prefix.'id']!='')
+					{
+						$arItem=$this->GetRecord(array('id'=>$input[$prefix . 'id']));
+						if(is_array($arItem)&&($arItem['id']==$input[$prefix . 'id']))
+						{
+							if (file_exists(UPLOADS_DIR.$arItem[$key]))
+								unlink(UPLOADS_DIR.$arItem[$key]);
+						}
+					}
+				}
 			}
 			if (array_key_exists($prefix . $key . '_del', $_REQUEST))
 			{
-
 				if($input[$prefix.'id']!='')
 				{
 					$arItem=$this->GetRecord(array('id'=>$input[$prefix . 'id']));

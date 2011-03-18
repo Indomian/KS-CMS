@@ -74,6 +74,14 @@ class CFileUploader
 		return false;
 	}
 
+	function GetFileName()
+	{
+		if($this->IsReady())
+		{
+			return $_FILES[$this->sField]['name'];
+		}
+		return false;
+	}
 	/**
 	 * Метод выполняет загрузку нового файла
 	 */
@@ -95,7 +103,7 @@ class CFileUploader
 				$sNewFilename=substr($sNewFilename,strlen($this->sRootDir));
 			}
 			if($bUseUserFileName)
-				$sNewFilename.=$_FILES[$this->sField]['name'];
+				$sNewFilename.='/'.$_FILES[$this->sField]['name'];
 			$arFile=pathinfo($sNewFilename);
 			if(!IsFilename($arFile['basename']))
 			{

@@ -233,12 +233,33 @@ class CNavElement extends CFieldsObject
 	function GetCurrentPageMenuIds($link,$type_id='')
 	{
 		$arFilter = array('link' => $link);
-		if($type_id) $arFilter['type_id']=$type_id;
-		$res_array = $this->GetRecord($arFilter);
-		if (!count($res_array))
+		if($type_id)
+			$arFilter['type_id']=$type_id;
+		$page_menu=array();
+		if($res_array = $this->GetRecord($arFilter))
+		{
+			$page_menu['id'] = $res_array['id'];
+			$page_menu['parent_id'] = $res_array['parent_id'];
+		}
+		else
+		{
+			//Если не нашли меню сразу, пробуем усекать линк пока не найдём меню
+			$arSourceLink=explode('/',$link);
+			while(count($arSourceLink)>0)
+			{
+				array_pop($arSourceLink);
+				$sLink=join('/',$arSourceLink);
+				$arFilter = array('link' => $sLink.'/');
+				if($res_array = $this->GetRecord($arFilter))
+				{
+					$page_menu['id'] = $res_array['id'];
+					$page_menu['parent_id'] = $res_array['parent_id'];
+					break;
+				}
+			}
+		}
+		if (!is_array($page_menu))
 			return false;
-		$page_menu['id'] = $res_array['id'];
-		$page_menu['parent_id'] = $res_array['parent_id'];
 		return $page_menu;
 	}
 
