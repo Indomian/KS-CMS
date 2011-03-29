@@ -22,7 +22,7 @@ class CPageNavigation extends CInterface
 	 * Конструктор - производит создание объекта постраничной навигации,
 	 * при создании учитывает номер созданного объекта.
 	 */
-	function __construct(&$General=NULL,$Items=false,$Visible=false,$Current=false)
+	function __construct($General=NULL,$Items=false,$Visible=false,$Current=false)
 	{
 		$this->obGeneral=NULL;
 		$this->iItems=0;
@@ -94,7 +94,7 @@ class CPageNavigation extends CInterface
 		{
 			$this->iItems=$this->obGeneral->items;
 		}
-		else
+		elseif($items!=false)
 		{
 			$this->iItems=$items;
 		}

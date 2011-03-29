@@ -630,7 +630,7 @@ class CObject extends CBaseList
 					/*Проверяем на допустимые операции, если одна из них указана,
 					 * выполняем обработку введенных данных и формируем операцию.*/
 
-					if(preg_match('#^(!~|!->|[><!~=]|>=|<=|->|is)?([\w_\.\-]+)#i',$field,$matches))
+					if(preg_match('#^(!~|!->|[><!~=]|>=|<=|->|%)?([\w_\.\-]+)#i',$field,$matches))
 					{
 						$operation=$matches[1];
 						if($operation=='') $operation="=";
@@ -638,7 +638,6 @@ class CObject extends CBaseList
 						/*Добавлена проверка на сложное наименование полей*/
 						if(strpos($myfield,'.')>0)
 						{
-
 							//Значит впереди идет имя таблицы
 							$arField=explode(".",$myfield);
 							if($arField[0]!='')
@@ -723,6 +722,7 @@ class CObject extends CBaseList
 								continue;
 							}
 						}
+						elseif($operation=='%') $operation=" $myfield is '".$ks_db->safesql($value)."' ";
 						elseif($noSafe) $operation=" $myfield $operation $value ";
 						else $operation=" $myfield $operation '".$ks_db->safesql($value)."' ";
 						$arFil[]=$operation;
@@ -1140,7 +1140,7 @@ class CObject extends CBaseList
  		{
 			$query="SELECT $fields FROM $sFrom $sWhere $sGroupBy $sOrder $limits";
 		}
-		//echo $query.'<br/>';
+		if(KS_DEBUG_QUERIES) echo $query.'<br/>';
 		$ks_db_res=$this->obDB->query($query);
 		if($ks_db->num_rows($ks_db_res)<1)
 		{

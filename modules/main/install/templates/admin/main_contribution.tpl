@@ -10,6 +10,7 @@
 		<li><a href="http://tinymce.moxiecode.com/">TinyMCE</a> Javascript WYSIWYG Editor. TinyMCE is released under the <a href="http://www.gnu.org/licenses/lgpl.html">LGPL (Lesser GPL).</a></li>
 		<li><a href="http://jquery.com/demo/thickbox/">ThickBox 3.1</a> web page UI dialog.</li>
 		<li><a href="http://www.captcha.ru/">KCaptcha</a> for CAPTCHA works</li>
+		<li><a href="http://www.fatcow.com/free-icons">Fatcow icons pack</a> licensed under Creative Commons Attribution 3.0 license</li>
 		<li>Other scripts or code parts. All copyrights saved in source files</li>
 	</ol>
 </div>

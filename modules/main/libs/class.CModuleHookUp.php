@@ -13,6 +13,7 @@ class CModuleHookUp extends CModuleManagment
 	protected $sTemplate;
 	protected $sScheme;
 	protected $arWidgetTimes;
+	protected $arRequestData;
 	static private $instance;
 
 	function __construct($sTable='main_modules')
@@ -25,9 +26,16 @@ class CModuleHookUp extends CModuleManagment
 	 */
 	private function init()
 	{
+		global $KS_IND_matches;
 		$this->arWidgetStack=array();
 		$this->sTemplate='.default';
 		$this->sScheme='index';
+		$this->arRequestData=array(
+			'path'=>$KS_IND_matches[0],
+			'dirs'=>$KS_IND_matches[1],
+			'page'=>$KS_IND_matches[2],
+			'text_ident'=>$KS_IND_matches[3]
+		);
 	}
 
 	/**
@@ -45,6 +53,35 @@ class CModuleHookUp extends CModuleManagment
 				$this->sScheme=$arTemplate[1];
 			}
 		}
+	}
+
+	/**
+	 * Метод возвращает true если пользователь запросил страницу
+	 */
+	function IsPage()
+	{
+		if($this->arRequestData['page']!='') return true;
+		return false;
+	}
+
+	/**
+	 * Метод возвращает true если пользователь запросил каталог
+	 */
+	function IsCatalogue()
+	{
+		return !$this->IsPage();
+	}
+
+	/**
+	 * Метод возвращает текущий текстовый идентификатор страницы (если это страница)
+	 */
+	function CurrentTextIdent()
+	{
+		if($this->IsPage())
+		{
+			return $this->arRequestData['text_ident'];
+		}
+		return false;
 	}
 
 	/**

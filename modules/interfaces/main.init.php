@@ -13,5 +13,5 @@
 /*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
-include_once (MODULES_DIR.'/interfaces/libs/class.CPageNavigation.php');
-?>
+include_once (MODULES_DIR.'/interfaces/libs/class.CPages.php');
+
