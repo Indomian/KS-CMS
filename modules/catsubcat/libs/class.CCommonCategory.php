@@ -29,6 +29,7 @@ class CCommonCategory extends CCategorySubCategory
 	function __construct($tables = '',$sElementsTable = '')
 	{
 		parent::__construct($tables,$sElementsTable);
+		$this->AddFileField('img');
 	}
 
 	/**

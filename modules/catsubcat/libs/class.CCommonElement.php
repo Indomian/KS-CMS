@@ -3,14 +3,14 @@
  * \file class.CElement.php
  * Сюда сделать описание файла
  * Файл проекта kolos-cms.
- * 
+ *
  * Создан 25.02.2010
  *
  * \author blade39
- * \version 
+ * \version
  * \todo
  */
-/*Обязательно вставляем во все файлы для защиты от взлома*/ 
+/*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 require_once MODULES_DIR.'/catsubcat/libs/class.CCategorySubCategory.php';
@@ -25,6 +25,7 @@ class CCommonElement extends CCategorySubCategory
 	function __construct($sCategoryTable="",$sElementsTable='')
 	{
 		parent::__construct($sElementsTable,$sCategoryTable);
+		$this->AddFileField('img');
 	}
 
 	/**
@@ -151,4 +152,4 @@ class CCommonElement extends CCategorySubCategory
 		return $arResult;
 	}
 }
-?>
+

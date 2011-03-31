@@ -148,8 +148,8 @@ class CcatsubcatAIindex extends CModuleAdmin
 			if ($_POST['CSC_text_ident'] == "" && $_POST['CSC_id'] != 0)
 			{
 				$_POST['CSC_text_ident'] = Translit($_POST['CSC_title']);
-				if ($_POST['CSC_text_ident'] == "")
-					throw new CError("SYSTEM_NOT_IDENT");
+				if (!IsTextIdent($_POST['CSC_text_ident']))
+					$iError+=$this->obModules->AddNotify("SYSTEM_NOT_IDENT");
 			}
 
 			if ($_POST['CSC_id'] == 0)
@@ -211,7 +211,7 @@ class CcatsubcatAIindex extends CModuleAdmin
 		}
 		catch (CError $e)
 		{
-			if($e->GetCode()==KS_ERROR_MAIN_ALREADY_EXISTS && $_POST['CSC_text_ident'] != '')
+			if($e->GetCode()==KS_ERROR_MAIN_ALREADY_EXISTS && IsTextIdent($_POST['CSC_text_ident']))
 			{
 				$arData=$obEditable->GetRecord(
 					array(
@@ -224,7 +224,7 @@ class CcatsubcatAIindex extends CModuleAdmin
 					$e=new CError("CATSUBCAT_DUBLICATE_BASKET",KS_ERROR_MAIN_ALREADY_EXISTS);
 				}
 			}
-			$this->smarty->assign('last_error',$e);
+			$this->smarty->assign('last_error',$e->__toString());
 
 			$showList=false;
 			$data=$this->obEditable->GetRecordFromPost('CSC_',$_POST);

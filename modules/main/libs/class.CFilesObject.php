@@ -133,7 +133,11 @@ class CFilesObject extends CObject
 		{
 			if(in_array($field,$this->arFileFields))
 			{
-				$arResult[$field]=$this->_DoFileUpload($prefix.$field);
+				$obUploadManager=new CFileUploader($prefix.$field,$this->sTable);
+				if($obUploadManager->IsReady())
+				{
+					$arResult[$field]=$obUploadManager->Upload($this->sUploadPath.'/'.$this->_GenFileName($obUploadManager->GetFileName()),false);
+				}
 			}
 			else
 			{
@@ -166,7 +170,7 @@ class CFilesObject extends CObject
 		/* Считаем входными данными также закачанные на сервер файлы-картинки */
 		if(in_array($key,$this->arFileFields))
 		{
-			$obUploadManager=new CFileUploader($key,$this->sTable);
+			$obUploadManager=new CFileUploader($prefix.$key,$this->sTable);
 			if($obUploadManager->IsReady())
 			{
 				$sResult=$obUploadManager->Upload($this->sUploadPath.'/'.$this->_GenFileName($obUploadManager->GetFileName()),false);
@@ -226,4 +230,4 @@ class CFilesObject extends CObject
 		return false;
 	}
 }
-?>
+

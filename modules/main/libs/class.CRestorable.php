@@ -3,21 +3,21 @@
  * \file class.CRestorable.php
  * Класс который обладает функционалом работы с восстановлением данных
  * Файл проекта kolos-cms.
- * 
+ *
  * Создан 09.06.2009
  *
  * \author blade39 <blade39@kolosstudio.ru>
  * \version 1.0
  * \todo
  */
-/*Обязательно вставляем во все файлы для защиты от взлома*/ 
+/*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 /**
  * Данный класс обладает измененными методами восстановления и удаления данных
  */
 require_once MODULES_DIR.'/main/libs/class.CFieldsObject.php';
- 
+
 class CRestorable extends CFieldsObject
 {
 	/**
@@ -41,7 +41,7 @@ class CRestorable extends CFieldsObject
 				{
 					$field=$matches[2];
 				}
-				if($field=='deleted') 
+				if($field=='deleted')
 				{
 					$bAddField=true;
 					break;
@@ -50,10 +50,10 @@ class CRestorable extends CFieldsObject
 		}
 		return $bAddField;
 	}
-	
+
 	/**
 	 * Метод выполняет сохранение записи, используется родительский метод сохранения,
-	 * при этом если происходит ошибка существования такой записи, то выполняется 
+	 * при этом если происходит ошибка существования такой записи, то выполняется
 	 * поиск похожей записи в корзине.
 	 * @param $prefix string - префикс полей в массиве данных
 	 * @param $data array - данные для сохранения, если пустой использует массив $_POST;
@@ -65,7 +65,7 @@ class CRestorable extends CFieldsObject
 		try
 		{
 			return parent::Save($prefix,$data);
-		}	
+		}
 		catch(CError $e)
 		{
 			if($e->getCode()==KS_ERROR_MAIN_ALREADY_EXISTS)
@@ -133,7 +133,7 @@ class CRestorable extends CFieldsObject
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Метод производит удаление записей в корзину
 	 */
@@ -151,4 +151,4 @@ class CRestorable extends CFieldsObject
 		return false;
 	}
 }
-?>
+

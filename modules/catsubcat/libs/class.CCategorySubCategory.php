@@ -37,29 +37,7 @@ class CCategorySubCategory extends CRestorable
 	{
 		$this->sTable = ($sCategoryTable!='') ? $sCategoryTable : 'catsubcat_catsubcat';
 		$this->sElTable = ($sElementsTable!='') ? $sElementsTable : 'catsubcat_element';
-		parent::__construct($this->sTable);
-		if(strlen($this->sFieldsModule)<1) $this->sFieldsModule='catsubcat';
-		//Подключаем работу с пользовательскими полями.
-		if (class_exists(CFields))
-		{
-			$this->bFields=true;
-			$obFields=new CFields();
-			$this->arUserFields=$obFields->GetFields($this->sFieldsModule,$this->sTable);
-			foreach($this->arUserFields as $item)
-			{
-				$this->arFields[]='ext_'.$item['title'];
-			}
-		}
-		//Устанавливаем папку для загрузки
-		$this->sUploadPath='/catsubcat';
-		$this->Init();
-	}
-
-	/**
-	 * Метод производит инициализацию класса
-	 */
-	function Init()
-	{
+		parent::__construct($this->sTable,'/catsubcat','catsubcat');
 	}
 
 	/**
