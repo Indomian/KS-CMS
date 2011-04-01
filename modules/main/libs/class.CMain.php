@@ -1079,6 +1079,17 @@ class CObject extends CBaseList
 		return $this->_GetTableFields();
 	}
 
+	/**
+	 * Метод переключает режим выборок
+	 */
+	public function SetDistinctMode($mode)
+	{
+		$old=$this->bDistinctMode;
+		if($mode) $this->bDistinctMode=true;
+		else $this->bDistinctMode=false;
+		return $old;
+	}
+
 	/**Функция возвращает отфильтрованный и упорядоченый список значений из базы данных.
 	 * Возращаемые данные - массив строк, каждая строка - асоциатиный массив по структуре сходный
 	 * либо с запросом либо с базой данных из которой осуществляется выборка.
@@ -1140,7 +1151,7 @@ class CObject extends CBaseList
  		{
 			$query="SELECT $fields FROM $sFrom $sWhere $sGroupBy $sOrder $limits";
 		}
-		if(KS_DEBUG_QUERIES) echo $query.'<br/>';
+		if(KS_DEBUG_QUERIES==1) echo $query.'<br/>';
 		$ks_db_res=$this->obDB->query($query);
 		if($ks_db->num_rows($ks_db_res)<1)
 		{

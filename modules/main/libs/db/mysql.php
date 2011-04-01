@@ -484,8 +484,8 @@ class mysql extends CDBInterface
 		}
 		try
 		{
-			$query="ALTER TABLE ".PREFIX.$sTable." ADD COLUMN ".
-				$arColumn['Field'].' '.
+			$query="ALTER TABLE ".PREFIX.$sTable." ADD COLUMN `".
+				$arColumn['Field'].'` '.
 				$arColumn['Type'].' '.
 				($arColumn['Null']=='NO'?'NOT NULL':'NULL').' ';
 			if($arColumn['Extra']!='auto_increment')

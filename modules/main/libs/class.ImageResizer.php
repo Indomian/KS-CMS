@@ -351,7 +351,7 @@ class ImageResizer extends CBaseObject
 					if($image_w_r>$image_w)
 					{
 						$x=round(($image_w_r-$image_w)/2/$scale);
-						$w=round($image_w_r/$scale-$x);
+						$w=round($w-$x*2);
 					}
 				}
 				else
@@ -361,7 +361,7 @@ class ImageResizer extends CBaseObject
 					if($image_h_r>$image_h)
 					{
 						$y=round(($image_h_r-$image_h)/2/$scale);
-						$h=round($image_h_r/$scale-$y);
+						$h=round($h-$y*2);
 					}
 				}
 				imagecopyresampled($newImg, $im, 0, 0, $x, $y, $image_w, $image_h, $w, $h);

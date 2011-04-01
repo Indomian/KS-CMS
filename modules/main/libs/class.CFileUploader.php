@@ -26,6 +26,24 @@ class CFileUploader
 	}
 
 	/**
+	 * Метод проверяет загрузил ли пользователь реальный файл
+	 */
+	private function HasUploadData()
+	{
+		if (array_key_exists($this->sField, $_FILES))
+		{
+			if($_FILES[$this->sField]['error']==UPLOAD_ERR_OK)
+			{
+				if($_FILES[$this->sField]['size'] > 0)
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Метод возращает true если файл загружен
 	 */
 	function IsReady()
@@ -92,12 +110,21 @@ class CFileUploader
 		{
 			return false;
 		}
-		if(array_key_exists($this->sSaverName,$_SESSION)&&array_key_exists($this->sField,$_SESSION[$this->sSaverName]))
+		if(!$this->HasUploadData() && array_key_exists($this->sSaverName,$_SESSION) && array_key_exists($this->sField,$_SESSION[$this->sSaverName]))
 		{
 			return $_SESSION[$this->sSaverName][$this->sField];
 		}
 		else
 		{
+			if(array_key_exists($this->sSaverName,$_SESSION) && array_key_exists($this->sField,$_SESSION[$this->sSaverName]))
+			{
+				//Проверяем был ли старый файл, если да, то его потереть надо
+				if(file_exists($this->sRootDir.$_SESSION[$this->sSaverName][$this->sField]))
+				{
+					unlink($this->sRootDir.$_SESSION[$this->sSaverName][$this->sField]);
+				}
+			}
+
 			if(strpos($sNewFilename,$this->sRootDir)!==false)
 			{
 				$sNewFilename=substr($sNewFilename,strlen($this->sRootDir));

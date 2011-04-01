@@ -85,6 +85,32 @@ class CModuleHookUp extends CModuleManagment
 	}
 
 	/**
+	 * Метод выполняет проверку текущего адреса на соответствие тому, что есть сейчас.
+	 */
+	function CheckPath($sPath,$bInModule=true)
+	{
+		$arPath=explode('/',$sPath);
+		foreach($arPath as $sElement)
+		{
+			if(trim($sElement)!='')
+				$arResult[]=trim($sElement);
+		}
+		foreach($arResult as $i=>$sElement)
+		{
+			if($sElement!=$this->arRequestData['dirs'][$i+2]) return false;
+		}
+		return true;
+	}
+
+	/**
+	 * Метод возвращает кусочек запроса с указанным номером
+	 */
+	function GetPathPart($iPart=1)
+	{
+		return $this->arRequestData['dirs'][$iPart];
+	}
+
+	/**
 	 * This implements the 'singleton' design pattern
    	 *
      * @return object CModuleHookUp The one and only instance

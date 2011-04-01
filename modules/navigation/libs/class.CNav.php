@@ -250,6 +250,8 @@ class CNavElement extends CFieldsObject
 				array_pop($arSourceLink);
 				$sLink=join('/',$arSourceLink);
 				$arFilter = array('link' => $sLink.'/');
+				if($type_id)
+					$arFilter['type_id']=$type_id;
 				if($res_array = $this->GetRecord($arFilter))
 				{
 					$page_menu['id'] = $res_array['id'];

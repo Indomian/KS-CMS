@@ -508,10 +508,59 @@ function ShorterString($sString,$length)
 }
 
 /**
+ * Функция конвертирует ip адрес в целое число
+ */
+function IPtoInt($ip)
+{
+	if(is_string($ip))
+	{
+		$iResult=0;
+		$arIp=explode('.',$ip);
+		if(count($arIp)==4)
+		{
+			$arIp[0]=$arIp[0]*16777216;
+			$arIp[1]=$arIp[1]*65536;
+			$arIp[2]=$arIp[2]*256;
+			return array_sum($arIp);
+		}
+		return 0;
+	}
+	return 0;
+}
+
+/**
+ * Функция определяет тип файла, использует консольную команду file
+ */
+function GetFileType($sFile)
+{
+	$query="file --mime-type -b ".$sFile;
+	exec($query,$arLines,$iCode);
+	if(is_array($arLines) && count($arLines)>0)
+	{
+		return trim($arLines[0]);
+	}
+	return '';
+}
+
+/**
+ * Функция генерирует описание файла
+ */
+function GenFileArray($sFile)
+{
+	$arFile=array(
+		'name'=>basename($sFile),
+		'type'=>GetFileType($sFile),
+		'size'=>filesize($sFile),
+		'tmp_name'=>$sFile,
+		'error'=>UPLOAD_ERR_OK
+	);
+	return $arFile;
+}
+
+/**
  * Функция очишает массив от пустых элементов, в качестве аргумента принимает массив
  */
 function ClearArray($ar)
 {
 	return array_filter($ar,'IsEmpty');
 }
-?>
