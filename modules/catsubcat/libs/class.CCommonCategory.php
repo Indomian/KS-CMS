@@ -122,9 +122,9 @@ class CCommonCategory extends CCategorySubCategory
 	 */
 	function GetFullPath($parent_id)
 	{
+		$bParent_id=$parent_id;
 		if(self::$arCatPath[$this->sTable][$parent_id]=='')
 		{
-			$bParent_id=$parent_id;
 			/* Объект для работы с модулями с таким именем должен быть инициализирован в пользовательской части */
 			global $KS_MODULES;
 
