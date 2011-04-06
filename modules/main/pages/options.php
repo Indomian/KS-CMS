@@ -171,7 +171,8 @@ class CmainAIoptions extends CModuleAdmin
 				}
 				else
 				{
-					$obConfig->Set('admin_lang','en');
+					//Язык по умолчанию - русский
+					$obConfig->Set('admin_lang','ru');
 				}
 				$this->obModules->RecountTextStructure();
 				if($error>0) throw new CDataError('MAIN_OPTIONS_ERRORS');

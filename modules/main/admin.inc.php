@@ -140,6 +140,11 @@ if (!defined("KS_MAIN_INIT"))
 	$KS_EVENTS_HANDLER->Execute("main", "onInit", $initParams);
 	define("KS_MAIN_INIT",1);
 
+	if($USER->GetLevel('main')> 9)
+	{
+		throw new CAccessError("MAIN_ACCESS_ADMINISTRATIVE_PART_CLOSED", 403);
+	}
+
 	/* Список модулей, поддерживающик связь между элементами полей */
 	$_ks_modules_linkable = array("catsubcat","blog","photogallery",'production');
 }

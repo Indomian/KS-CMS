@@ -15,9 +15,9 @@ interface User
 	function login();
 	function logout();
 	function IsLogin();
-	function SetUserGroup($uid, $gid);
+	function SetUserGroup($uid, $gid,$from=false,$to=false);
+	function UnsetUserGroup($uid,$gid);
 	function GenPassword($length=6);
-	function is_admin($id);
 	function IsAdmin($id=false);
 	function Save($prefix="KS_", $data="", $mytable="");
 	function GetUserVar($var);
@@ -28,7 +28,7 @@ interface User
  	function ID();
  	function Email();
  	function GetAllGroups($id);
- 	function GetLevel($module);
+ 	function GetLevel($module,$iUserID=false);
  	function SetAllUserGroups($iUserID, $arGroups);
  	function GetUserData();
 }

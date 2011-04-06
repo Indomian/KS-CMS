@@ -2,9 +2,9 @@
 
 /**
  * Страница управления профилями пользователей ЦМС.
- * 
+ *
  * 10.09.09 Добавлена поддержка ответа в формате json. Добавлена поддержка уменьшенной формы.
- * 
+ *
  * @filesource users.php
  * @author BlaDe39 <blade39@kolosstudio.ru>, north-e <pushkov@kolosstudio.ru>
  * @version 1.1
@@ -20,7 +20,7 @@ include_once(MODULES_DIR . "/main/libs/class.CUserGroup.php");
 /* Проверка прав доступа к редактированию пользователей */
 if ($USER->GetLevel("main") > 9)
 	throw new CAccessError("MAIN_NO_RIGHT_TO_VIEW_USERS");
-	
+
 /* Обрабатываем входные данные (постраничный вывод) */
 $obPages = new CPageNavigation($USER);
 global $KS_URL;
@@ -90,7 +90,7 @@ if (array_key_exists("ACTION", $_REQUEST))
 		/* Отправляем на страницу редактирования профиля */
 		$page="_edit";
 	}
-	
+
 	/* Редактирование профиля существующего пользователя */
 	if ($_REQUEST["ACTION"] == "edit")
 	{
@@ -111,7 +111,7 @@ if (array_key_exists("ACTION", $_REQUEST))
 		}
 		$page = "_edit";
 	}
-	
+
 	if ($_REQUEST["ACTION"]=="save")
 	{
 		try
@@ -141,7 +141,7 @@ if (array_key_exists("ACTION", $_REQUEST))
 			$_POST['CU_blocked_from']=$datefrom;
 			$dateto=$_POST["CU_blocked_till"];
 			if (strlen($dateto)>0)
-			{	
+			{
 				if(preg_match("#^([\d]{2})\.([\d]{2})\.([\d]{4})( ([\d]{2}):([\d]{2}))?#",$dateto,$matches))
 				{
 					$dateto=mktime($matches[5],$matches[6],0,$matches[2],$matches[1],$matches[3]);
@@ -165,58 +165,32 @@ if (array_key_exists("ACTION", $_REQUEST))
 				{
 					foreach($_POST["CU_groups"] as $group_id)
 					{
-						$datefrom=$_POST["CU_groups_from".$group_id];
-						if(strlen($datefrom)>0)
+						if(intval($_POST["CU_groups_from".$group_id])>0)
 						{
-							if(preg_match("#^([\d]{2})\.([\d]{2})\.([\d]{4})( ([\d]{2}):([\d]{2}))?#",$datefrom,$matches))
-							{
-								$datefrom=mktime($matches[5],$matches[6],0,$matches[2],$matches[1],$matches[3]);
-							}
-							else
-							{
-								$datefrom=time();
-							}
+							$datefrom=String2Time($_POST["CU_groups_from".$group_id]);
 						}
 						else
 						{
 							$datefrom=0;
 						}
-						$dateto=$_POST["CU_groups_to".$group_id];
-						if (strlen($dateto)>0)
-						{	
-							if(preg_match("#^([\d]{2})\.([\d]{2})\.([\d]{4})( ([\d]{2}):([\d]{2}))?#",$dateto,$matches))
-							{
-								$dateto=mktime($matches[5],$matches[6],0,$matches[2],$matches[1],$matches[3]);
-							}
-							else
-							{
-								$dateto=time();
-							}
+						if(intval($_POST["CU_groups_to".$group_id])>0)
+						{
+							$dateto=String2Time($_POST["CU_groups_to".$group_id]);
 						}
 						else
 						{
 							$dateto=0;
 						}
-						if (array_key_exists($group_id,$usergroups))
-						{
-							$ks_db->query("UPDATE " . PREFIX . $USER->sLinksTable
-									. " SET date_start = '" . $datefrom . "',"
-									. " date_end = '" . $dateto . "'"
-									. " WHERE user_id = '" . $id . "' AND group_id = '" . $group_id . "'");
-						}
-						else
-						{
-							$ks_db->query("INSERT INTO " . PREFIX . $USER->sLinksTable
-									. " (user_id, group_id, date_start, date_end) VALUES "
-									. " ('" . $id . "', '" . $group_id . "', '" . $datefrom . "', '" . $dateto . "')");
-						}
+						$USER->SetUserGroup($id,$group_id,$datefrom,$dateto);
 						unset($usergroups[$group_id]);
 					}
 				}
 				if(count($usergroups)>0)
 				{
-					$ks_db->query("DELETE FROM " . PREFIX . $USER->sLinksTable
-						. " WHERE user_id = '" . $id . "' AND group_id IN (" . join(",", array_keys($usergroups)) . ")");
+					foreach($usergroups as $group_id=>$something)
+					{
+						$USER->UnsetUserGroup($id,$group_id);
+					}
 				}
 				if($KS_MODULES->IsActive('forum'))
 				{
@@ -355,7 +329,7 @@ else
 
 	$totalUsers=$USER->count($arFilter);
 	$list=$USER->GetList($arOrder,$arFilter,$obPages->GetLimits($totalUsers));
-	if($_GET['mode']=='ajax') 
+	if($_GET['mode']=='ajax')
 	{
 		$data=array(
 			'list'=>$list,
@@ -371,7 +345,7 @@ else
 	else
 	{
 		$smarty->assign("list",$list);
-		$smarty->assign("groups_num",$USER->GetNum());
+		$smarty->assign("groups_num",$USER->Count());
 		$smarty->assign("pages",$obPages->GetPages($totalUsers));
 		$smarty->assign("num_visible",$obPages->GetVisible());
 		$smarty->assign('level',$USER->GetLevel('main'));

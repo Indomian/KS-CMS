@@ -194,6 +194,35 @@ h1 {font-size: 24px; font-weight: normal; color:#000; margin: 0 0 10px;}
 .manage input,
 input.button,
 div.button input{padding: 4px; font-family: tahoma; font-size: 12px; color:#70808D; border: 1px solid #D2D2D2; background:#EDEDED; cursor: pointer;}
+
+input.button_reload
+{
+	background: url('/uploads/templates/admin/images/icons2/reload.gif') no-repeat 5px 2px;
+	padding-left: 27px;
+	width:100px;
+}
+
+input.button_question
+{
+	background: url('/uploads/templates/admin/images/icons2/question.png') no-repeat 5px 4px;
+	padding-left: 27px;
+	width:100px;
+}
+
+input.button_basket
+{
+	background: url('/uploads/templates/admin/images/icons2/basket_put.png') no-repeat 5px 4px;
+	padding-left: 27px;
+	width:100px;
+}
+
+input.button_copy
+{
+	background: url('/uploads/templates/admin/images/icons2/folders.png') no-repeat 5px 4px;
+	padding-left: 27px;
+	width:100px;
+}
+
 .manage .add_div {padding-left: 27px; background: #EDEDED url('/uploads/templates/admin/images/icons2/create_folder.gif') 5px top no-repeat;}
 .manage .add_div2 {padding-left: 27px; background: #EDEDED url('/uploads/templates/admin/images/icons2/create_file.gif') 5px top no-repeat;}
 .manage .create {padding-left: 27px; background: #EDEDED url('/uploads/templates/admin/images/icons2/add.gif') 5px top no-repeat;}

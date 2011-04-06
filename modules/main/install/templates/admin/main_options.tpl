@@ -13,72 +13,41 @@
     					<th width="30%">{#header_field#}</th>
     					<th width="70%">{#header_value#}</th>
     				</tr>
-    				<tr>
-    					<td><div id="hint_home_url"
-    						style="cursor: pointer;"
-    						onmouseover="floatMessage.showMessage(document.getElementById('hint_home_url'),
-    						'{#field_home_url_hint#}');">{#field_home_url#}</div>
-    					</td>
+    				<tr class="is_necessary_light">
+    					<td>{Title field=home_url}</td>
     					<td><input type="text" name="sc_home_url" value="{$data.home_url|htmlspecialchars:2:"UTF-8":false}" style="width:95%" class="form_input"/></td>
 					</tr>
     				<tr>
-    					<td><div id="hint_home_title"
-    						style="cursor: pointer;"
-    						onmouseover="floatMessage.showMessage(document.getElementById('hint_home_title'),
-    						'{#field_home_title_hint#}');">{#field_home_title#}</div>
-    					</td>
+    					<td>{Title field=home_title}</td>
     					<td><input type="text" name="sc_home_title" value="{$data.home_title|htmlspecialchars:2:"UTF-8":false}" style="width:95%" class="form_input"/></td>
     				</tr>
 					<tr>
-    					<td><div id="hint_home_descr"
-    						style="cursor: pointer;"
-    						onmouseover="floatMessage.showMessage(document.getElementById('hint_home_descr'),
-    						'{#field_home_descr_hint#}');">{#field_home_descr#}</div>
-    					</td>
+    					<td>{Title field=home_descr}</td>
     					<td><input type="text" name="sc_home_descr" value="{$data.home_descr|htmlspecialchars:2:"UTF-8":false}" style="width:95%" class="form_input"/></td>
     				</tr>
     				<tr>
-    					<td><div id="hint_home_keywrds"
-    						style="cursor: pointer;"
-    						onmouseover="floatMessage.showMessage(document.getElementById('hint_home_keywrds'),
-    						'{#field_home_keywrds_hint#}');">{#field_home_keywrds#}</div>
-    					</td>
+    					<td>{Title field=home_keywrds}</td>
     					<td><input type="text" name="sc_home_keywrds" value="{$data.home_keywrds|htmlspecialchars:2:"UTF-8":false}" style="width:95%" class="form_input"/></td>
     				</tr>
     				<tr>
-    					<td><div id="hint_copyright"
-    						style="cursor: pointer;"
-    						onmouseover="floatMessage.showMessage(document.getElementById('hint_copyright'),
-    						'{#field_copyright_hint#}');">{#field_copyright#}</div>
-    					</td>
+    					<td>{Title field=copyright}</td>
     					<td><input type="text" name="sc_copyright" value="{$data.copyright|htmlspecialchars:2:"UTF-8":false}" style="width:95%" class="form_input"/></td>
     				</tr>
-					<tr>
-    					<td><div id="hint_admin_email"
-    						style="cursor: pointer;"
-    						onmouseover="floatMessage.showMessage(document.getElementById('hint_admin_email'),
-    						'{#field_admin_email_hint#}');">{#field_admin_email#}</div>
-    					</td>
+					<tr class="is_necessary_light">
+    					<td>{Title field=admin_email}</td>
     					<td><input type="text" name="sc_admin_email" value="{$data.admin_email}" style="width:95%" class="form_input"/></td>
     				</tr>
-    				<tr>
+    				<tr class="is_necessary_light">
     					<td>{Title field="emailFrom"}</td>
     					<td><input type="text" name="sc_emailFrom" value="{$data.emailFrom}" style="width:95%" class="form_input"/></td>
     				</tr>
 					<tr>
-    					<td><div id="hint_time_format"
-    						style="cursor: pointer;"
-    						onmouseover="floatMessage.showMessage(document.getElementById('hint_time_format'),
-    						'{#field_time_format_hint#}');">{#field_time_format#}</div>
-    					</td>
+    					<td>{Title field=time_format}</td>
     					<td><input type="text" name="sc_time_format" value="{$data.time_format}" style="width:95%" class="form_input"/></td>
     				</tr>
     				{*
     				<tr>
-				    	<td><div id="hint_debugmode"
-    						style="cursor: pointer;"
-    						onmouseover="floatMessage.showMessage(document.getElementById('hint_debugmode'),
-    						'{#field_debugmode_hint#}');">{#field_debugmode#}</div></td>
+				    	<td>{Title field=debugmode}</td>
 						<td>
 							<select name="sc_debugmode" class="form_input">
 								<option value="1" {if $data.debugmode==1} selected="selected"{/if}>{#short_error_mode#}</option>
@@ -87,10 +56,7 @@
 						</td>
 					</tr>*}
 					<tr>
-						<td><div id="hint_start_adminpage"
-    						style="cursor: pointer;"
-    						onmouseover="floatMessage.showMessage(document.getElementById('hint_start_adminpage'),
-    						'{#field_start_adminpage_hint#}');">{#field_start_adminpage#}</div></td>
+						<td>{Title field=start_adminpage}</td>
 						<td>
 							<select name="sc_start_adminpage" class="form_input">
 								<option value="main" {if $data.start_adminpage=="main"} selected="selected"{/if}>{#main_page_main#}</option>
@@ -137,7 +103,7 @@
     			</tr>
     			<tr>
     				<td>{Title field="admin_lang"}</td>
-    				<td><input type="text" name="admin_lang" value="{$data.admin_lang}" size="2"/></td>
+    				<td><input type="text" name="admin_lang" value="{$data.admin_lang}" size="2" class="form_input"/></td>
     			</tr>
     		</table>
     	</div>
@@ -149,13 +115,13 @@
     				<th width="30%">{#header_field#}</th>
     				<th width="70%">{#header_value#}</th>
     			</tr>
-    			<tr>
+    			<tr class="is_necessary_light">
     				<td>{Title field="pkey"}</td>
-    				<td><input type="text" name="sc_pkey" value="{$data.pkey}" size="30"/></td>
+    				<td><input type="text" name="sc_pkey" value="{$data.pkey}" size="30" class="form_input"/></td>
     			</tr>
-    			<tr>
+    			<tr class="is_necessary_light">
     				<td>{Title field="update_server"}</td>
-    				<td><input type="text" name="sc_update_server" value="{$data.update_server}" size="30"/></td>
+    				<td><input type="text" name="sc_update_server" value="{$data.update_server}" size="30" class="form_input"/></td>
     			</tr>
     		</table>
     	</div>
@@ -169,23 +135,23 @@
     			</tr>
     			<tr>
     				<td>{Title field="drop_cache"}</td>
-    				<td><input type="submit" name="act_drop_cache" value="{#action_drop_cache#}"/></td>
+    				<td><input type="submit" name="act_drop_cache" value="{#action_drop_cache#}" class="button button_basket"/></td>
     			</tr>
 				<tr>
     				<td>{Title field="check_tables"}</td>
-    				<td><input type="submit" name="act_check_tables" value="{#action_check_tables#}"/></td>
+    				<td><input type="submit" name="act_check_tables" value="{#action_check_tables#}" class="button button_question"/></td>
     			</tr>
     			<tr>
     				<td>{Title field="update_language_files"}</td>
-    				<td><input type="submit" name="act_update_lng" value="{#action_update_language_files#}"/></td>
+    				<td><input type="submit" name="act_update_lng" value="{#action_update_language_files#}" class="button button_reload"/></td>
     			</tr>
     			<tr>
     				<td>{Title field="drop_images_cache"}</td>
-    				<td><input type="submit" name="act_drop_images_cache" value="{#action_drop_images_cache#}"/></td>
+    				<td><input type="submit" name="act_drop_images_cache" value="{#action_drop_images_cache#}" class="button button_basket"/></td>
     			</tr>
     			<tr>
     				<td>{Title field="update_templates"}</td>
-    				<td><input type="submit" name="act_update_templates" value="{#action_update_templates#}"/></td>
+    				<td><input type="submit" name="act_update_templates" value="{#action_update_templates#}" class="button button_copy"/></td>
     			</tr>
     		</table>
     	</div>
@@ -234,8 +200,8 @@
 
 {strip}
 <dl class="def" style="background:#FFF6C4 url('{#images_path#}/big_icons/settings.gif') left 50% no-repeat;{if $smarty.cookies.showHelpBar==1}display:none;{/if}">
-<dt>{#title#}</dt>
-<dd>{#hint#}</dd>
+	<dt>{#title#}</dt>
+	<dd>{#hint#}</dd>
 </dl>
 <div class="content_arrow_{if $smarty.cookies.showHelpBar==1}down{else}up{/if}" onclick="ToggleHelpBar(this)" style="cursor:pointer;">&nbsp;</div>
 {/strip}

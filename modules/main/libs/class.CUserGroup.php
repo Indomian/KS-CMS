@@ -1,5 +1,12 @@
 <?php
-
+/**
+ * Файл содержит общий классы для работы с группами пользователей
+ *
+ * @since 05.11.2008
+ *
+ * @author blade39 <blade39@kolosstudio.ru>
+ * @version 2.6
+ */
 if(!defined('KS_ENGINE')){  die("Hacking attempt!");}
 include_once MODULES_DIR.'/main/libs/class.CUsersCommon.php';
 
@@ -8,35 +15,17 @@ include_once MODULES_DIR.'/main/libs/class.CUsersCommon.php';
  */
 class CUserGroup extends CUsersCommon
 {
-	function __construct($sTable="usergroups")
+	function __construct($sTable="usergroups",$sUploadPath='/users',$sModule='user')
 	{
-		parent::__construct($sTable);
-		$this->fType='cat';
+		parent::__construct($sTable,$sUploadPath,$sModule);
 	}
 
 	function DeleteItems($arFilter)
 	{
-		global $USER,$ks_db,$KS_ERROR;
-		try
+		if($arGroups=$this->GetList(array('id'=>'asc'),$arFilter))
 		{
-			$arGroups=$this->GetList(array('id'=>'asc'),$arFilter);
-			if(is_array($arGroups) && count($arGroups)>0)
-			{
-				$arIds=array();
-				foreach($arGroups as $arItem)
-				{
-					$arIds[]=$arItem['id'];
-				}
-				$query="DELETE FROM ".PREFIX.$USER->sLinksTable." WHERE group_id in (".join(',',$arIds).")";
-				$ks_db->query($query);
-				$query="DELETE FROM ".PREFIX.$this->sTable." WHERE id in (".join(',',$arIds).")";
-				$ks_db->query($query);
-			}
+			$this->obLinks->DeleteItems(array('->group_id'=>array_keys($arGroups)));
+			return parent::DeleteItems($arFilter);
 		}
-		catch (Exception $e)
-		{
-			throw new CError($e->GetMessage());
-		}
-		return false;
 	}
 }

@@ -122,7 +122,7 @@ class CmainAIpassword extends CModuleAdmin
 			$this->smarty->assign('header', array('title' => $this->obModules->GetText('MAIN_PASSWORD_RESTORE_STEP').$step));
 			$this->smarty->assign('step', $step);
 			$this->smarty->display('admin/password.tpl');
-			exit();
+			die();
 		}
 		else
 		{

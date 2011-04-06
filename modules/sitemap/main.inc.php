@@ -34,55 +34,33 @@ if($access_level==10) throw new CAccessError('SYSTEM_NOT_ACCESS_MODULE');
 
 $smarty->plugins_dir[] = MODULES_DIR.'/'.$module.'/widgets/';
 
-if($module_parameters['is_widget']==1)
+try
 {
-	if(file_exists(MODULES_DIR.'/'.$module.'/widgets/function.'.$module_parameters['action'].'.php'))
+	/**
+		* Работаем как модуль, значит надо провести полную проверку переданного пути
+		* на правильность и на права доступа, если что-то не так, лучше отдать ошибку.
+		*/
+	$root_path=$KS_MODULES->GetSitePath($module);
+	if($root_path!='/')
 	{
-		include_once(MODULES_DIR.'/'.$module.'/widgets/function.'.$module_parameters['action'].'.php');
-		$res=call_user_func('smarty_function_'.$module_parameters['action'],$module_parameters,$smarty);
+		if($KS_MODULES->IsActive('navigation'))
+			CNNavChain::get_instance()->Add($KS_MODULES->GetTitle($module),'/'.$root_path.'/');
+		$sUrl='/'.$root_path.'';
+		$iBase=2;
+		if(count($KS_IND_matches[1])>2) throw new CError('SYSTEM_FILE_NOT_FOUND');
 	}
 	else
 	{
-		$res=new CError('MAIN_WIDGET_NOT_REGISTERED');
+		$sUrl='';
+		$iBase=1;
+		if(count($KS_IND_matches[1])>1) throw new CError('SYSTEM_FILE_NOT_FOUND');
 	}
-	$output['main_content']=$res;
-	return $output['main_content'];
+	if(!function_exists('smarty_function_sitemap')) include MODULES_DIR.'/'.$module.'/widgets/function.sitemap.php';
+	$smarty->assign('TITLE',$KS_MODULES->GetTitle($module));
+	$res=smarty_function_sitemap($module_parameters,$smarty);
 }
-else
+catch(CAccessError $e)
 {
-	try
-	{
-		/**
-		 * Работаем как модуль, значит надо провести полную проверку переданного пути
-		 * на правильность и на права доступа, если что-то не так, лучше отдать ошибку.
-		 */
-		$root_path=$KS_MODULES->GetSitePath($module);
-		if($root_path!='/') 
-		{
-			if($KS_MODULES->IsActive('navigation'))
-				CNNavChain::get_instance()->Add($KS_MODULES->GetTitle($module),'/'.$root_path.'/');
-			$sUrl='/'.$root_path.'';
-			$iBase=2;
-			if(count($KS_IND_matches[1])>2) throw new CError('SYSTEM_FILE_NOT_FOUND');
-		}
-		else
-		{
-			$sUrl='';
-			$iBase=1;
-			if(count($KS_IND_matches[1])>1) throw new CError('SYSTEM_FILE_NOT_FOUND');
-		}
-		if(!function_exists('smarty_function_sitemap')) include MODULES_DIR.'/'.$module.'/widgets/function.sitemap.php';
-		$smarty->assign('TITLE',$KS_MODULES->GetTitle($module));
-		$res=smarty_function_sitemap($module_parameters,$smarty);
-	}
-	catch(CAccessError $e)
-	{
-		$res=$e;	
-	}
-	catch(CError $e)
-	{
-		throw $e;
-	}
+	$res=$e->__toString();
 }
 $output['main_content']=$res;
-?>

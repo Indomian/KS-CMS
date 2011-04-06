@@ -1,9 +1,17 @@
 <?php
-
+/**
+ * Файл обеспечивает работу с пользователями сайта, их авторизацию, хранение полей и многое другое.
+ *
+ * @since 05.11.2008
+ *
+ * @author blade39 <blade39@kolosstudio.ru>
+ * @version 2.6
+ */
 if (!defined('KS_ENGINE')) die("Hacking attempt!");
 include_once MODULES_DIR.'/main/libs/class.CUsersCommon.php';
 include_once MODULES_DIR.'/main/libs/interface.User.php';
-include_once MODULES_DIR.'/photogallery/libs/class.ImageResizer.php';
+include_once MODULES_DIR.'/main/libs/class.ImageResizer.php';
+include_once MODULES_DIR.'/main/libs/class.CModulesAccess.php';
 
 define('PASSWORD_CHARS','abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890');
 
@@ -19,7 +27,7 @@ define('PASSWORD_CHARS','abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123
  * Убрана автоматическая авторизация по параметру в URL
  */
 
-class CUser extends CBaseUser implements User
+class CUser extends CUsersCommon implements User
 {
 	protected $is_login;
 	private $arAllowExt=array('jpg','jpeg','png');
@@ -34,7 +42,7 @@ class CUser extends CBaseUser implements User
 	 *
 	 * @param string $sTable Таблица пользователей в базе данных
 	 */
-	function __construct($sTable = "users")
+	function __construct($sTable = "users",$sUploadPath='/users',$sModule='users')
 	{
 		global $smarty, $KS_EVENTS_HANDLER;
 
@@ -59,7 +67,7 @@ class CUser extends CBaseUser implements User
 			$_SESSION['USER_IP'] = $_SERVER['REMOTE_ADDR'];
 
 		/* Инициализация полей класса CObject */
-		parent::__construct($sTable);
+		parent::__construct($sTable,$sUploadPath,$sModule);
 
 		$this->userdata = array();
 		$this->arAccessLevels = array();
@@ -154,13 +162,6 @@ class CUser extends CBaseUser implements User
 		/* Вызов обработчика при инициализации объекта класса */
 		$onInitParams = $this->userdata;
 		$onUserObjectInitSuccess = $KS_EVENTS_HANDLER->Execute('main', 'onUserObjectInit', $onInitParams);
-	}
-
-	/**
-	 * Метод вызывается при освобождении памяти (удалении объекта класса)
-	 */
-	function __destruct()
-	{
 	}
 
 	/**
@@ -388,42 +389,11 @@ class CUser extends CBaseUser implements User
 	}
 
 	/**
-	 * Метод добавляет указанного пользователя в указанную группу
-	 * @param $uid integer номер пользователя
-	 * @param $gid integer номер группы пользователя
-	 * @todo Определить класс для линков групп пользователей и убрать вызовы базы дынных напрямую
-	 */
-	function SetUserGroup($uid,$gid)
-	{
-		$this->obDB->query("INSERT INTO " . PREFIX . $this->sLinksTable .
-			" (user_id,group_id,date_start,date_end) VALUES " .
-			" ('".intval($uid)."','".intval($gid)."','".time()."','0')"
-		);
-	}
-
-	/**
 	 * Функция генерирует пароль
 	 */
 	function GenPassword($length=6)
 	{
 		return substr(str_shuffle(PASSWORD_CHARS),rand(0,strlen(PASSWORD_CHARS)-$length),$length);
-	}
-
-	/**
-	 * Метод проверяет является ли пользователь администратором сайта
-	 * @depricated 27.01.11
-	 */
-	function is_admin($id)
-	{
-		if ($this->is_login)
-		{
-			$arGroups=$this->GetGroups();
-			return in_array(1,$arGroups);
-		}
-		else
-		{
-			return false;
-		}
 	}
 
 	/**
@@ -652,6 +622,230 @@ class CUser extends CBaseUser implements User
 		if (!$KS_EVENTS_HANDLER->Execute('main', 'onDelete', $onDeleteParams))					// Вызов обработчика при удалении
 			throw new CError('MAIN_HANDLER_ERROR',0,$KS_EVENTS_HANDLER->GetLastEvent());
 		return $res;
+	}
+
+	var $groups_list;
+	protected $userdata;
+	/**
+	 * Массив со списком групп к которым принадлежит данный пользователь.
+	 * @var array $arInGroups
+	 */
+	protected $arInGroups;
+	protected $arAccessLevels; 		/**<Хранит список уровней доступа к которым был сделан запрос*/
+
+	/**
+	 * Метод возвращает массив упорядоченных по номеру групп, к которым принадлежит текущий пользователь
+	 *
+	 * @version 1.1
+	 * @since 11.05.2009
+	 *
+	 * Добавлено получение групп для незалогиненного пользователя
+	 *
+	 * @param int $user_id id незалогиненного пользователя
+	 * @return array
+	 */
+	function GetGroups($user_id = 0)
+	{
+		global $ks_db;
+
+		/* Если неоткуда взять id, тогда выходим */
+		if ($this->ID()==0 && $user_id == 0)
+			return array(0);
+
+		/* Если указан id пользователя, то работаем по нему */
+		$possible_user_id = intval($user_id);
+		if ($possible_user_id > 0)
+			$id = $possible_user_id;
+		else
+			$id = $this->ID();
+
+		if ($this->arInGroups == false)
+		{
+			$time = time();
+			$arFilter=array(
+				'user_id'=>$id,
+				'AND'=>array(
+					array(
+						'OR'=>array(
+							array('>=date_end'=>$time),
+							array('date_end'=>0)
+						),
+					),
+					array(
+						'OR'=>array(
+							array('<=date_start'=>$time),
+							array('date_start'=>0)
+						),
+					),
+				)
+			);
+			$arResult = array(0);
+			if($arList=$this->obLinks->GetList(array('group_id'=>'asc'),$arFilter))
+			{
+				foreach($arList as $arRow)
+				{
+					$arResult[] = $arRow['group_id'];
+				}
+			}
+			$this->arInGroups = $arResult;
+		}
+		else
+			$arResult=$this->arInGroups;
+		return $arResult;
+	}
+
+	function ID()
+	{
+		return $this->userdata['id'];
+	}
+
+	function Email()
+	{
+		return $this->userdata['email'];
+	}
+
+	/**
+	 * Метод, возвращает полный список групп к которым привязан указанный пользователь.
+	 * Обычно используется в системе администрирования.
+	 * @param id - номер пользователя
+	 */
+	function GetAllGroups($id)
+	{
+		$arResult=false;
+		if($arList=$this->obLinks->GetList(array('group_id'=>'asc'),array('user_id'=>intval($id))))
+		{
+			$arResult=array();
+			foreach($arList as $arRow)
+			{
+				$arResult[$arRow['group_id']]=$arRow;
+			}
+		}
+		return $arResult;
+	}
+
+	/**
+	 * Возвращает уровень прав доступа к определенному модулю.
+	 * @param $module - текстовый идентификатор модуля.
+	 */
+
+	function GetLevel($module,$iUserID=false)
+	{
+		$obAccess=new CModulesAccess();
+		$arGroups=$this->GetGroups($iUserID);
+		$level=10;
+		if(array_key_exists($module,$this->arAccessLevels))
+		{
+			$res=$this->arAccessLevels[$module];
+		}
+		elseif($res=$obAccess->GetList(array('group_id'=>'asc'),array('module'=>$module)))
+		{
+			$this->arAccessLevels[$module]=$res;
+		}
+		else
+		{
+			return $level;
+		}
+		foreach($res as $key=>$value)
+		{
+			//Проверяем принадлежит ли пользователь найденой группе, если да то смотрим больше ли текущий
+			//уровень чем текущий, если больше - считаем его текущим.
+			if((in_array($value['group_id'],$arGroups))&&($level>$value['level']))
+			{
+				$level=$value['level'];
+			}
+		}
+		return $level;
+	}
+
+	/**
+	 * Метод размещает пользователя в указанных группах, при этом стираются все привязки
+	 * пользователя к другим группам
+	 * @return integer количество групп в которые был внесён пользователь
+	 */
+	function SetAllUserGroups($iUserID,$arGroups)
+	{
+		if(!is_array($arGroups)) throw new CDataError('SYSTEM_ARRAY_REQUIRED');
+		if($arUser=$this->GetRecord(array('id'=>$iUserID)))
+		{
+			if(!is_array($arGroups)&&is_numeric($arGroups)) $arGroups=array($arGroups);
+			if(!is_array($arGroups)) return false;
+			$this->obLinks->DeleteItems(array('user_id'=>$arUser['id']));
+			$iDone=0;
+			foreach($arGroups as $group)
+			{
+				if(is_numeric($group))
+				{
+					$arFields=array(
+						'user_id'=>$arUser['id'],
+						'group_id'=>$group,
+						'date_start'=>0,
+						'date_end'=>0,
+					);
+					if($this->obLinks->Save('',$arFields))
+						$iDone++;
+					else
+						throw new CError('SYSTEM_USER_LINK_SAVE_ERROR');
+				}
+				elseif(is_array($group))
+				{
+					$arFields=array(
+						'user_id'=>$arUser['id'],
+						'group_id'=>$group['id'],
+						'date_start'=>intval($group['date_from']),
+						'date_end'=>intval($group['date_to']),
+					);
+					if($this->obLinks->Save('',$arFields))
+						$iDone++;
+					else
+						throw new CError('SYSTEM_USER_LINK_SAVE_ERROR');
+				}
+			}
+			return $iDone;
+		}
+		return false;
+	}
+
+	/**
+	 * Метод добавляет указанного пользователя в указанную группу
+	 * @param $uid integer номер пользователя
+	 * @param $gid integer номер группы пользователя
+	 */
+	function SetUserGroup($uid,$gid,$from=false,$to=false)
+	{
+		if($arRecord=$this->obLinks->GetRecord(array('user_id'=>$uid,'group_id'=>$gid)))
+		{
+			if($from!=false || $to!=false)
+			{
+				$arUpdate=array();
+				if($from>0) $arUpdate['date_start']=intval($from);
+				if($to>0) $arUpdate['date_end']=intval($from);
+				$this->obLinks->Update($arRecord['id'],$arUpdate);
+			}
+		}
+		else
+		{
+			$arFields=array(
+				'user_id'=>intval($uid),
+				'group_id'=>intval($gid),
+				'date_start'=>time(),
+			);
+			if($from>0) $arFields['date_start']=intval($from);
+			if($to>0) $arFields['date_end']=intval($to);
+			$this->obLinks->Save('',$arFields);
+		}
+	}
+
+	/**
+	 * Метод убирает указанного пользователя из указанной группы
+	 * @param $uid integer номер пользователя
+	 * @param $gid integer номер группы пользователя
+	 */
+	function UnsetUserGroup($uid,$gid)
+	{
+		if($arRecord=$this->obLinks->GetRecord(array('user_id'=>$uid,'group_id'=>$gid)))
+		{
+			$this->obLinks->Delete($arRecord['id']);
+		}
 	}
 }
 

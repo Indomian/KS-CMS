@@ -129,4 +129,3 @@ if (!defined('KS_MAIN_INIT'))
 	$KS_EVENTS_HANDLER->Execute('main', 'onInit', $initParams);
 	define("KS_MAIN_INIT", 1);
 }
-?>

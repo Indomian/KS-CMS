@@ -13,7 +13,7 @@ Original Code by BlaDe39 (c) 2008
 
 require_once MODULES_DIR.'/main/libs/class.CUserGroup.php';
 require_once MODULES_DIR.'/main/libs/class.CUGModules.php';
-require_once MODULES_DIR.'/main/libs/class.CAccess.php';
+require_once MODULES_DIR.'/main/libs/class.CModulesAccess.php';
 
 global $KS_URL;
 

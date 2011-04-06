@@ -148,7 +148,7 @@ class CModuleHookUp extends CModuleManagment
 	 */
 	function InitModule($module_name)
 	{
-		global $ks_db;
+		global $ks_db,$smarty;
 		$arModule=array('active'=>'0');
 		//Смотрим какой первый параметр, если строка - ищем такой модуль
 		if(is_string($module_name))
@@ -190,10 +190,11 @@ class CModuleHookUp extends CModuleManagment
    			{
    				include_once MODULES_DIR.'/'.$arModule['directory'].'/init.inc.php';
    			}
-   			if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/main.init.php'))
+    			if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/main.init.php'))
    			{
    				include_once MODULES_DIR.'/'.$arModule['directory'].'/main.init.php';
    			}
+   			$smarty->plugins_dir[] = MODULES_DIR.'/'.$module_name.'/widgets/';
    			$this->arModules[$module_name]=$arModule;
 			return $this->arModules;
 		}

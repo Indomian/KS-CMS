@@ -24,67 +24,45 @@ if($access_level==10) throw new CAccessError('SYSTEM_NOT_ACCESS_MODULE');
 
 $smarty->plugins_dir[] = MODULES_DIR.'/'.$module.'/widgets/';
 
-if($module_parameters['is_widget']==1)
+try
 {
-	if(file_exists(MODULES_DIR.'/'.$module.'/widgets/function.'.$module_parameters['action'].'.php'))
+	/**
+		* Работаем как модуль, значит надо провести полную проверку переданного пути
+		* на правильность и на права доступа, если что-то не так, лучше отдать ошибку.
+		*/
+	$root_path=$this->GetSitePath($module);
+	if($root_path!='/')
 	{
-		include_once(MODULES_DIR.'/'.$module.'/widgets/function.'.$module_parameters['action'].'.php');
-		$res=call_user_func('smarty_function_'.$module_parameters['action'],$module_parameters,$smarty);
+		if($this->IsActive('navigation'))
+			CNNavChain::get_instance()->Add($this->GetTitle($module),$root_path);
+		$sUrl='/'.$root_path.'';
+		$iBase=2;
+		if(count($KS_IND_matches[1])>3) throw new CError('SYSTEM_FILE_NOT_FOUND');
 	}
 	else
 	{
-		$res=new CError('MAIN_WIDGET_NOT_REGISTERED');
+		$sUrl='';
+		$iBase=1;
+		if(count($KS_IND_matches[1])>1) throw new CError('SYSTEM_FILE_NOT_FOUND');
 	}
-	$output['main_content']=$res;
-	return $output['main_content'];
-}
-else
-{
-	try
-	{
-		/**
-		 * Работаем как модуль, значит надо провести полную проверку переданного пути
-		 * на правильность и на права доступа, если что-то не так, лучше отдать ошибку.
-		 */
-		$root_path=$this->GetSitePath($module);
-		if($root_path!='/')
-		{
-			if($this->IsActive('navigation'))
-				CNNavChain::get_instance()->Add($this->GetTitle($module),$root_path);
-			$sUrl='/'.$root_path.'';
-			$iBase=2;
-			if(count($KS_IND_matches[1])>3) throw new CError('SYSTEM_FILE_NOT_FOUND');
-		}
-		else
-		{
-			$sUrl='';
-			$iBase=1;
-			if(count($KS_IND_matches[1])>1) throw new CError('SYSTEM_FILE_NOT_FOUND');
-		}
 
-		if(is_numeric($KS_IND_matches[3]))
-		{
-			$smarty->assign('element_id',intval($KS_IND_matches[3]));
-			$res=$this->RenderTemplate($smarty,'/guestbook2/gb2item',$this->GetTemplate(),$module_parameters['tpl']);
-		}
-		elseif(count($KS_IND_matches[1])>2)
-		{
-			$res=$this->RenderTemplate($smarty,'/guestbook2/gb2inner',$this->GetTemplate(),$module_parameters['tpl']);
-		}
-		else
-		{
-			$res=$this->RenderTemplate($smarty,'/guestbook2/gb2index',$this->GetTemplate(),$module_parameters['tpl']);
-		}
-		$smarty->assign('TITLE',$this->GetTitle($module));
-	}
-	catch(CAccessError $e)
+	if(is_numeric($KS_IND_matches[3]))
 	{
-		$res=$e->getMessage();
+		$smarty->assign('element_id',intval($KS_IND_matches[3]));
+		$res=$this->RenderTemplate($smarty,'/guestbook2/gb2item',$this->GetTemplate(),$module_parameters['tpl']);
 	}
-	catch(CError $e)
+	elseif(count($KS_IND_matches[1])>2)
 	{
-		throw $e;
+		$res=$this->RenderTemplate($smarty,'/guestbook2/gb2inner',$this->GetTemplate(),$module_parameters['tpl']);
 	}
+	else
+	{
+		$res=$this->RenderTemplate($smarty,'/guestbook2/gb2index',$this->GetTemplate(),$module_parameters['tpl']);
+	}
+	$smarty->assign('TITLE',$this->GetTitle($module));
+}
+catch(CAccessError $e)
+{
+	$res=$e->__toString();
 }
 $output['main_content']=$res;
-?>
