@@ -428,7 +428,7 @@ class CUser extends CUsersCommon implements User
 	 */
 	function Save($prefix = "KS_", $data = "", $mytable = "")
 	{
-		global $KS_ERROR, $KS_EVENTS_HANDLER;
+		global $KS_EVENTS_HANDLER;
 		/* Если мы не передаём данные для залогинивания непосредственно методу, то берём их из $_POST */
 		if($data == "")
 			$data = $_POST;
@@ -450,7 +450,6 @@ class CUser extends CUsersCommon implements User
 		else
 			unset($data[$prefix . 'password']);
 
-		$data[$prefix . "last_visit"] = 0;
 		$data[$prefix . "number_of_log_tries"] = 0;
 		if(!array_key_exists($prefix . "pwd_updated",$data))
 			$data[$prefix . "pwd_updated"] = 0;
@@ -460,7 +459,6 @@ class CUser extends CUsersCommon implements User
 		$this->obDB->begin();			// соединяемся с базой данных ЦМС
 		try
 		{
-
 			/* Читаем текущие настройки существующего пользователя */
 			if ($data[$prefix."id"] > 0)
 				$previous_user_row = $this->GetRecord(array("id" => $data[$prefix."id"]));
@@ -470,7 +468,6 @@ class CUser extends CUsersCommon implements User
 
 			if($_FILES[$prefix.'img']['error']==0)
 			{
-
 				//проверка размера файла аватара, если больше чем положено, выводим ошибку
 				if($this->sSize)
 				{

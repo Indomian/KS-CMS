@@ -14,16 +14,14 @@ if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 require_once MODULES_DIR.'/main/libs/class.CModuleAdmin.php';
 require_once MODULES_DIR.'/main/libs/class.CUserGroup.php';
-require_once MODULES_DIR.'/main/libs/class.CAccess.php';
+require_once MODULES_DIR.'/main/libs/class.CModulesAccess.php';
 require_once MODULES_DIR.'/main/libs/class.CConfigParser.php';
 
 class CmainAIoptions extends CModuleAdmin
 {
 	function __construct($module='main',&$smarty,&$parent)
 	{
-		global $USER;
 		parent::__construct($module,$smarty,$parent);
-		$this->obUser=$USER;
 	}
 
 	function UpdateLanguages()

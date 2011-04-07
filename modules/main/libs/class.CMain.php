@@ -763,16 +763,16 @@ class CObject extends CBaseList
 						$bJoinBegin=true;
 						unset($arResTables[$arJoin['fromTable']]);
 						unset($arResTables[$arJoin['toTable']]);
-				}
-				else
-				{
+					}
+					else
+					{
 						$arResJoin[]=' '.$arJoin['operation'].
 							' '.PREFIX.$arJoin['toTable'].' AS '.$this->arTables[$arJoin['toTable']].
 							' ON '.$arJoin['ON'];
 						unset($arResTables[$arJoin['toTable']]);
+					}
 				}
 			}
-				}
 			foreach($arResTables as $sTable=>$sCode)
 			{
 				$arRes[]=PREFIX.$sTable.' AS '.$sCode;
@@ -1119,6 +1119,11 @@ class CObject extends CBaseList
 		$sGroupBy=$this->_GenGroup($arGroupBy);
 		/*Генерируем список таблиц (FROM)*/
 		$sFrom=$this->_GenFrom();
+		//Блокировка запросов если не указан список полей при сложном запросе
+		if(!$arSelect && (count($this->arJoinTables)>0 || count($this->arTables)>1))
+		{
+			throw new CError('SYSTEM_QUERY_FIELDS_REQUIRE');
+		}
 		/*Считаем сколько элементов*/
 		$limits='';
 		if ($limit!=false)

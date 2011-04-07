@@ -234,4 +234,4 @@ class CFieldsObject extends CFilesObject
 		return $this->arUserFields;
 	}
 }
-?>
+

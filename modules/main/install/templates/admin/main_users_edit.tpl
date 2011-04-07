@@ -33,34 +33,30 @@
 						<th width="30%">{#header_field#}</th>
 						<th width="70%">{#header_value#}</th>
 					</tr>
-					<tr>
+					<tr class="is_necessary_light">
 						<td>{Title field="title"}</td>
 						<td><input type="text" name="CU_title" value="{$userdata.title|htmlspecialchars:2:"UTF-8":false}" class="form_input" style="width:80%"/></td>
 					</tr>
 					<tr>
 						<td>{Title field="new_password"}</td>
-						<td><input type="password" name="CU_password" value="" class="form_input" style="width:80%"/></td>
+						<td><input type="password" name="CU_password" value="" class="form_input" style="width:98%"/></td>
 					</tr>
 					<tr>
 						<td>{Title field="repeat_password"}</td>
-						<td><input type="password" name="CU_password_c" value="" class="form_input" style="width:80%"/></td>
+						<td><input type="password" name="CU_password_c" value="" class="form_input" style="width:98%"/></td>
 					</tr>
-					<tr>
+					<tr class="is_necessary_light">
 						<td>{Title field="email"}</td>
-						<td><input type="text" name="CU_email" value="{$userdata.email}" class="form_input"  style="width:80%"/></td>
+						<td><input type="text" name="CU_email" value="{$userdata.email}" class="form_input"  style="width:98%"/></td>
 					</tr>
 					<tr>
 						<td>{Title field="active"}</td>
-						<td><select name="CU_active" style="width:100%"  class="form_input">
-    						<option value="1" {if $userdata.active==1}SELECTED{/if}>[{#active#}]</option>
-    						<option value="0" {if $userdata.active==0}SELECTED{/if}>[{#inactive#}]</option>
-    						</select>
-						</td>
+						<td><input type="checkbox" name="CU_active" value="1" {if $userdata.active==1}checked="checked"{/if}/></td>
 					</tr>
 					<tr>
 						<td>{Title field="img"}</td>
 						<td>
-							<input type="file" name="CU_img" value="" style="width:100%"/><br/>
+							<input type="file" name="CU_img" value="" style="width:98%"/><br/>
 							{if $userdata.img!=""}<img src="/uploads/{$userdata.img}"><br/>
 							<input type="checkbox" name="CU_img_del" value="1"/> {#delete#}{/if}</td>
 						</td>
@@ -74,6 +70,12 @@
 					<tr>
 						<th colspan="4">{#select_user_groups#}</th>
 					</tr>
+					<tr>
+						<th width="0"></th>
+						<th width="30%">{#header_group_name#}</th>
+						<th width="35%">{#header_from#}</th>
+						<th width="35%">{#header_to#}</th>
+					</tr>
 					{foreach from=$groupslist item=oItem key=oKey}
 					<tr>
 						<td>
@@ -82,22 +84,17 @@
 						<td>
 							<label for="groupidcb{$oItem.id}">{$oItem.title}</label>
 						</td>
-						<td>{#from#}&nbsp;
-							<input type="text" name="CU_groups_from{$oItem.id}" id="f_date_c{$oItem.id}" readonly="readonly" {if $userdata.GROUPS[$oItem.id].date_start!=0}value="{$userdata.GROUPS[$oItem.id].date_start|date_format:"%d.%m.%Y %H:%M":""}"{else}value=""{/if}/>
-							<img src="{#images_path#}/calendar/img.gif" id="f_trigger_c{$oItem.id}" style="border: 0pt none ; cursor: pointer;" title="{#select_date#}" align="absmiddle"/>
-							<script type="text/javascript">
-							$(document).bind("InitCalendar",function(){ldelim}
-								$("#f_date_c{$oItem.id}").datetimepicker({ldelim}dateFormat:{#date_format#},timeFormat:{#time_format#},dayNames:{#days#},dayNamesMin:{#daysMin#},dayNamesShort:{#daysShort#},monthNames:{#monthes#}{rdelim});
-								$("#f_date_c1{$oItem.id}").datetimepicker({ldelim}dateFormat:{#date_format#},timeFormat:{#time_format#},dayNames:{#days#},dayNamesMin:{#daysMin#},dayNamesShort:{#daysShort#},monthNames:{#monthes#}{rdelim});
-								$("#f_trigger_c{$oItem.id}").click(function(){ldelim}$("#f_date_c{$oItem.id}").datetimepicker('show'){rdelim});
-								$("#f_trigger_c1{$oItem.id}").click(function(){ldelim}$("#f_date_c1{$oItem.id}").datetimepicker('show'){rdelim});
-							{rdelim});
-							$(document).ready(function(){ldelim}$(document).trigger("InitCalendar");{rdelim});
-							</script>
+						<td>
+							<div class="date_selector">
+								<input type="text" name="CU_groups_from{$oItem.id}" readonly="readonly" {if $userdata.GROUPS[$oItem.id].date_start!=0}value="{$userdata.GROUPS[$oItem.id].date_start|date_format:"%d.%m.%Y %H:%M":""}"{else}value=""{/if} class="date_input"/>
+								<img src="{#images_path#}/calendar/img.gif" title="{#select_date#}" class="date_button"/>
+							</div>
 						</td>
-						<td>{#till#}&nbsp;
-							<input type="text" name="CU_groups_to{$oItem.id}" id="f_date_c1{$oItem.id}" readonly="readonly" {if $userdata.GROUPS[$oItem.id].date_end!=0}value="{$userdata.GROUPS[$oItem.id].date_end|date_format:"%d.%m.%Y %H:%M":""}"{else}value=""{/if}/>
-						    <img src="{#images_path#}/calendar/img.gif" id="f_trigger_c1{$oItem.id}" style="border: 0pt none ; cursor: pointer;" title="{#select_date#}" align="absmiddle"/>
+						<td>
+							<div class="date_selector">
+								<input type="text" name="CU_groups_to{$oItem.id}" readonly="readonly" {if $userdata.GROUPS[$oItem.id].date_end!=0}value="{$userdata.GROUPS[$oItem.id].date_end|date_format:"%d.%m.%Y %H:%M":""}"{else}value=""{/if} class="date_input"/>
+								<img src="{#images_path#}/calendar/img.gif" id="f_trigger_c1{$oItem.id}" style="border: 0pt none ; cursor: pointer;" title="{#select_date#}" align="absmiddle" class="date_button"/>
+							</div>
 						</td>
 					</tr>
 					{/foreach}
@@ -108,28 +105,24 @@
 			<div class="form">
 				<table class="layout">
 					<tr>
-						<th width="30%">{#header_field#}</th>
-						<th width="70%" colspan="2">{#header_value#}</th>
+						<th width="30%">{#header_block_type#}</th>
+						<th width="35%">{#header_from#}</th>
+						<th width="35%">{#header_to#}</th>
 					</tr>
 					<tr>
 						<td>{Title field="blocked"}</td>
-						<td>{#from#}&nbsp;
-							<input type="text" name="CU_blocked_from" id="f_blocked_from" readonly="readonly" {if $userdata.blocked_from!=0}value="{$userdata.blocked_from|date_format:"%d.%m.%Y %H:%M":""}"{else}value=""{/if}/>
-							<img src="{#images_path#}/calendar/img.gif" id="t_blocked_from" style="border: 0pt none ; cursor: pointer;" title="{#select_date#}" align="absmiddle"/>
-							<script type="text/javascript">
-							$(document).bind("InitCalendar",function(){ldelim}
-								$("#f_blocked_from").datetimepicker({ldelim}dateFormat:{#date_format#},timeFormat:{#time_format#},dayNames:{#days#},dayNamesMin:{#daysMin#},dayNamesShort:{#daysShort#},monthNames:{#monthes#}{rdelim});
-								$("#f_blocked_till").datetimepicker({ldelim}dateFormat:{#date_format#},timeFormat:{#time_format#},dayNames:{#days#},dayNamesMin:{#daysMin#},dayNamesShort:{#daysShort#},monthNames:{#monthes#}{rdelim});
-								$("#t_blocked_from").click(function(){ldelim}$("#f_blocked_from").datetimepicker('show'){rdelim});
-								$("#t_blocked_till").click(function(){ldelim}$("#f_blocked_till").datetimepicker('show'){rdelim});
-							{rdelim});
-							$(document).ready(function(){ldelim}$(document).trigger("InitCalendar");{rdelim});
-							</script>
+						<td>
+							<div class="date_selector">
+								<input type="text" name="CU_blocked_from" readonly="readonly" {if $userdata.blocked_from!=0}value="{$userdata.blocked_from|date_format:"%d.%m.%Y %H:%M":""}"{else}value=""{/if} class="date_input"/>
+								<img src="{#images_path#}/calendar/img.gif" title="{#select_date#}" class="date_button"/>
+							</div>
 						</td>
-						<td>{#till#}&nbsp;
-							<input type="text" name="CU_blocked_till" id="f_blocked_till" readonly="readonly" {if $userdata.blocked_till!=0}value="{$userdata.blocked_till|date_format:"%d.%m.%Y %H:%M":""}"{else}value=""{/if}/>
-						    <img src="{#images_path#}/calendar/img.gif" id="t_blocked_till" style="border: 0pt none ; cursor: pointer;" title="{#select_date#}" align="absmiddle"/>
-						</td></td>
+						<td>
+							<div class="date_selector">
+								<input type="text" name="CU_blocked_till" readonly="readonly" {if $userdata.blocked_till!=0}value="{$userdata.blocked_till|date_format:"%d.%m.%Y %H:%M":""}"{else}value=""{/if} class="date_input"/>
+								<img src="{#images_path#}/calendar/img.gif" title="{#select_date#}" class="date_button"/>
+							</div>
+						</td>
 					</tr>
 				</table>
 			</div>
@@ -153,77 +146,6 @@
 			</div>
 			{/strip}{/ksTab}
 		{/if}
-		{if $userdata.FORUM!=''}
-			{ksTab NAME=Форум}{strip}
-			<input type="hidden" name="ff_id" value="{$userdata.FORUM.id}"/>
-			<div class="form">
-				<table class="layout">
-					<tr class="titles">
-						<th width=30%>Поле</th>
-						<th width=70%>Значение</th>
-					</tr>
-					<tr>
-						<td>Разрешить ББ код</td>
-						<td><select name="ff_bbcode">
-							<option value="1" {if $userdata.FORUM.bbcode==1}selected="selected"{/if}>{#yes#}</option>
-							<option value="0" {if $userdata.FORUM.bbcode!=1}selected="selected"{/if}>{#no#}</option>
-						</select>
-						</td>
-					</tr>
-					<tr>
-						<td>Разрешить HTML</td>
-						<td><select name="ff_html">
-							<option value="1" {if $userdata.FORUM.html==1}selected="selected"{/if}>{#yes#}</option>
-							<option value="0" {if $userdata.FORUM.html!=1}selected="selected"{/if}>{#no#}</option>
-						</select>
-						</td>
-					</tr>
-					<tr>
-						<td>Уведомлять о новых сообщениях</td>
-						<td><select name="ff_notify">
-							<option value="1" {if $userdata.FORUM.notify==1}selected="selected"{/if}>{#yes#}</option>
-							<option value="0" {if $userdata.FORUM.notify!=1}selected="selected"{/if}>{#no#}</option>
-						</select>
-						</td>
-					</tr>
-					<tr>
-						<td>Подпись пользователя</td>
-						<td><input type="text" name="ff_signature" value="{$userdata.FORUM.signature|htmlspecialchars:2:"UTF-8":false}" style="width:100%;" class="form_input"/>
-						</td>
-					</tr>
-				</table>
-			</div>
-			{/strip}{/ksTab}
-		{/if}
-		{if $userdata.MESSAGES!=''}
-			{ksTab NAME="Личные сообщения"}{strip}
-			<input type="hidden" name="mp_id" value="{$userdata.MESSAGES.id}"/>
-			<div class="form">
-				<table class="layout">
-					<tr class="titles">
-						<th width=30%>Поле</th>
-						<th width=70%>Значение</th>
-					</tr>
-					<tr>
-						<td>Разрешить личные сообщения</td>
-						<td><select name="mp_active">
-							<option value="1" {if $userdata.MESSAGES.active==1}selected="selected"{/if}>{#yes#}</option>
-							<option value="0" {if $userdata.MESSAGES.active!=1}selected="selected"{/if}>{#no#}</option>
-						</select>
-						</td>
-					</tr>
-					<tr>
-						<td>Уведомлять о новых сообщениях</td>
-						<td><select name="mp_notify">
-							<option value="1" {if $userdata.MESSAGES.notify==1}selected="selected"{/if}>{#yes#}</option>
-							<option value="0" {if $userdata.MESSAGES.notify!=1}selected="selected"{/if}>{#no#}</option>
-						</select>
-						</td>
-					</tr>
-				</table>
-			</div>
-			{/strip}{/ksTab}
-		{/if}
 	{/ksTabs}
 	<div class="form_buttons">
     	<div>
@@ -237,3 +159,30 @@
     	</div>
    	</div>
 </form>
+
+{strip}
+<dl class="def" style="background:#FFF6C4 url('{#images_path#}/big_icons/people.gif') left 50% no-repeat;{if $smarty.cookies.showHelpBar==1}display:none;{/if}">
+	<dt>{#title_edit#}</dt>
+	<dd>{#hint#}</dd>
+</dl>
+<div class="content_arrow_{if $smarty.cookies.showHelpBar==1}down{else}up{/if}" onclick="ToggleHelpBar(this)" style="cursor:pointer;">&nbsp;</div>
+{/strip}
+
+<script type="text/javascript">
+{literal}
+$(document).bind("InitCalendar",function(){
+	$(".date_input").datetimepicker({{/literal}
+			dateFormat:{#date_format#},
+			timeFormat:{#time_format#},
+			dayNames:{#days#},
+			dayNamesMin:{#daysMin#},
+			dayNamesShort:{#daysShort#},
+			monthNames:{#monthes#}
+	{literal}});
+	$(".date_button").click(function(){
+		$(this).parent().children('.date_input').datetimepicker('show')
+	});
+});
+$(document).ready(function(){$(document).trigger("InitCalendar");});
+{/literal}
+</script>

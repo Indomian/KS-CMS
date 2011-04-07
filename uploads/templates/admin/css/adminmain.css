@@ -730,3 +730,28 @@ select.loading
 {
 	color:#ccc !important;
 }
+
+div.date_selector
+{
+	width: 200px;
+	padding: 4px;
+	font-family: tahoma;
+	font-size: 12px;
+	color: #70808D;
+	border: 1px solid #D2D2D2;
+	background: white;
+}
+
+div.date_selector input.date_input
+{
+	border: 0px none;
+	padding: 0;
+	width: 170px;
+}
+
+div.date_selector img.date_button
+{
+	float: right;
+	border: 0pt none;
+	cursor: pointer;
+}

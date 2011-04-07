@@ -69,7 +69,14 @@ try
 		if($_REQUEST['type']=='AJAX')
 		{
 			$KS_IND_dir=$_REQUEST['module'];
-			$global_template='.default';
+			if(!IsTextIdent($_REQUEST['gtpl']))
+			{
+				$global_template='.default';
+			}
+			else
+			{
+				$global_template=$_REQUEST['gtpl'];
+			}
 			$smarty->assign("glb_tpl", $global_template);
 			if($KS_MODULES->IsActive($KS_IND_dir))
 			{

@@ -111,6 +111,14 @@ class CModuleHookUp extends CModuleManagment
 	}
 
 	/**
+	 * Метод возвращает список разделов пути
+	 */
+	function GetPathDirs($from=1)
+	{
+		return array_slice($this->arRequestData['dirs'],$from);
+	}
+
+	/**
 	 * This implements the 'singleton' design pattern
    	 *
      * @return object CModuleHookUp The one and only instance
