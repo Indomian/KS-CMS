@@ -29,7 +29,14 @@ class CFilterFrame extends CFrame
 	{
 		global $smarty;
 		$this->arFields=array();
-		$method=$_REQUEST['fm'];
+		if(array_key_exists('fm',$_REQUEST))
+		{
+			$method=$_REQUEST['fm'];
+		}
+		else
+		{
+			$method='';
+		}
 		if(strtolower($method)=='post')
 		{
 			//Ацкий чит из-за точки в пхп
@@ -60,8 +67,7 @@ class CFilterFrame extends CFrame
 			}
 		}
 		$arMatches=array();
-		//pre_print($arFrom);
-		if(($arFrom['filter']==1)&&(!array_key_exists('fundo',$arFrom)))
+		if(array_key_exists('filter',$arFrom) && ($arFrom['filter']==1)&&(!array_key_exists('fundo',$arFrom)))
 		{
 			foreach($arFrom as $key=>$value)
 			{
@@ -80,16 +86,32 @@ class CFilterFrame extends CFrame
 	 * */
 	function AddField($arField)
 	{
+		if(is_string($arField))
+		{
+			$arField=array(
+				'FIELD'=>$arField,
+				'METHOD'=>'=',
+			);
+		}
 		$arNewField=array(
 			'FIELD'=>$arField['FIELD'],
-			'VALUE'=>$arField['VALUE'],
-			'VALUES'=>$arField['VALUES'],
-			'METHOD'=>$arField['METHOD'],
-			'TYPE'=>$arField['TYPE'],
-			'DEFAULT'=>$arField['DEFAULT'],
+			'VALUE'=>'',
+			'VALUES'=>array(),
+			'METHOD'=>'=',
+			'TYPE'=>'STRING',
+			'DEFAULT'=>'',
 		);
-		if($arNewField['METHOD']=='') $arNewField['METHOD']='='; else $arNewField['METHOD']=$arField['METHOD'];
-		if($arNewField['TYPE']=='') $arNewField['TYPE']='STRING'; else $arNewField['TYPE']=$arField['TYPE'];
+		if(array_key_exists('VALUE',$arField))
+			$arNewField['VALUE']=$arField['VALUE'];
+		if(array_key_exists('VALUES',$arField))
+			$arNewField['VALUES']=$arField['VALUES'];
+		if(array_key_exists('METHOD',$arField))
+			$arNewField['METHOD']=$arField['METHOD'];
+		if(array_key_exists('TYPE',$arField))
+			$arNewField['TYPE']=$arField['TYPE'];
+		if(array_key_exists('DEFAULT',$arField))
+			$arNewField['DEFAULT']=$arField['DEFAULT'];
+
 		if(array_key_exists($arField['FIELD'],$this->arFields))
 		{
 			$this->arFields[$arField['FIELD']]['VALUES']=$arNewField['VALUES'];
@@ -118,7 +140,14 @@ class CFilterFrame extends CFrame
 		{
 			if ($arItem['TYPE']=='DATE') $smarty->assign('addCalendar',1);
 		}
-		$smarty->assign('hideFilter',intval($_COOKIE['showFilter']));
+		if(array_key_exists('showFilter',$_COOKIE))
+		{
+			$smarty->assign('hideFilter',intval($_COOKIE['showFilter']));
+		}
+		else
+		{
+			$smarty->assign('hideFilter',1);
+		}
 		$smarty->assign($sName,$this->arFields);
 	}
 

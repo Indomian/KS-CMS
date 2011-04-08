@@ -1,4 +1,6 @@
 <?php
+/*Обязательно вставляем во все файлы для защиты от взлома*/
+if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 include_once MODULES_DIR.'/main/libs/class.CLanguage.php';
 /**
@@ -15,7 +17,10 @@ class CLanguageSmarty extends CLanguage
 		$this->sFilename=$filename;
 	}
 
-	function LoadSection($section)
+	/**
+	 * Метод подгружает указанную секцию в память
+	 */
+	function LoadSection($section='')
 	{
 		$this->obSmarty->config_load($this->sFilename,$section);
 	}

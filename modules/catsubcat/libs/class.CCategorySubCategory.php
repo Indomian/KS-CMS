@@ -183,11 +183,11 @@ class CCategorySubCategory extends CRestorable
 	 * @param $id integer - номер записи для обновления
 	 * @param $arFields array - массив со списком полей и их новых значений
 	 */
-	function Update($id,$arFields)
+	function Update($id,$arFields,$bFiltered=false)
 	{
 		if(in_array('date_edit',$this->arFields) && !array_key_exists('date_edit',$arFields))
 			$arFields['date_edit']=time();
-		return parent::Update($id,$arFields);
+		return parent::Update($id,$arFields,$bFiltered);
 	}
 }
-?>
+

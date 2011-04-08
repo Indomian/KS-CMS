@@ -77,11 +77,11 @@ class Cguestbook2AIcategories extends CModuleAdmin
 			}
 			if(!array_key_exists('update',$_REQUEST))
 			{
-				CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl(Array('action','id')));
+				CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl(Array('action','id')));
 			}
 			else
 			{
-				CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl(array('action','id')).'&action=edit&id='.$id);
+				CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl(array('action','id')).'&action=edit&id='.$id);
 			}
 		}
 		catch(CDataError $e)
@@ -177,7 +177,7 @@ class Cguestbook2AIcategories extends CModuleAdmin
 			case "delete":
 				$this->obGB2->DeleteCategory($id);
 				$this->obModules->AddNotify('GB2_CATEGORY_NOTIFY_DELETE_OK','',NOTIFY_MESSAGE);
-				CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl(Array('action','id')));
+				CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl(Array('action','id')));
 			default:
 				$page=$this->Table();
 		}

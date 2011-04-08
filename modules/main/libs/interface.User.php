@@ -19,7 +19,7 @@ interface User
 	function UnsetUserGroup($uid,$gid);
 	function GenPassword($length=6);
 	function IsAdmin($id=false);
-	function Save($prefix="KS_", $data="", $mytable="");
+	function Save($prefix="KS_", $data="");
 	function GetUserVar($var);
 	function SetUserVar($var, $value);
 	function WriteUserVars();

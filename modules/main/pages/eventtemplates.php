@@ -60,12 +60,12 @@ class CmainAIeventtemplates extends CModuleAdmin
 					case 'delete':
 					$this->obTemplates->Delete($_GET['id']);
 					$this->obModules->AddNotify('MAIN_EVENTS_DELETE_DONE','',NOTIFY_MESSAGE);
-					CUrlParser::Redirect('/admin.php?module=main&modpage=eventtemplates');
+					CUrlParser::get_instance()->Redirect('/admin.php?module=main&modpage=eventtemplates');
 				break;
 				case 'save':
 					$this->obTemplates->SaveTemplate();
 					$this->obModules->AddNotify('MAIN_EVENTS_SAVE_DONE','',NOTIFY_MESSAGE);
-					CUrlParser::Redirect('/admin.php?module=main&modpage=eventtemplates');
+					CUrlParser::get_instance()->Redirect('/admin.php?module=main&modpage=eventtemplates');
 				break;
 				default:
 					$page=$this->Table();

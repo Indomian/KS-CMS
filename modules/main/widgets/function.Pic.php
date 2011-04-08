@@ -23,6 +23,12 @@ function smarty_function_Pic($params, &$subsmarty)
 	if($params['height']!='') $sSizeFile.=intval($params['height']);
 	$cacheDir=ROOT_DIR.'/uploads/PicCache'.$params['src'].'/';
 	$cacheFile='/uploads/PicCache'.$params['src'].'/'.$sSizeFile.'.jpeg';
+	$attributes=array(
+		'src',
+		'mode',
+		'default',
+		'lifetime',
+	);
 	/**
 	 * @todo Убрать эту хрень к чертям собачьим
 	 */
@@ -39,8 +45,10 @@ function smarty_function_Pic($params, &$subsmarty)
 			$res='<img src="'.$cacheFile.'"';
 			foreach($params as $key=>$value)
 			{
-				if($key!='mode'&&$key!='default'&&$key!='lifetime')
+				if(!in_array($key,$attributes))
+				{
 					$res.=' '.$key.'="'.$value.'"';
+				}
 			}
 			$res.='/>';
 			return $res;
@@ -84,11 +92,11 @@ function smarty_function_Pic($params, &$subsmarty)
 				$res='<img src="'.$cacheFile.'"';
 				foreach($params as $key=>$value)
 				{
-						if(in_array($key,$attributes))
-						{
+					if(!in_array($key,$attributes))
+					{
 						$res.=' '.$key.'="'.$value.'"';
-				}
 					}
+				}
 				$res.='/>';
 				return $res;
 			}
@@ -97,10 +105,10 @@ function smarty_function_Pic($params, &$subsmarty)
 				$res='<img src="'.$params['default'].'"';
 				foreach($params as $key=>$value)
 				{
-					if(in_array($key,$attributes))
+					if(!in_array($key,$attributes))
 					{
 						$res.=' '.$key.'="'.$value.'"';
-				}
+					}
 				}
 				$res.='/>';
 				return $res;

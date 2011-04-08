@@ -90,7 +90,7 @@ class Cguestbook2AIoptions extends CModuleAdmin
 					}
 				}
 				$this->obModules->AddNotify('GB2_OPTIONS_SAVED','',NOTIFY_MESSAGE);
-				CUrlParser::Redirect("admin.php?module=$module_name&page=options");
+				CUrlParser::get_instance()->Redirect("admin.php?module=$module_name&page=options");
 			}
 			catch (CError $e)
 			{

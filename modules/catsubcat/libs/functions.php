@@ -11,11 +11,6 @@
 if( !defined('KS_ENGINE') ){ die("Hacking attempt!");}
 
 /**
- * Количество цифр при замене текстового идентификатора
- */
-define('MAX_TEXT_IDENT_NUMBERS',7);
-
-/**
  * Подключаем требуемые модули
  */
 require_once MODULES_DIR.'/catsubcat/libs/class.CParentsResult.php';

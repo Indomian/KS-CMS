@@ -217,7 +217,7 @@ class CcatsubcatAIbasket extends CModuleAdmin
 			{
 				case "restore":
 					$this->obEditable->RestoreItems(array('id'=>$_GET['CSC_id']));
-					CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl(Array('ACTION','CSC_id')));
+					CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl(Array('ACTION','CSC_id')));
 				break;
 				case "delete":
 					if($iUserLevel>0) throw new CAccessError("CATSUBCAT_BASKET_NOT_DELETE_RECORD");
@@ -231,7 +231,7 @@ class CcatsubcatAIbasket extends CModuleAdmin
 					}
 					$this->obEditable->DeleteItems(array('id'=>$iId,'>deleted'=>'-1'));
 					$KS_URL->Set('CSC_catid',$arData['parent_id']);
-					CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl(Array('ACTION')));
+					CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl(Array('ACTION')));
 				break;
 				default:
 					$page=$this->Table();

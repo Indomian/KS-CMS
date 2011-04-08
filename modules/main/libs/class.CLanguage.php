@@ -1,10 +1,12 @@
 <?php
+/*Обязательно вставляем во все файлы для защиты от взлома*/
+if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 /**
  * Класс для поддержки многоязыковых интерфейсов
  */
 
-class CLanguage
+abstract class CLanguage
 {
 	/**
 	 * Метод возвращает значение текста по его коду
@@ -17,6 +19,5 @@ class CLanguage
 	/**
 	 * Метод выполняет загрузку очередной части перевода в область переводов
 	 */
-	function LoadSection($section)
-	{}
+	abstract function LoadSection($section='');
 }

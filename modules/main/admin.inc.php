@@ -99,7 +99,7 @@ if (!defined("KS_MAIN_INIT"))
 
 	/* Подключение класса обработки url */
 	require_once "libs/class.CUrlParser.php";
-	$KS_URL = new CUrlParser();
+	$KS_URL = CUrlParser::get_instance();
 
 	/* Дополнительные библиотеки */
 	require_once "libs/class.CTemplates.php";
@@ -124,7 +124,7 @@ if (!defined("KS_MAIN_INIT"))
 	$USER = new CUser();
 	if($_SERVER['REQUEST_METHOD']=='POST')
 	{
-		if($_POST['CU_ACTION']=='login')
+		if(array_key_exists('CU_ACTION',$_POST) && $_POST['CU_ACTION']=='login')
 		{
 			$USER->login();
 		}
@@ -192,4 +192,3 @@ else
 	}
 	//$page=$start_adminpage;
 }
-?>

@@ -32,11 +32,11 @@ class CFieldsObject extends CFilesObject
 		{
 			$this->sFieldsModule=$sModule;
 			//Подключаем работу с пользовательскими полями.
-			if (class_exists(CFields))
+			if(class_exists('CFields'))
 			{
 				$this->bFields=true;
 				$obFields=new CFields();
-				$this->arUserFields=$obFields->GetFields($this->sFieldsModule,$this->sTable);
+				$this->arUserFields=$obFields->GetModuleFields($this->sFieldsModule,$this->sTable);
 				foreach($this->arUserFields as $item)
 				{
 					$this->arFields[]='ext_'.$item['title'];
@@ -78,15 +78,14 @@ class CFieldsObject extends CFilesObject
 		return $sResult;
 	}
 
-	function Save($prefix='KS_',$data='',$my_table="")
+	function Save($prefix='KS_',$data='')
 	{
 		global $ks_db,$KS_EVENTS_HANDLER, $KS_MODULES;
 		try
 		{
 			$ks_db->begin();
-			$table=$my_table;
 			// 	Определяем таблицу с которой будем работать
-			if ($my_table=="") $table=$this->sTable;
+			$table=$this->sTable;
 			// Определяем данные с которыми будем работать
 			if ($data=='')
 				$input=$_REQUEST;
@@ -227,7 +226,7 @@ class CFieldsObject extends CFilesObject
 			{
 				$this->bFields=true;
 				$obFields=new CFields();
-				$this->arUserFields=$obFields->GetFields($this->sFieldsModule,$this->sTable);
+				$this->arUserFields=$obFields->GetModuleFields($this->sFieldsModule,$this->sTable);
 				if(!is_array($this->arUserFields)) $this->arUserFields=array();
 			}
 		}

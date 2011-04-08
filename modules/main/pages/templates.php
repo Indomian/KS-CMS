@@ -41,11 +41,11 @@ try
 				$sResult=$KS_TEMPLATES->SaveTemplate($sName,$_POST['scheme']);
 				if(!array_key_exists('update',$_REQUEST))
 				{
-	    			CUrlParser::Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','id')));
+	    			CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','id')));
 	    		}
 	    		else
 	    		{
-		    		CUrlParser::Redirect("/admin.php?".$KS_URL->GetUrl('ACTION','id').'&ACTION=edit&id='.$sName);
+		    		CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl('ACTION','id').'&ACTION=edit&id='.$sName);
 				}
 			}
 			catch(CError $e)
@@ -267,7 +267,7 @@ try
 		    			$KS_URL->Set('ACTION','editsub');
 		    			$KS_URL->Set('id',$sName);
 		    			$KS_URL->Set('template',$_POST['s_module'].'/'.$_POST['file']);
-		    			CUrlParser::Redirect("/admin.php?".$KS_URL->GetUrl());
+		    			CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl());
 			    	}
 				}
 				else
@@ -333,7 +333,7 @@ try
 		try
 		{
 			$KS_TEMPLATES->DeleteSub($sName,$_GET['template']);
-			CUrlParser::Redirect("/admin.php?module=main&modpage=templates&ACTION=edit&id=".$sName);
+			CUrlParser::get_instance()->Redirect("/admin.php?module=main&modpage=templates&ACTION=edit&id=".$sName);
 		}
 		catch(CError $e)
 		{

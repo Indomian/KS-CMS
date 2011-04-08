@@ -35,7 +35,10 @@ $arTables = array(
 $userLevel=$USER->GetLevel('catsubcat');
 /* Специальный класс с функциями дерева */
 $obCategory=$arTables['category'];
-
+if(!array_key_exists('parent_id',$arRow))
+{
+	$arRow['parent_id']=0;
+}
 /* Получаем список элементов */
 $arResult = GetAllList(array("orderation" => "asc"), array("parent_id" => $arRow["parent_id"]), array(0, 1000), $arTables);
 

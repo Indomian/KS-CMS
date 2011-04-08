@@ -1,7 +1,7 @@
 <?php
 /**
  * Файл отвечает за генерацию древовидной структуры лайт-версии сайта
- * 
+ *
  * @filesource main.php
  * @author blade39 <blade39@kolosstudio.ru>, north-e <pushkov@kolosstudio.ru>
  * @since 07.04.2009
@@ -14,14 +14,14 @@ if (!defined("KS_ENGINE"))
 	die("Hacking attempt!");
 
 /* Отображение вложенных элементов */
-if ($_GET["mode"] == "ajax" && $_GET["q"] != "")
+if(array_key_exists('mode',$_GET) && $_GET["mode"] == "ajax" && array_key_exists('q',$_GET) && $_GET["q"] != "")
 {
 	/* Получаем строку запроса ajax */
 	$sReq = base64_decode($_GET["q"]);
-	
+
 	/* Массив запроса */
 	$arParams = explode("|", $sReq);
-	
+
 	/* Формуруем массив переменных, переданных через запрос */
 	$arRow = array();
 	foreach($arParams as $item)
@@ -29,14 +29,13 @@ if ($_GET["mode"] == "ajax" && $_GET["q"] != "")
 		$arRos = explode("=", $item);
 		$arRow[$arRos[0]] = $arRos[1];
 	}
-	
+
 	if($arRow["module"] == $_GET["m"])
 	{
 		/* Читаем запись о модуле из базы */
 		if($arModule = $KS_MODULES->GetRecord(array("directory" => $arRow["module"])))
 		{
 			$arRow = array_merge($arRow, $arModule);
-			
 			/* Получаем древовидную структуру модуля */
 			$arTree = array();
 			$module_tree_file = MODULES_DIR . "/" . $arRow["directory"] . "/.tree.php";
@@ -44,17 +43,13 @@ if ($_GET["mode"] == "ajax" && $_GET["q"] != "")
 			{
 				/* Подключение файла, формирующего массив дерева модуля */
 				include $module_tree_file;
-				
 				/* Список элементов */
 				$arTree["list"] = $arMyTree;
-				
 				/* Опции */
 				$arTree["ui"] = $modTreeSettings;
-				
 				/* Добавляем случайный id для каждого из элементов */
 				foreach($arTree["list"] as $list_item_key => $list_item)
 					$arTree["list"][$list_item_key]["liid"] = rand();
-				
 				$smarty->assign("tree", $arTree);
 				echo $smarty->fetch("admin/main_tree_ajax.tpl");
 			}
@@ -81,7 +76,7 @@ if ($arModules)
 	{
 		/* Имя файла, формирующего дерево для текущего модуля */
 		$module_tree_file = MODULES_DIR . "/" . $arRow["directory"] . "/.tree.php";
-		
+
 		if ($arRow["URL_ident"] == "default")
 		{
 			/* Элементы модуля по умолчанию выводим в корне */
@@ -98,7 +93,7 @@ if ($arModules)
 			if (file_exists($module_tree_file))
 			{
 				include $module_tree_file;
-				
+
 				$arModRow = array();
 				$arModRow["title"] = $arRow["name"];
 				$arModRow["path"] = $arRow["URL_ident"];
@@ -123,10 +118,8 @@ foreach ($arTree["list"] as $list_item_key => $list_item)
 $smarty->assign("FIRST", "1");
 $smarty->assign("tree", $arTree);
 
-if ($_GET["mode"] == "ajax" && $_GET["q"] == "")
+if (array_key_exists('mode',$_GET) && $_GET["mode"] == "ajax" && array_key_exists('q',$_GET) && $_GET["q"] == "")
 {
 	echo $smarty->fetch("admin/main_tree_ajax.tpl");
 	die();
 }
-
-?>

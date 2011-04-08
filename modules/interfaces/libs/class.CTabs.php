@@ -27,7 +27,7 @@ class CTabs extends CInterface
 		$this->jsIncluded=0;
 	}
 
-	function _smarty_add_roll($params,$content,&$smarty,&$repeat)
+	function _smarty_add_roll($params,$content,&$smarty,$repeat)
 	{
 		if($content)
 		{
@@ -35,7 +35,7 @@ class CTabs extends CInterface
 		}
 	}
 
-	function _smarty_begin_tabs($params,$content, &$smarty, &$repeat)
+	function _smarty_begin_tabs($params,$content, &$smarty, $repeat)
 	{
 		$tabsname=$params['NAME'].'_'.$this->iTimeStart;
 		if($tabsname!=$this->tabs['NAME'])
@@ -155,7 +155,7 @@ class CTabs extends CInterface
 		}
 	}
 
-	function _smarty_add_tab($params,$content, &$smarty, &$repeat)
+	function _smarty_add_tab($params,$content, &$smarty, $repeat)
 	{
 		if ($content)
 		{

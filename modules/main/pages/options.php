@@ -64,7 +64,7 @@ class CmainAIoptions extends CModuleAdmin
 		$obConfig->Set('update_db',1);
 		$obConfig->WriteConfig();
 		$this->obModules->AddNotify('MAIN_OPTIONS_TABLES_UPDATED','',NOTIFY_MESSAGE);
-		CUrlParser::Redirect('/admin.php?module=main&modpage=options');
+		CUrlParser::get_instance()->Redirect('/admin.php?module=main&modpage=options');
 	}
 
 	function Run()
@@ -77,10 +77,10 @@ class CmainAIoptions extends CModuleAdmin
 		$USERGROUP=new CUserGroup;
 		$arAccess['groups']=$USERGROUP->GetList(array('title'=>'asc'));
 		//Получаем список доступов для модуля
-		$arAccess['module']=$this->obModules->GetAccessArray($module_name);
+		$arAccess['module']=$this->obModules->GetAccessArray('main');
 		$obAccess=new CModulesAccess();
-		$arAccess['levels']=$obAccess->GetList(array('id'=>'asc'),array('module'=>$module_name));
-		unset($arAccess['levels'][$module_name]);
+		$arAccess['levels']=$obAccess->GetList(array('id'=>'asc'),array('module'=>'main'));
+		unset($arAccess['levels']['main']);
 		$arRes=array();
 		foreach($arAccess['levels'] as $key=>$item)
 		{
@@ -182,14 +182,14 @@ class CmainAIoptions extends CModuleAdmin
 					foreach($_POST['sc_groupLevel'] as $key=>$value)
 					{
 						//echo min($value);
-						$obAccess->Set($key,$module_name,min($value));
+						$obAccess->Set($key,'main',min($value));
 					}
 				}
 				/**
 				 * @todo изменить строку о сохранении настроек на константу
 				 */
 				$this->obModules->AddNotify('MAIN_OPTIONS_UPDATE_OK','',NOTIFY_MESSAGE);
-				CUrlParser::Redirect("admin.php?module=main&modpage=options");
+				CUrlParser::get_instance()->Redirect("admin.php?module=main&modpage=options");
 			}
 			catch (EXCEPTION $e)
 			{

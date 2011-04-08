@@ -175,7 +175,14 @@ class CSimpleFs extends CFileSystem
     		closedir($curdir);
   		}
   		$red = explode(",",$ret);
-  		$ret = ($num + $red[0]).",".(($fail-$offset) + $red[1]).",".($sizetotal + $red[2]).",".$fifail.$red[3];
+  		if(is_array($red) && count($red)>2)
+		{
+			$ret = ($num + $red[0]).",".(($fail-$offset) + $red[1]).",".($sizetotal + $red[2]).",".$fifail.$red[3];
+		}
+		else
+		{
+			$ret = ($num).",".(($fail-$offset)).",".($sizetotal).",".$fifail;
+		}
   		return $ret;
 	}
 
@@ -200,7 +207,7 @@ class CSimpleFs extends CFileSystem
 		}
 		else
 		{
-			return copy($from, $to);
+			return @copy($from, $to);
 		}
 	}
 

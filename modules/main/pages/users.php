@@ -282,12 +282,12 @@ class CmainAIusers extends CModuleAdmin
 					if(!array_key_exists('update',$_REQUEST))
 					{
 						$this->obModules->AddNotify('MAIN_USERS_SAVE_OK','',NOTIFY_MESSAGE);
-						CUrlParser::Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','id')));
+						CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','id')));
 					}
 					else
 					{
 						$this->obModules->AddNotify('MAIN_USERS_SAVE_OK','',NOTIFY_MESSAGE);
-						CUrlParser::Redirect("/admin.php?".$KS_URL->GetUrl(array('ACTION','id')).'&ACTION=edit&id='.$id);
+						CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(array('ACTION','id')).'&ACTION=edit&id='.$id);
 					}
 				}
 				else
@@ -345,21 +345,21 @@ class CmainAIusers extends CModuleAdmin
 						// Установка общей активности для выделенных элементов
 						$this->obUser->Update($arElements,Array('active'=>'1'));
 						$this->obModules->AddNotify('MAIN_USERS_ACTIVE_OK','',NOTIFY_MESSAGE);
-						CUrlParser::Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','id')));
+						CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','id')));
 					}
 					elseif (array_key_exists('comdea',$_POST))
 					{
 						//Снятие общей активности для элементов
 						$this->obUser->Update($arElements,Array('active'=>'0'));
 						$this->obModules->AddNotify('MAIN_USERS_DEACTIVE_OK','',NOTIFY_MESSAGE);
-						CUrlParser::Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','id')));
+						CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','id')));
 					}
 					elseif (array_key_exists('comdel',$_POST))
 					{
 						// Удаление выделенных элементов
 						$this->obUser->DeleteByIds($arElements);
 						$this->obModules->AddNotify('MAIN_USERS_DELETE_OK','',NOTIFY_MESSAGE);
-						CUrlParser::Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','id')));
+						CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','id')));
 					}
 					$page=$this->Table();
 				break;
@@ -378,7 +378,7 @@ class CmainAIusers extends CModuleAdmin
 						{
 							$this->obUser->Delete($iId);
 							$this->obModules->AddNotify('MAIN_USERS_DELETE_OK','',NOTIFY_MESSAGE);
-							CUrlParser::Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','id')));
+							CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','id')));
 						}
 						else
 						{

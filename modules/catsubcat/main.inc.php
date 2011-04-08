@@ -16,17 +16,17 @@ if (!defined("KS_ENGINE"))
 global $USER, $KS_MODULES, $KS_IND_matches, $KS_IND_dir,  $CCatsubcat, $global_template, $smarty;
 
 /* Идентификатор модуля */
-$module_name = "catsubcat";
+$module = "catsubcat";
 
 /* Проверка прав доступа пользователя */
-if ($USER->GetLevel($module_name) == 10)
+if ($USER->GetLevel($module) == 10)
 	throw new CAccessError("SYSTEM_NOT_ACCESS_MODULE");
 
 /* Установка директории с плагинами модуля для Смарти */
-$smarty->plugins_dir[] = MODULES_DIR . "/" . $module_name . "/widgets/";
+$smarty->plugins_dir[] = MODULES_DIR . "/" . $module . "/widgets/";
 
 /* Чтение конфигурации модуля */
-$module_config = $KS_MODULES->GetConfigArray($module_name);
+$module_config = $KS_MODULES->GetConfigArray($module);
 
 /* Если модуль подключается из шаблона, то не обращаем внимание на УРЛ */
 if ($KS_IND_matches[3] == "index")
@@ -36,13 +36,13 @@ if ($KS_IND_matches[3] == "index")
 	* на правильность и на права доступа, если что-то не так, лучше отдать ошибку */
 
 	/* Путь к корню модуля */
-$root_path = $this->GetSitePath($module_name);
+$root_path = $this->GetSitePath($module);
 
 if ($root_path != "/")
 {
 	/* Добавляем элемент навигационной цепочки */
 	if ($this->GetConfigVar("catsubcat", "show_nav_chain",'1'))
-		CNNavChain::get_instance()->Add( $this->arModules[$module_name]['name'],$root_path);
+		CNNavChain::get_instance()->Add( $this->arModules[$module]['name'],$root_path);
 
 	$sUrl = $root_path;
 	$iBase = 2;
@@ -55,7 +55,7 @@ else
 }
 
 /* Устанавливать заголовок страницы или нет */
-$module_parameters['setPageTitle'] = $this->GetConfigVar($module_name, "set_title",1) ==1 ? "Y" : "N";
+$module_parameters['setPageTitle'] = $this->GetConfigVar($module, "set_title",1) ==1 ? "Y" : "N";
 
 /* Родительский раздел */
 $module_parameters['parent_id'] = 0;
@@ -94,36 +94,31 @@ if (count($KS_IND_dir) > $iBase)
 	}
 }
 /* Определение виджета для подключения в качестве контента страницы */
-if (strlen($KS_IND_matches[2]) > 0 OR ($module_parameters['action'] == "CatElement"))
+if (strlen($KS_IND_matches[2]) > 0)
 {
 	/* Элемент каталога */
 	$module_parameters['text_ident'] = $KS_IND_matches[3];
 	$module_parameters['setPageTitle']=$KS_MODULES->GetConfigVar('catsubcat','set_title',1)==1?'Y':'N';
-	if(!function_exists('smarty_function_CatElement'))
-		include_once("widgets/function.CatElement.php");
-	$res = smarty_function_CatElement($module_parameters, $smarty);
+	$res=$this->IncludeWidget($module,'CatElement',$module_parameters);
 }
-elseif ($_GET['type'] == "rss")
+elseif(array_key_exists('type',$_GET) && $_GET['type'] == "rss")
 {
 	/* RSS */
 	$module_parameters['tpl'] = "RSS";
-	$module_parameters['sort_by'] = $KS_MODULES->GetConfigVar($module_name, "sort_by",'id');
-	$module_parameters['sort_dir'] = $KS_MODULES->GetConfigVar($module_name, "sort_dir",'asc');
-	$module_parameters['announces_count'] = $KS_MODULES->GetConfigVar($module_name, "count",'10');
+	$module_parameters['sort_by'] = $KS_MODULES->GetConfigVar($module, "sort_by",'id');
+	$module_parameters['sort_dir'] = $KS_MODULES->GetConfigVar($module, "sort_dir",'asc');
+	$module_parameters['announces_count'] = $KS_MODULES->GetConfigVar($module, "count",'10');
 	$module_parameters['parent_id'] = $module_parameters['parent_id'];
-	$module_parameters['select_from_children'] = $KS_MODULES->GetConfigVar($module_name, "select_from_children",'y');
+	$module_parameters['select_from_children'] = $KS_MODULES->GetConfigVar($module, "select_from_children",'y');
 
-	if (!function_exists("smarty_function_CatAnnounce"))
-		include_once("widgets/function.CatAnnounce.php");
-	$res = smarty_function_CatAnnounce($module_parameters, $smarty);
+	$res=$this->IncludeWidget($module,'CatAnnounce',$module_parameters);
 	$output['include_global_template'] = 0;
 }
 else
 {
 	/* Категория */
 	$module_parameters['ID'] = $module_parameters['parent_id'];
-	include_once("widgets/function.CatCategory.php");
-	$res = smarty_function_CatCategory($module_parameters, $smarty);
+	$res=$this->IncludeWidget($module,'CatCategory',$module_parameters);
 }
 /* Возвращаем результат работы */
 $output['main_content'] = $res;

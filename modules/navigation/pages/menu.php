@@ -175,11 +175,11 @@ class CnavigationAImenu extends CModuleAdmin
 					$this->obModules->AddNotify('NAVIGATION_MENU_ITEM_SAVED','',NOTIFY_MESSAGE);
 					if(!array_key_exists('update',$_REQUEST))
 					{
-						CUrlParser::Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','CSC_elmid')).'&CSC_parid='.$iParentId);
+						CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','CSC_elmid')).'&CSC_parid='.$iParentId);
 					}
 					else
 					{
-						CUrlParser::Redirect("/admin.php?".$KS_URL->GetUrl(array('ACTION','CSC_elmid')).'&ACTION=edit&CSC_elmid='.$id);
+						CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(array('ACTION','CSC_elmid')).'&ACTION=edit&CSC_elmid='.$id);
 					}
 				}
 				else

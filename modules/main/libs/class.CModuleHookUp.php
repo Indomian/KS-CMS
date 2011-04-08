@@ -95,9 +95,15 @@ class CModuleHookUp extends CModuleManagment
 			if(trim($sElement)!='')
 				$arResult[]=trim($sElement);
 		}
+		$iRequestCount=count($this->arRequestData['dirs']);
 		foreach($arResult as $i=>$sElement)
 		{
-			if($sElement!=$this->arRequestData['dirs'][$i+2]) return false;
+			if($i+2<$iRequestCount)
+			{
+				if($sElement!=$this->arRequestData['dirs'][$i+2]) return false;
+			}
+			else
+				return false;
 		}
 		return true;
 	}
@@ -107,6 +113,7 @@ class CModuleHookUp extends CModuleManagment
 	 */
 	function GetPathPart($iPart=1)
 	{
+		if(count($this->arRequestData['dirs'])<=$iPart) return '';
 		return $this->arRequestData['dirs'][$iPart];
 	}
 
@@ -194,6 +201,11 @@ class CModuleHookUp extends CModuleManagment
 				if (isset($$db_config_var))
 					$arModule['db_config'] = $$db_config_var;
 			}
+			else
+			{
+				$arModule['config']=array();
+				$arModule['db_config']=array();
+			}
 			if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/init.inc.php'))
    			{
    				include_once MODULES_DIR.'/'.$arModule['directory'].'/init.inc.php';
@@ -247,14 +259,21 @@ class CModuleHookUp extends CModuleManagment
 						$KS_URL->redirect("/" . $arModule['URL_ident'] . "/");
 				}
 			}
-			elseif($arModule['params']['is_widget']==1)
+			elseif(array_key_exists('params',$arModule) && array_key_exists('is_widget',$arModule['params']) && $arModule['params']['is_widget']==1)
 			{
 				return $this->IncludeWidget($arModule['directory'],$arModule['params']['action'],$arModule['params']);
 			}
 			else
 			{
 				/* Производим инициализацию пользовательской части модуля */
-	   			$module_parameters = $arModule['params'];
+				if(array_key_exists('params',$arModule))
+				{
+					$module_parameters = $arModule['params'];
+				}
+				else
+				{
+					$module_parameters=array();
+				}
 	   			include ($module_main_file);
 			}
 	   	}
@@ -276,9 +295,11 @@ class CModuleHookUp extends CModuleManagment
 		{
 			$url_ident = 'default';
 		}
-		$output=array();
+		$output=array(
+			'include_global_template'=>1
+		);
 		if($arModule=$this->GetRecord(array('URL_ident'=>$url_ident,'active'=>1)))
-  			{
+  		{
   			if($arModule['include_global_template'] == 0)
   				$output['include_global_template'] = 0;
   			try
@@ -366,6 +387,10 @@ class CModuleHookUp extends CModuleManagment
 					throw new CError('MAIN_WIDGET_NOT_REGISTERED');
 				}
 			}
+			if(!array_key_exists('global_template',$params))
+				$params['global_template']='';
+			if(!array_key_exists('tpl',$params))
+				$params['tpl']='';
 			$sResult=call_user_func('smarty_function_'.$action,$params,$smarty);
 		}
 		catch(CError $e)
@@ -379,6 +404,7 @@ class CModuleHookUp extends CModuleManagment
 
 	/**
 	 * Метод выполняет подключение модулей, которые использутся системой
+	 * @todo Убрать прямые запросы к БД
 	 */
 	function AutoInit()
 	{

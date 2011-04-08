@@ -83,10 +83,10 @@ class CCommonElement extends CCategorySubCategory
 	/**
 	 *	\copydoc CObject::GetRecord()
 	 */
-	function GetRecord($arFilter)
+	function GetRecord($arFilter=false)
 	{
 		global $ks_db;
-		$ks_db->add2log(__METHOD__.' at '.__LINE__.' in '.__FILE__);
+		if(KS_RELEASE!=1) $ks_db->add2log(__METHOD__.' at '.__LINE__.' in '.__FILE__);
 		$arResult=$arFilter;
 		$arResult['?'.$this->sElTable.'.id']=$this->sTable.'.parent_id';
 		//Генерируем строку поиска

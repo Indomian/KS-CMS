@@ -1,5 +1,8 @@
 <?php
+/*Обязательно вставляем во все файлы для защиты от взлома*/
+if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
+include_once MODULES_DIR.'/main/libs/class.CTemplates.php';
 /*
 CTemplates - управение шаблонами
 */
@@ -10,7 +13,7 @@ class CTemplates extends CBaseList
 	private $arList;
 	private $arWidgets;
 	protected $arNotTemplates;
-	
+
 	function __construct()
 	{
 		$this->sTemplatesPath=TEMPLATES_DIR;
@@ -18,7 +21,7 @@ class CTemplates extends CBaseList
 		$this->arNotTemplates=Array('.','..','admin','cache','configs','templates_c','css','images','.sysfooter.tpl');
 		$this->arWidgets=array();
 	}
-	
+
 	/**
 	 * Метод выполняет проверку папки на наличие темплейта
 	 */
@@ -28,7 +31,7 @@ class CTemplates extends CBaseList
 		$result = file_exists($sTemplatePath . '/index.tpl') ?  true : false;
 		return $result;
 	}
-	
+
 	/**
 	 * Метод выполняет очистку внутреннего списка
 	 */
@@ -36,7 +39,7 @@ class CTemplates extends CBaseList
 	{
 		$this->arList=false;
 	}
-	
+
 	/**
 	 * Метод выполняет возврат количества записей
 	 */
@@ -46,7 +49,7 @@ class CTemplates extends CBaseList
 		$this->iCount=count($this->arList);
 		return $this->iCount;
 	}
-	
+
 	/**
 	 * Метод выполняет получение списка записей шаблонов.
 	 */
@@ -99,7 +102,7 @@ class CTemplates extends CBaseList
 	private function GetWidgetDescription($module,$widget)
 	{
 		if(!array_key_exists($module,$this->arWidgets))
-		{ 
+		{
 			$sDescriptionPath=MODULES_DIR.'/'.$module.'/widgets/.widgets.php';
 			/* Подключаем файл с описанием шаблонов данного модуля */
 			if (file_exists($sDescriptionPath))
@@ -125,22 +128,22 @@ class CTemplates extends CBaseList
 	function GetSubTemplates($sName)
 	{
 		global $KS_MODULES, $smarty;
-		
+
 		/* Файлы, которые не принимать за шаблоны */
 		$arInvisible = array('.', '..', '.description.php');
-		
+
 		/* Расширения файлов шаблонов */
 		$arVisible = array('.tpl');
-		
+
 		/* Получаем список всех установленных в системе модулей */
 		$arModules = $KS_MODULES->GetInstalledList();
-		
+
 		/* Добавляем к списку главный модуль, который установлен всегда */
 		$arModules[] = array('directory' => 'main', 'name' => 'Главный');
-		
+
 		/* Результирующий массив со списком шаблонов для заданного глобального шаблона */
 		$arResult = array();
-		
+
 		/* Начинаем поиск шаблонов для каждого из модулей */
 		foreach ($arModules as $arModule)
 		{
@@ -154,13 +157,13 @@ class CTemplates extends CBaseList
 				{
 					/* Тип файла с предворяющей точкой */
 					$sFType = substr($file, strrpos($file, '.'));
-					
+
 					/* Если имя файла соответствует формату, то добавляем его в список */
 					if ((!in_array($file, $arInvisible)) && in_array($sFType, $arVisible))
 						$files[]=$file;
 				}
 				closedir($hDir);
-				
+
 				/* Путь к шаблонам модуля для заданного глобального шаблона */
 				$sPath = TEMPLATES_DIR.'/' . $sName . '/';
 				$arResult[$arModule['directory']]=$arModule;
@@ -193,22 +196,22 @@ class CTemplates extends CBaseList
 							);
 						}
 					}
-					
+
 					/* Если для модуля найдены шаблоны */
 					if (count($arResult[$arModule['directory']]) > 0)
 					{
 						/* Сортируем шаблоны по имени */
 						uasort($arResult[$arModule['directory']]['widgets'], array($this, 'Compare'));
-						
+
 						$arRes = array();
 						$sMyName = '';
-						
+
 						/* Определяем, какие шаблоны стандартные, а какие пользовательские */
 						foreach($arResult[$arModule['directory']]['widgets'] as $item)
 						{
 							/* Текущий шаблон */
 							$arRow = $item;
-							
+
 							/* Если нет описания для шаблона, значит, он создан пользователем */
 							if (strlen($item['description']) == 0)
 							{
@@ -224,7 +227,7 @@ class CTemplates extends CBaseList
 							}
 							$arRes[] = $arRow;
 						}
-						
+
 						/* Обновляем массив шаблонов */
 						$arResult[$arModule['directory']]['widgets'] = $arRes;
 					}
@@ -257,7 +260,7 @@ class CTemplates extends CBaseList
 	}
 
 	/**
-	 * Метод возвращает содержимое файла указанного глобального шаблона. 
+	 * Метод возвращает содержимое файла указанного глобального шаблона.
 	 * @param $name - имя шаблона
 	 * @param $scheme - имя схемы, по умолчанию index
 	 * @return string
@@ -286,7 +289,7 @@ class CTemplates extends CBaseList
 		catch(CDataError $e)
 		{
 			throw $e;
-			
+
 		}
 		return $arResult;
 	}
@@ -349,7 +352,7 @@ class CTemplates extends CBaseList
 	/**
 	 * Метод производит сохранение корневого шаблона (глобального) по указанному имени
 	 */
-	function SaveTemplate($name,$scheme='index')
+	function SaveTemplate($name='',$scheme='index')
 	{
 		try
 		{
@@ -392,17 +395,17 @@ class CTemplates extends CBaseList
 			throw new CError("MAIN_ERROR_WRITING_TEMPLATE",0,$e->GetMessage());
 		}
 	}
-	
+
 	/**
 	 * Метод создаёт копию шаблона $id с именем $new_id
-	 * 
+	 *
 	 * @version 1.0
 	 * @since 04.08.2009
 	 *
 	 * @param string $id
 	 * @param string $new_id
 	 * @return bool
-	 * 
+	 *
 	 * @todo Надо тестировать
 	 */
 	function Copy($id, $new_id)
@@ -416,21 +419,21 @@ class CTemplates extends CBaseList
 					{
 						/* Копируем локальные шаблоны */
 						$KS_FS->dircopy(TEMPLATES_DIR . "/" . $id . "/", TEMPLATES_DIR . "/" . $new_id . "/");
-						
+
 						/* Копируем css и картинки */
 						$KS_FS->dircopy(TEMPLATES_FILES_DIR . "/" . $id . "/", TEMPLATES_FILES_DIR . "/". $new_id . "/");
-						
+
 						return true;
 					}
-					else 
+					else
 						throw new CError("MAIN_TEMPLATE_ALREADY_EXISTS", 0, $new_id);
 				}
-				else 
+				else
 					throw new CError("MAIN_TEMPLATE_NOT_EXIST_OR_CORRUPTED", 0, $id);
-		
+
 		return false;
 	}
-	
+
 	function Delete($id)
 	{
 		global $KS_FS;
@@ -442,7 +445,7 @@ class CTemplates extends CBaseList
 		}
 		return false;
 	}
-	
+
 	function DeleteSub($id,$url)
 	{
 		$arRes=$this->SubTemplate($id,$url);
@@ -510,13 +513,13 @@ class CTemplates extends CBaseList
 
 class CGlobalTemplates extends CObject
 {
-	
+
 	function __construct($sTable='main_path_to_template')
 	{
 		parent::__construct($sTable);
 		$this->arFields=array('id','url_path','template_path','orderation','type','function1','function2');
 	}
-	
+
 	function GetList($arOrder=false,$arFilter=false,$arLimit=false,$arSelect=false,$arGroupBy=false)
 	{
 		$arList=parent::GetList($arOrder,$arFilter,$arLimit,$arSelect);
@@ -569,7 +572,7 @@ class CGlobalTemplates extends CObject
 		$query="DELETE FROM ".PREFIX."main_path_to_template WHERE url_path='$url'";
 		$ks_db->query($query);
 	}
-	
+
 	function DeleteByTemplate($tpl)
 	{
 		global $ks_db;
@@ -578,4 +581,3 @@ class CGlobalTemplates extends CObject
 	}
 }
 
-?>

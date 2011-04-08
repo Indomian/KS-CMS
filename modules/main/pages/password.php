@@ -126,7 +126,7 @@ class CmainAIpassword extends CModuleAdmin
 		}
 		else
 		{
-			CUrlParser::Redirect('/admin.php');
+			CUrlParser::get_instance()->Redirect('/admin.php');
 		}
 	}
 }

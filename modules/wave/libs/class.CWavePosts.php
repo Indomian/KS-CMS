@@ -28,24 +28,10 @@ class CWavePosts extends CFieldsObject
 {
 	private $arPostsCache;
 
-	function __construct($sTable='wave_posts')
+	function __construct($sTable='wave_posts',$sUploadPath='/wave',$sModule='wave')
 	{
-		parent::__construct($sTable);
-		$this->sFieldsModule='wave';
-		//Подключаем работу с пользовательскими полями.
-		if (class_exists(CFields))
-		{
-			$this->bFields=true;
-			$obFields=new CFields();
-			$this->arUserFields=$obFields->GetFields($this->sFieldsModule,$this->sTable);
-			foreach($this->arUserFields as $item)
-			{
-				$this->arFields[]='ext_'.$item['title'];
-			}
-		}
+		parent::__construct($sTable,$sUploadPath,$sModule);
 		$this->arPostsCache=array();
-		//Устанавливаем папку для загрузки
-		$this->sUploadPath='/wave';
 	}
 
 	/**

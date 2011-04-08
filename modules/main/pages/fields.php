@@ -121,11 +121,11 @@ if ($USER->GetLevel('main')<=8)
 					$arField=$obFields->GetRecord(array('id'=>$id));
 					if(!array_key_exists('update',$_REQUEST))
 				    {
-		    			CUrlParser::Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','id')));
+		    			CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','id')));
 		    		}
 		    		else
 		    		{
-		    			CUrlParser::Redirect("/admin.php?".$KS_URL->GetUrl('ACTION','id').'&ACTION=edit&id='.$id);
+		    			CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl('ACTION','id').'&ACTION=edit&id='.$id);
 		    		}
 				}
 				catch (CError $e)
@@ -168,4 +168,4 @@ else
 	$page='';
 	throw new CAccessError("MAIN_ACCESS_USER_FIELDS_CLOSED",403);
 }
-?>
+

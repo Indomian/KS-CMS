@@ -121,23 +121,21 @@ class CError extends Exception
  	{
  		switch ($errno)
  		{
-		    case E_USER_ERROR:
-		        throw new CError($errstr,$errno);
-		        break;
+			case E_USER_ERROR:
+				throw new CError($errstr,$errno);
+				break;
 
-		    case E_USER_WARNING:
-		        echo "<div style=\"border:3px solid #ffb400;padding:5px;background:#ffefc9;\"><b>Внимание</b>: $errstr</div>";
-		        break;
+			case E_USER_WARNING:
+				echo "<div style=\"border:3px solid #ffb400;padding:5px;background:#ffefc9;\"><b>Внимание</b>: $errstr</div>";
+				break;
 
-		    case E_USER_NOTICE:
-		        echo "Замечание: [$errno] $errstr";
-		        break;
+			case E_USER_NOTICE:
+				echo "Замечание: [$errno] $errstr";
+				break;
 
-		    default:
-		        //echo "Unknown error type: [$errno] $errstr<br />\n";
-		        break;
-		    }
-
+			default:
+				return false;
+		}
     	/* Don't execute PHP internal error handler */
     	return true;
  	}
@@ -246,4 +244,4 @@ class CDataError extends CError
 		parent::__construct($message,$code,$text);
 	}
 }
-?>
+

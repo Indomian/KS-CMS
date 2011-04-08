@@ -18,7 +18,7 @@ require_once 'class.CDBInterface.php';
 */
 class mysql extends CDBInterface
 {
-	var $ks_db_id = false; 						/**<фиг знает*/
+	private $ks_db_id = false; 						/**<Ресурс подключения к базе данных*/
 	var $connected = false;				/**<флаг подключения к базе данных*/
 	var $query_num = 0;					/**<количество выполненных запросов*/
 	var $query_list = array();			/**<список выполненных запросов*/
@@ -66,7 +66,7 @@ class mysql extends CDBInterface
 	function connect($ks_db_user, $ks_db_pass, $ks_db_name, $ks_db_location = 'localhost', $show_error=1)
 	{
 		//пробуем подключиться
-		if(!$this->db_id = @mysql_connect($ks_db_location, $ks_db_user, $ks_db_pass)) {
+		if(!$this->ks_db_id = @mysql_connect($ks_db_location, $ks_db_user, $ks_db_pass)) {
 			if($show_error == 1) {
 				throw new CDBError(mysql_error(), mysql_errno());
 			} else {
@@ -74,7 +74,7 @@ class mysql extends CDBInterface
 			}
 		}
 		//пробуем выбрать бд для работы
-		if(!@mysql_select_db($ks_db_name, $this->db_id)) {
+		if(!@mysql_select_db($ks_db_name, $this->ks_db_id)) {
 			if($show_error == 1) {
 				throw new CDBError(mysql_error(), mysql_errno());
 			} else {
@@ -123,7 +123,7 @@ class mysql extends CDBInterface
 				$arRow['WHERE']=$matches[4];
 				$arRow['QUERY']=$query;
 				$myquery="SELECT * FROM ".$arRow['TABLE']." WHERE ".$arRow['WHERE'];
-				if(!($this->query_id = @mysql_query($myquery, $this->db_id) ))
+				if(!($this->query_id = @mysql_query($myquery, $this->ks_db_id) ))
 				{
 					$this->mysql_error = mysql_error();
 					$this->mysql_error_num = mysql_errno();
@@ -146,7 +146,7 @@ class mysql extends CDBInterface
 			}
 		}
 
-		if(!($this->query_id = @mysql_query($query, $this->db_id) ))
+		if(!($this->query_id = @mysql_query($query, $this->ks_db_id) ))
 		{
 			$this->mysql_error = mysql_error();
 			$this->mysql_error_num = mysql_errno();
@@ -187,7 +187,7 @@ class mysql extends CDBInterface
 				if($arRow['OP']=='INSERT INTO')
 				{
 					$query="DELETE FROM ".$arRow['TABLE']." WHERE id=".$arRow['DATA'];
-					if(!($this->query_id = @mysql_query($query, $this->db_id) ))
+					if(!($this->query_id = @mysql_query($query, $this->ks_db_id) ))
 					{
 						$this->mysql_error = mysql_error();
 						$this->mysql_error_num = mysql_errno();
@@ -208,7 +208,7 @@ class mysql extends CDBInterface
 						$sSet=trim($sSet,",");
 						$query="UPDATE ".$arRow['TABLE']." SET ".$sSet." WHERE id=".$arDataRow['id'];
 						//echo $query;
-						if(!($this->query_id = @mysql_query($query, $this->db_id) ))
+						if(!($this->query_id = @mysql_query($query, $this->ks_db_id) ))
 						{
 							$this->mysql_error = mysql_error();
 							$this->mysql_error_num = mysql_errno();
@@ -279,7 +279,7 @@ class mysql extends CDBInterface
 	 * */
 	function insert_id()
 	{
-		return @mysql_insert_id($this->db_id);
+		return @mysql_insert_id($this->ks_db_id);
 	}
 
 	/**
@@ -290,7 +290,7 @@ class mysql extends CDBInterface
 	 */
 	function AffectedRows()
 	{
-		return @mysql_affected_rows($this->db_id);
+		return @mysql_affected_rows($this->ks_db_id);
 	}
 
 	/**
@@ -322,7 +322,7 @@ class mysql extends CDBInterface
 		{
 			$source=stripslashes($source);
 		}
-		if ($this->db_id) return mysql_real_escape_string ($source, $this->db_id);
+		if ($this->ks_db_id) return mysql_real_escape_string ($source, $this->ks_db_id);
 		return @mysql_escape_string($source);
 	}
 
@@ -343,7 +343,7 @@ class mysql extends CDBInterface
 	 */
 	function close()
 	{
-		@mysql_close($this->db_id);
+		@mysql_close($this->ks_db_id);
 		$this->connected=false;
 	}
 

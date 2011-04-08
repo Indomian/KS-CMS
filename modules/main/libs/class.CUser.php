@@ -406,12 +406,6 @@ class CUser extends CUsersCommon implements User
 		return in_array(1,$arGroups);
 	}
 
-	protected function _ParseItem(&$item)
-	{
-		$item['group_name']=$this->groups_list[$item['group_id']];
-		return true;
-	}
-
 	/**
 	 * Метод сохраняет нового пользователя или изменяет данные в профиле существующего
 	 *
@@ -693,7 +687,11 @@ class CUser extends CUsersCommon implements User
 
 	function ID()
 	{
-		return $this->userdata['id'];
+		if(is_array($this->userdata) && array_key_exists('id',$this->userdata))
+		{
+			return $this->userdata['id'];
+		}
+		return 0;
 	}
 
 	function Email()

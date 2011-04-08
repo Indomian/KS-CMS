@@ -62,7 +62,7 @@ class CmainAImodules extends CModuleAdmin
 				$this->obModules->Update(intval($_REQUEST['CM_id']), $arActivate);
 				$this->obModules->RecountDBStructure();
 				$this->obModules->RecountTextStructure();
-				CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl(Array('CM_ACTION','CM_id','ac')));
+				CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl(Array('CM_ACTION','CM_id','ac')));
 			break;
 			case "edit":
 				$data=$this->obModules->GetRecord(array('id'=>$_REQUEST['CM_id']));
@@ -88,11 +88,11 @@ class CmainAImodules extends CModuleAdmin
 							$id = $this->obModules->Save('CM_');
 							if(!array_key_exists('update',$_REQUEST))
 							{
-								CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl(Array('ACTION','CM_id')));
+								CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl(Array('ACTION','CM_id')));
 							}
 							else
 							{
-								CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl('ACTION','CM_id').'&ACTION=edit&CM_id='.$id);
+								CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl('ACTION','CM_id').'&ACTION=edit&CM_id='.$id);
 							}
 						}
 						else
@@ -165,7 +165,7 @@ class CmainAImodules extends CModuleAdmin
 						$this->obModules->Update($arModule['id'],array('URL_ident'=>$arModule['directory']));
 					}
 					$this->obModules->Update(intval($_REQUEST['CM_id']),array('URL_ident'=>'default'));
-					CUrlParser::Redirect('/admin.php?module=main&modpage=modules');
+					CUrlParser::get_instance()->Redirect('/admin.php?module=main&modpage=modules');
 				}
 				else
 				{

@@ -69,11 +69,11 @@ class Cguestbook2AIrecords extends CModuleAdmin
 			}
 			if(!array_key_exists('update',$_REQUEST))
 			{
-				CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl(Array('action','id')));
+				CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl(Array('action','id')));
 			}
 			else
 			{
-				CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl(array('action','id')).'&action=edit&id='.$id);
+				CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl(array('action','id')).'&action=edit&id='.$id);
 			}
 		}
 		catch(CError $e)
@@ -179,7 +179,7 @@ class Cguestbook2AIrecords extends CModuleAdmin
 			break;
 			case "delete":
 				$this->obGB2->DeletePost($id);
-				CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl(Array('action','id')));
+				CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl(Array('action','id')));
 			default:
 				$page=$this->Table();
 		}

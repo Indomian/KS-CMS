@@ -94,7 +94,7 @@ if (!defined('KS_MAIN_INIT'))
 
 	/*подключение и обработка Url*/
 	require_once MODULES_DIR.'/main/libs/class.CUrlParser.php';
-	$KS_URL = new CUrlParser();
+	$KS_URL = CUrlParser::get_instance();
 
 	/* Пользовательские поля */
 	if (file_exists(MODULES_DIR.'/main/libs/class.CFields.php'))

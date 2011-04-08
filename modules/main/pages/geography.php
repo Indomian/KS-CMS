@@ -84,7 +84,7 @@ class CmainAIgeography extends CModuleAdmin
 					$obCountry->Save('',$arFields);
 				}
 				$this->obModules->AddNotify('MAIN_GEOGRAPHY_IMPORT_OK','',NOTIFY_MESSAGE);
-				CUrlParser::Redirect('/admin.php?module=main&modpage=geography');
+				CUrlParser::get_instance()->Redirect('/admin.php?module=main&modpage=geography');
 			}
 			$bError=$this->obModules->AddNotify('MAIN_GEOGRAPHY_IMPORT_FILE_EMPTY');
 		}
@@ -139,7 +139,7 @@ class CmainAIgeography extends CModuleAdmin
 		else
 		{
 			$this->obModules->AddNotify('MAIN_GEOGRAPHY_COUNTRY_NOT_FOUND');
-			CUrlParser::Redirect('/admin.php?module=main&action=geography');
+			CUrlParser::get_instance()->Redirect('/admin.php?module=main&action=geography');
 		}
 	}
 
@@ -178,7 +178,7 @@ class CmainAIgeography extends CModuleAdmin
 		else
 		{
 			$this->obModules->AddNotify('MAIN_GEOGRAPHY_COUNTRY_NOT_FOUND');
-			CUrlParser::Redirect('/admin.php?module=main&action=geography');
+			CUrlParser::get_instance()->Redirect('/admin.php?module=main&action=geography');
 		}
 	}
 
@@ -201,7 +201,7 @@ class CmainAIgeography extends CModuleAdmin
 		if(!$this->obAPI->Country()->GetById($arFields['country_id']))
 		{
 			$this->obModules->AddNotify('MAIN_GEOGRAPHY_COUNTRY_NOT_FOUND');
-			CUrlParser::Redirect('/admin.php?module=main&action=geography');
+			CUrlParser::get_instance()->Redirect('/admin.php?module=main&action=geography');
 		}
 		if($bError==0)
 		{
@@ -209,17 +209,17 @@ class CmainAIgeography extends CModuleAdmin
 			{
 				if(!array_key_exists('update',$_REQUEST))
 				{
-					CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl(Array('action','city_id')).'&action=cities');
+					CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl(Array('action','city_id')).'&action=cities');
 				}
 				else
 				{
-					CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl('action','city_id').'&action=edit_city&city_id='.$id);
+					CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl('action','city_id').'&action=edit_city&city_id='.$id);
 				}
 			}
 			else
 			{
 				$this->obModules->AddNotify('MAIN_GEOGRAPHY_CITY_SAVE_ERROR');
-				CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl(Array('action','city_id')));
+				CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl(Array('action','city_id')));
 			}
 		}
 		else
@@ -243,7 +243,7 @@ class CmainAIgeography extends CModuleAdmin
 		else
 		{
 			$this->obModules->AddNotify('MAIN_GEOGRAPHY_COUNTRY_NOT_FOUND');
-			CUrlParser::Redirect('/admin.php?module=main&action=geography');
+			CUrlParser::get_instance()->Redirect('/admin.php?module=main&action=geography');
 		}
 	}
 
@@ -265,7 +265,7 @@ class CmainAIgeography extends CModuleAdmin
 		if(!$this->obAPI->Country()->GetById($arFields['id']))
 		{
 			$this->obModules->AddNotify('MAIN_GEOGRAPHY_COUNTRY_NOT_FOUND');
-			CUrlParser::Redirect('/admin.php?module=main&action=geography');
+			CUrlParser::get_instance()->Redirect('/admin.php?module=main&action=geography');
 		}
 		if($bError==0)
 		{
@@ -273,17 +273,17 @@ class CmainAIgeography extends CModuleAdmin
 			{
 				if(!array_key_exists('update',$_REQUEST))
 				{
-					CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl(Array('action','country_id')));
+					CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl(Array('action','country_id')));
 				}
 				else
 				{
-					CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl('action','country_id').'&action=edit_country&country_id='.$id);
+					CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl('action','country_id').'&action=edit_country&country_id='.$id);
 				}
 			}
 			else
 			{
 				$this->obModules->AddNotify('MAIN_GEOGRAPHY_COUNTRY_SAVE_ERROR');
-				CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl(Array('action','city_id')));
+				CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl(Array('action','city_id')));
 			}
 		}
 		else

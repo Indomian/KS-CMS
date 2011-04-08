@@ -32,7 +32,7 @@ class CAdminTextParser extends CSmile
 		return $text;
 	}
 
-	function _smarty_parse_text($params,$content,&$smarty,&$repeat)
+	function _smarty_parse_text($params,$content,&$smarty,$repeat)
 	{
 		if($content)
 		{

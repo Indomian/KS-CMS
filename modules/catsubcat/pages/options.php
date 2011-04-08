@@ -104,7 +104,7 @@ class CcatsubcatAIoptions extends CModuleAdmin
 					}
 				}
 				$this->obModules->AddNotify('CATSUBCAT_OPTIONS_SAVED','',NOTIFY_MESSAGE);
-				CUrlParser::Redirect("admin.php?module=".$this->module."&page=options");
+				CUrlParser::get_instance()->Redirect("admin.php?module=".$this->module."&page=options");
 			}
 			catch (EXCEPTION $e)
 			{

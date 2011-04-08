@@ -22,7 +22,7 @@ class CFields extends CObject
 {
     static protected $arUserFields;	/*!<Массив с описанием пользовательских полей различных модулей и типов*/
     static protected $bInit;
-    
+
 	function __construct($sTable='main_fields')
 	{
 		global $smarty;
@@ -48,7 +48,7 @@ class CFields extends CObject
 		}
 	}
 
-	function _showField($params)
+	static function _showField($params)
 	{
 		if($params['prefix']=='') $params['prefix']='CSC_';
 		$sParam2 = $params['field']['option_2'];
@@ -63,7 +63,7 @@ class CFields extends CObject
 			return "Не найден обработчик поля";
 		}
 	}
-	
+
 	function _configField($params)
 	{
 		if($params['prefix']=='') $params['prefix']='CSC_';
@@ -81,8 +81,8 @@ class CFields extends CObject
 
 	/**
 	 * Перекрыт метод получения одной записи. Добавлено внутренее кэширование данных.
-	 */	
-	function GetRecord($arFilter)
+	 */
+	function GetRecord($arFilter=false)
 	{
 		$key=$this->_GenFilterHash($arFilter);
 		if(!array_key_exists($key,self::$arUserFields))
@@ -91,7 +91,7 @@ class CFields extends CObject
 		}
 		return self::$arUserFields[$key];
 	}
-	
+
 	/**
 	 * Метод выполняет перенос поля из одного модуля в другой, также меняется таблица
 	 * @param array $from - откуда переносим
@@ -104,7 +104,7 @@ class CFields extends CObject
 		if(is_array($arToFields)&&array_key_exists('ext_'.$to['title'],$arToFields))
 		{
 			throw new CError("MAIN_DUPLICATE_TABLE_FIELD",241);
-		}	
+		}
 		if($from['type']==$to['type']) throw new CError("MAIN_NOT_MOVE_FIELD_ITSELF",242);
 		$arFromFields=$this->GetFieldsList('ext_',$from['type']);
 		if(!array_key_exists('ext_'.$from['title'],$arFromFields))
@@ -131,12 +131,12 @@ class CFields extends CObject
 			throw new CError("MAIN_ERROR_PROCESSING_FIELD", 245, $e->GetMessage());
 		}
 	}
-	
+
 	/**
 	 * Метод выполняет переименовывание поля
 	 * @param array $from - описание поля которое переименовываем
 	 * @param string $newname - новое имя поля
-	 * 
+	 *
 	 */
 	function RenameField($from,$newname)
 	{
@@ -170,7 +170,7 @@ class CFields extends CObject
 			throw new CError("MAIN_ERROR_PROCESSING_FIELD", 249, $e->GetMessage());
 		}
 	}
-	
+
 	/**
 	 * Метод обновляет значение по умолчанию для указанного поля
 	 * @param array $from - массив описывающий поле
@@ -200,7 +200,7 @@ class CFields extends CObject
 			throw new CError("MAIN_ERROR_PROCESSING_FIELD", 251, $e->GetMessage());
 		}
 	}
-	
+
 	/**
 	 * Метод выполняет сохранение записи, перекрывает родительский метод, в случае успеха записи
 	 * в таблицу полей пробует изменить таблицу к которой добавляется поле
@@ -337,16 +337,16 @@ class CFields extends CObject
 		$ks_db->commit();
 		return $id;
 	}
-	
+
 	function GetTypes()
 	{
 		$dir=MODULES_DIR.'/main/fields/';
 		$arResult=array();
-		if (is_dir($dir)) 
+		if (is_dir($dir))
 		{
-    		if ($dh = opendir($dir)) 
+    		if ($dh = opendir($dir))
     		{
-        		while (($file = readdir($dh)) !== false) 
+        		while (($file = readdir($dh)) !== false)
         		{
         			if((filetype($dir.$file)=='dir')&&
         			(file_exists($dir.$file.'/desc.php')))
@@ -364,23 +364,23 @@ class CFields extends CObject
 
 	/**
 	 * Функция возвращает список полей указанного типа
-	 * 
+	 *
 	 * @version 2.2
 	 * Исправлен возврат
 	 * Добавлен кэш для экономии запросов при инициализации
-	 * 
+	 *
 	 * @version 2.3
 	 * Добавлен необязательный параметр $script, указывающий на имя обработчика полей
-	 * 
+	 *
 	 * @param string $module Имя модуля
 	 * @param string $type Тип записи
 	 * @param string $script Имя обработчика полей, которые выбираются для списка
 	 * @return array
 	 */
-	function GetFields($module, $type, $script = false)
+	function GetModuleFields($module, $type, $script = false)
 	{
 		global $ks_db;
-		if (is_array(self::$arUserFields[$module][$type]) && !$script)
+		if (is_array(self::$arUserFields) && array_key_exists($module,self::$arUserFields) && array_key_exists($type,self::$arUserFields[$module]) && !$script)
 		{
 			return self::$arUserFields[$module][$type];
 		}
@@ -417,7 +417,7 @@ class CFields extends CObject
 			}
 			catch(Exception $e)
 			{
-				
+
 			}
 			$query="DELETE FROM ".PREFIX.$this->sTable." WHERE id='".intval($id)."'";
 			$ks_db->query($query);
@@ -430,11 +430,11 @@ class CFields extends CObject
  * этот класс т.к. в будущем он будет исключен
  * @deprecated 2.4 - 04.06.2009
  */
-class CFieldsValues extends CObject 
+class CFieldsValues extends CObject
 {
 	var $sTable;
 	var $obField;	/*!<объект класса CField*/
-	
+
 	function __construct($sTable='catsubcat_fields_values')
 	{
 		parent::__construct($sTable);
@@ -488,7 +488,7 @@ class CFieldsValues extends CObject
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Избегайте использовать эту функцию! В будущем планируется её исключение.
 	 */
@@ -513,5 +513,3 @@ class CFieldsValues extends CObject
 		return false;
 	}
 }
-
-?>

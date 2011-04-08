@@ -1,12 +1,15 @@
-<?php  
+<?php
 	define ("DBHOST",		"#DB_HOST#");
 	define ("DBNAME",		"#DB_NAME#");
 	define ("DBUSER",		"#DB_USER#");
 	define ("DBPASS",		"#DB_PASS#");
 	define ("PREFIX",		"ks_");
-	
-	define('KS_RELEASE',1);
-	define('KS_MAIL_DEBUG',0);
+
+	define('KS_RELEASE',0);
 	define('KS_LOG_DB_ERRORS',1);
+	define('KS_SKIP_HTMLCACHE','Y');
+	define('KS_DEBUG_QUERIES',0);
+	define('KS_DEBUG',0);
 	$ks_db = new mysql(KS_DEBUG);
-?>
+	/// Количество цифр при замене текстового идентификатора
+	define('MAX_TEXT_IDENT_NUMBERS',7);

@@ -3,14 +3,14 @@
  * \file class.CModuleAdmin.php
  * Файл контейнер для класса управление административным интерфейсом
  * Файл проекта kolos-cms.
- * 
+ *
  * Создан 10.09.2009
  *
  * \author blade39 <blade39@kolosstudio.ru>
  * \version 1.0
  * \todo
  */
-/*Обязательно вставляем во все файлы для защиты от взлома*/ 
+/*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 require_once MODULES_DIR.'/main/libs/class.CMain.php';
@@ -24,7 +24,7 @@ class CModuleAdmin extends CBaseAPI
 	protected $obModules;
 	protected $obUser;
 	protected $sAction;
-		
+
 	function __construct($module_name,&$smarty,&$parent)
 	{
 		global $USER;
@@ -34,16 +34,18 @@ class CModuleAdmin extends CBaseAPI
 		$this->sAction='';
 		$this->obUser=&$USER;
 	}
-	
+
 	/**
 	 * Метод выполняет инициализацию сортировки
 	 * @param $arSortFields array - список полей по которым можно выполнять сортировку записей
 	 * @param $sortField string - поле сортировки
 	 * @param $sortDir string - направление сортировки
-	 * @return array - массив, 0 элемент - поле сортировки, 1 - направление 
+	 * @return array - массив, 0 элемент - поле сортировки, 1 - направление
 	 */
 	function InitSort($arSortFields,&$sortField,&$sortDir)
 	{
+		$sOrderField='id';
+		$sOrderDir='asc';
 		// Обработка порядка вывода элементов
 		if($sortField!='')
 			$sOrderField=(in_array($sortField,$arSortFields))?$sortField:$arSortFields[0];
@@ -64,7 +66,7 @@ class CModuleAdmin extends CBaseAPI
 		$_SESSION[$this->module]['admin_sort_'.$this->page.'_dir']=$sOrderDir;
 		return array($sOrderField,$sOrderDir);
 	}
-	
+
 	/**
 	 * Метод выполняет формирование кода операции
 	 */
@@ -76,13 +78,13 @@ class CModuleAdmin extends CBaseAPI
 			$this->sAction=$action;
 		}
 	}
-	
+
 	/**
 	 * Данный метод выполняет обработку текущей страницы.
 	 * Возвращет название шаблона для рендеринга
 	 */
-	function Run($action='')
-	{		
+	function Run()
+	{
 		return '';
 	}
 }
@@ -95,7 +97,7 @@ class CAdminTable extends CModuleAdmin
 	protected $arColumns; /**<Массив описывающий колонки таблицы*/
 	protected $obConfigParser; /**<Объект работы с файлами конфигурации*/
 	protected $sTableName;	/**<Название таблицы*/
-	
+
 	function __construct($module_name,&$smarty,&$parent)
 	{
 		parent::__construct($module_name,$smarty,$parent);
@@ -103,7 +105,7 @@ class CAdminTable extends CModuleAdmin
 		$this->obConfigParser=new CConfigParser($module_name);
 		$this->obConfigParser->LoadConfig();
 	}
-	
+
 	/**
 	 * Метод выполняет подготовку параметров колонок
 	 */
@@ -118,7 +120,7 @@ class CAdminTable extends CModuleAdmin
 				$this->arColumns[$key]['show']=intval($arColumn['default']);
 		}
 	}
-	
+
 	/**
 	 * Метод выполняет отрисовку таблицы
 	 */
@@ -126,11 +128,11 @@ class CAdminTable extends CModuleAdmin
 	{
 		$this->PrepareColumns();
 	}
-	
+
 	/**
 	 * Метод выполняет обработку операций
 	 */
-	function Run($action='')
+	function Run()
 	{
 		global $KS_URL;
 		$this->ParseAction($action);
@@ -142,7 +144,7 @@ class CAdminTable extends CModuleAdmin
 				$this->smarty->assign('columns',$this->arColumns);
 				$this->obModules->AddChainItem('title_config_columns',$KS_URL->Url());
 				$page='confcols';
-			break;			
+			break;
 			case 'savecols':
 				if($_SERVER['REQUEST_METHOD']=='POST' && !array_key_exists('cancel',$_POST))
 				{
@@ -160,6 +162,6 @@ class CAdminTable extends CModuleAdmin
 				$page=parent::Run();
 		}
 		return $page;
-	}	 
+	}
 }
-?>
+

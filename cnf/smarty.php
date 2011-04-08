@@ -30,5 +30,6 @@ $smarty->security_settings=array(
 		'urlencode'
 	),
 	'ALLOW_CONSTANTS'  => false,
+	'ALLOW_SUPER_GLOBALS' => true
 );
 $smarty->secure_dir = array(TEMPLATES_DIR.'/',SYS_TEMPLATES_DIR);

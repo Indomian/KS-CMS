@@ -136,7 +136,7 @@ class CwaveAIoptions extends CModuleAdmin
 					}
 				}
 				$this->obModules->AddNotify('WAVE_OPTIONS_SAVED','',NOTIFY_MESSAGE);
-				CUrlParser::Redirect("admin.php?module=".$this->module."&page=options");
+				CUrlParser::get_instance()->Redirect("admin.php?module=".$this->module."&page=options");
 			}
 			catch (CError $e)
 			{

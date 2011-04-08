@@ -8,6 +8,6 @@ class Cguestbook2AIindex extends CModuleAdmin
 {
 	function Run()
 	{
-		CUrlParser::Redirect('/admin.php?module=guestbook2&page=records');
+		CUrlParser::get_instance()->Redirect('/admin.php?module=guestbook2&page=records');
 	}
 }

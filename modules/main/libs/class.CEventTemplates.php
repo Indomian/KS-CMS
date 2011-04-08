@@ -1,13 +1,16 @@
 <?php
 /*
  * CMS-local
- * 
+ *
  * Created on 10.11.2008
  *
  * Developed by blade39
- * 
+ *
  */
- 
+
+/*Обязательно вставляем во все файлы для защиты от взлома*/
+if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
+
 include_once MODULES_DIR.'/main/libs/class.CTemplates.php';
 
 class _CEventTemplates extends CObject
@@ -25,7 +28,7 @@ class CEventTemplates extends CTemplates
 	{
 		$this->sTemplatesPath=ROOT_DIR.'/templates/admin/eventTemplates/';
 	}
-	
+
 	function _ParseItem(&$item)
 	{
 		$itemname=explode('.',$item);
@@ -33,7 +36,7 @@ class CEventTemplates extends CTemplates
 		$item=$res;
 		return true;
 	}
-	
+
 	function GetTemplate($tpl)
 	{
 		$sPath=$this->sTemplatesPath;
@@ -73,7 +76,7 @@ class CEventTemplates extends CTemplates
 			throw new CError("MAIN_TEMPLATE_NOT_FOUND");
 		}
 	}
-	
+
 	function Delete($id)
 	{
 		global $ks_db;
@@ -85,7 +88,7 @@ class CEventTemplates extends CTemplates
 			if(!@unlink($this->sTemplatesPath.$id))
 			{
 				throw new CError("SYSTEM_FILE_NOT_FOUND");
-			}	
+			}
 		}
 		catch (CError $e)
 		{
@@ -94,8 +97,8 @@ class CEventTemplates extends CTemplates
 		}
 		$ks_db->commit();
 	}
-	
-	function SaveTemplate()
+
+	function SaveTemplate($name='',$scheme='index')
 	{
 		global $ks_db;
 		$ks_db->begin();
@@ -144,7 +147,7 @@ class CEventTemplates extends CTemplates
        		else
        		{
 	       		throw new CError("SYSTEM_FILE_NOT_FOUND_OR_NOT_WRITABLE");
-    	   	}	
+    	   	}
 		}
 		catch (CError $e)
 		{
@@ -152,9 +155,9 @@ class CEventTemplates extends CTemplates
 			throw $e;
 		}
 		$ks_db->commit();
-        
+
 	}
-	
+
 	/**
 	 * Извлекает из шаблона переменные смарти
 	 * @param string $tpl - имя файла шаблона

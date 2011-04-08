@@ -16,11 +16,11 @@ include_once MODULES_DIR.'/main/libs/class.CModuleManagment.php';
  * @author blade39 <blade39@kolosstudio.ru>
  * Добавлена работа с навигационными цепочками в административной части системы
  */
-class CAdminModuleManagment extends CModuleManagment
+final class CAdminModuleManagment extends CModuleManagment
 {
 	/*!Массив со списком подключенных модулей.*/
-	var $menu;			//!<Массив в котором храняться пункты меню.
-	protected $arNavChain; 		/**<Массив для хранения навигационной цепочки*/
+	private $menu;			//!<Массив в котором храняться пункты меню.
+	private $arNavChain; 		/**<Массив для хранения навигационной цепочки*/
 	public $current;		//!<Текущий модуль, определяетс по строке Get запроса.
 	public $currentMenu; 		/**<Указывает на название текущего модуля для меню*/
 	private $localTemplate;		//!<В переменой передается имя текущего шаблона. Обычно используется после подключения определенного модуля.
@@ -44,7 +44,7 @@ class CAdminModuleManagment extends CModuleManagment
 		$this->current='main';
 		$this->currentMenu=$this->current;
 		$this->sMode='full';
-		if($_GET['mode']=='small')
+		if(array_key_exists('mode',$_GET) && $_GET['mode']=='small')
 		{
 			$this->sMode='small';
 		}
@@ -124,23 +124,43 @@ class CAdminModuleManagment extends CModuleManagment
 		if($this->IsModule($module))
 		{
 			$KS_MODULES=$this;
-			$arModule=$this->GetRecord(array('directory'=>$module));
+			if(!array_key_exists($module,$this->arModules))
+			{
+				$arModule=$this->GetRecord(array('directory'=>$module));
+			}
+			else
+			{
+				$arModule=$this->arModules[$module];
+			}
 			$this->IncludeModule($arModule);
 			try
 			{
 				$page='';
 				if(!file_exists(MODULES_DIR.'/'.$module.'/admin.inc.php'))
 				{
-					if($_GET['page']!='' && !preg_match('#^[a-z0-9_]+$#',$_GET['page'])) throw new CError('SYSTEM_WRONG_ADMIN_PATH',1001);
+					if(array_key_exists('page',$_GET))
+					{
+						if($_GET['page']!='' && !preg_match('#^[a-z0-9_]+$#',$_GET['page']))
+							throw new CError('SYSTEM_WRONG_ADMIN_PATH',1001);
+						$sPage=$_GET['page'];
+					}
+					else
+					{
+						$sPage='index';
+					}
 					$access_level=$USER->GetLevel($module);
 					if($access_level>0) throw new CAccessError('SYSTEM_NOT_ACCESS_MODULE');
-					if(file_exists(MODULES_DIR.'/'.$module.'/pages/'.$_GET['page'].'.php'))
+					if(file_exists(MODULES_DIR.'/'.$module.'/pages/'.$sPage.'.php'))
 					{
-						$sClassPage=$_GET['page'];
+						$sClassPage=$sPage;
 					}
 					elseif(file_exists(MODULES_DIR.'/'.$module.'/pages/index.php'))
 					{
 						$sClassPage='index';
+					}
+					else
+					{
+						throw new CError('MAIN_MODULE_NO_ADMIN_PART');
 					}
 					$this->LoadModulePage($module,$sClassPage);
 				}
@@ -224,9 +244,15 @@ class CAdminModuleManagment extends CModuleManagment
 			$smarty->assign('bShowTreeView',$this->GetConfigVar('main','showTreeView','Y'));
 			/* Определяем header для отображения */
 			// Стандартный
-			if(!$_REQUEST['disp_design']) { $smarty->display('admin/header.tpl'); }
+			if(!array_key_exists('disp_design',$_REQUEST))
+			{
+				$smarty->display('admin/header.tpl');
+			}
 			//  - Для всплывающего фрейма
-			elseif($_REQUEST['disp_design'] > 0) { $smarty->display('admin/header_ajax.tpl'); }
+			elseif($_REQUEST['disp_design'] > 0)
+			{
+				$smarty->display('admin/header_ajax.tpl');
+			}
 			try
 			{
 				$template_to_display = 'admin/' . $this->current . $this->page . '.tpl';
@@ -243,7 +269,7 @@ class CAdminModuleManagment extends CModuleManagment
 			}
 			// Проверка какой footer подключать.
 			//  - Стандартный
-			if(!$_REQUEST['disp_design']) { $smarty->display('admin/footer.tpl'); }
+			if(!array_key_exists('disp_design',$_REQUEST)) { $smarty->display('admin/footer.tpl'); }
 			//  - Для всплывающего фрейма
 			elseif($_REQUEST['disp_design'] >0) { $smarty->display('admin/footer_ajax.tpl'); }
 		}
@@ -277,7 +303,14 @@ class CAdminModuleManagment extends CModuleManagment
 		{
 			include(MODULES_DIR.'/'.$arModule['directory'].'/config.php');
 			$var="MODULE_".$arModule['directory']."_config";
-			$arModule['config']=$$var;
+			if(isset($$var))
+			{
+				$arModule['config']=$$var;
+			}
+			else
+			{
+				$arModule['config']=array();
+			}
 		}
 		if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/.access.php'))
 		{
@@ -409,13 +442,20 @@ class CAdminModuleManagment extends CModuleManagment
 		if ($parent!="")
 		{
 			$parent=strtolower($parent);
-			if (is_array($this->menu[$parent]['items']))
+			if(array_key_exists($parent,$this->menu))
 			{
-				$this->menu[$parent]['items']=array_merge($this->menu[$parent]['items'],$item);
+				if (array_key_exists('items',$this->menu[$parent]) && is_array($this->menu[$parent]['items']))
+				{
+					$this->menu[$parent]['items']=array_merge($this->menu[$parent]['items'],$item);
+				}
+				else
+				{
+					$this->menu[$parent]['items']=$item;
+				}
 			}
 			else
 			{
-				$this->menu[$parent]['items']=$item;
+				$this->menu[$parent]=array();
 			}
 		}
 		else

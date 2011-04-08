@@ -2,7 +2,7 @@
 
 /**
  * Страница модуля main редактирования текстовых констант ошибок
- * 
+ *
  * @filesource errors.php
  * @author blade39 <blade39@kolosstudio.ru>
  * @version 2.5.2
@@ -22,13 +22,13 @@ if ($USER->GetLevel('main') > 7) throw new CAccessError("MAIN_ACCESS_ERRORS_CLOS
 class CErrorsAI extends CModuleAdmin
 {
 	private $obEdit;
-	
+
 	function __construct($module='main',&$smarty,&$parent)
 	{
 		parent::__construct($module,$smarty,$parent);
-		$this->obEdit=new CErrorsParser('error.conf');	
+		$this->obEdit=new CErrorsParser('error.conf');
 	}
-	
+
 	/**
 	 * Метод выполняет реализацию операции сохранения данных
 	 */
@@ -41,7 +41,7 @@ class CErrorsAI extends CModuleAdmin
 			{
 				$this->obEdit->LoadLocale($_POST['locale']);
 				$this->obEdit->Save($_POST['locale'],$_POST);
-				CUrlParser::Redirect("admin.php?module=main&modpage=errors");
+				CUrlParser::get_instance()->Redirect("admin.php?module=main&modpage=errors");
 			}
 			else
 			{
@@ -55,7 +55,7 @@ class CErrorsAI extends CModuleAdmin
 		}
 		return $page;
 	}
-	
+
 	function Table()
 	{
 		$arSortFields=Array('text_ident','ru');
@@ -95,7 +95,7 @@ class CErrorsAI extends CModuleAdmin
 		$this->smarty->assign('order',Array('newdir'=>$sNewDir,'curdir'=>$sOrderDir,'field'=>$sOrderField));
 		return '_errors';
 	}
-	
+
 	function Run()
 	{
 		global $USER,$KS_URL;
@@ -119,4 +119,4 @@ class CErrorsAI extends CModuleAdmin
 
 $obInterface=new CErrorsAI('main',$smarty,$this);
 $page=$obInterface->Run();
-?>
+

@@ -102,11 +102,11 @@ class CnavigationAIindex extends CModuleAdmin
 			$this->obModules->AddNotify('NAVIGATION_MENU_TYPE_SAVED','',NOTIFY_MESSAGE);
 			if(!array_key_exists('update',$_REQUEST))
 			{
-				CUrlParser::Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','type')));
+				CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','type')));
 			}
 			else
 			{
-				CUrlParser::Redirect("/admin.php?".$KS_URL->GetUrl(array('ACTION','CSC_catid')).'&ACTION=edit&CSC_catid='.$id);
+				CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(array('ACTION','CSC_catid')).'&ACTION=edit&CSC_catid='.$id);
 			}
 		}
 		catch(CError $e)
@@ -168,7 +168,7 @@ class CnavigationAIindex extends CModuleAdmin
 				{
 					$this->oType->Delete($this->iId);
 					$this->obModules->AddNotify('NAVIGATION_MENU_TYPE_DELETED','',NOTIFY_MESSAGE);
-					CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl(Array('ACTION','CSC_catid')));
+					CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl(Array('ACTION','CSC_catid')));
 				}
 				else
 				{

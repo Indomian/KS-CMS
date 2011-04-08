@@ -27,6 +27,16 @@ abstract class CModuleManagment extends CObject
 	function __construct()
 	{
 		global $ks_config,$KS_FS;
+		//Устанавливаем уровень обработки ошибок в системе
+		if(KS_RELEASE==1)
+		{
+			error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
+		}
+		else
+		{
+			error_reporting(E_ALL | E_STRICT);
+		}
+
 		if($ks_config['go_install']==1)
 		{
 			//Если самоустановка, то надо скопировать структуру БД
@@ -40,7 +50,7 @@ abstract class CModuleManagment extends CObject
 			'main'=>array(
 				'config'=>$ks_config,
 				'directory'=>'main',
-				'mess'=>$_txt,
+				'mess'=>'',
 				'ALEVELS'=>array('0'=>'full_access','10'=>'access_denied')),
 		);
 		if($ks_config['go_install']==1)
@@ -49,6 +59,7 @@ abstract class CModuleManagment extends CObject
 			$this->SelfInstall();
 		}
 		$this->arHeads=array();
+		$this->arHeadScripts=array();
 	}
 
 	function SetUser($obUser)
@@ -102,7 +113,14 @@ abstract class CModuleManagment extends CObject
 		$_SESSION['notifies']=array();
 		foreach($this->arNotifies as $arItem)
 		{
-			$arItem['life']++;
+			if(!array_key_exists('life',$arItem))
+			{
+				$arItem['life']++;
+			}
+			else
+			{
+				$arItem['life']=1;
+			}
 			if($arItem['life']<NOTIFIES_LIFE)
 			{
 				$_SESSION['notifies'][]=$arItem;
@@ -251,6 +269,8 @@ abstract class CModuleManagment extends CObject
 					$arLanguages=$KS_FS->GetDirItems($sModuleLangPath);
 					foreach($arLanguages as $sLangPath)
 					{
+						if(!array_key_exists($sLangPath,$arInterfaceFiles)) $arInterfaceFiles[$sLangPath]='';
+						if(!array_key_exists($sLangPath,$arErrorFiles)) $arErrorFiles[$sLangPath]='';
 						if(is_dir($sModuleLangPath.'/'.$sLangPath))
 						{
 							if(file_exists($sModuleLangPath.'/'.$sLangPath.'/admin.conf'))
@@ -452,6 +472,8 @@ abstract class CModuleManagment extends CObject
 	{
 		if(file_exists(ROOT_DIR.JS_DIR.$script))
 		{
+			if(!array_key_exists($position,$this->arHeadScripts))
+				$this->arHeadScripts[$position]=array();
 			if(!in_array($script,$this->arHeadScripts[$position]))
 			{
 				$this->arHeadScripts[$position][]=$script;
@@ -902,7 +924,7 @@ abstract class CModuleManagment extends CObject
 				$ks_db->CheckDB($arStructure);
 				$obConfig->Set('go_install',0);
 				$obConfig->WriteConfig();
-				CUrlParser::redirect('/admin.php');
+				CUrlParser::get_instance()->Redirect('/admin.php');
 			}
 		}
 		catch(CError $e)

@@ -31,6 +31,7 @@ class CcatsubcatAIindex extends CModuleAdmin
 		$this->obElement=new CElement();
 		$this->obUser=$USER;
 		$this->access_level=10;
+		$this->iCurSection=0;
 	}
 
 	function EditForm($data=false)
@@ -77,9 +78,12 @@ class CcatsubcatAIindex extends CModuleAdmin
 				include_once MODULES_DIR.'/navigation/libs/class.CNav.php';
 				$oType=new CNavTypes();
 				$oElement=new CNavElement();
-				$arMenu['types']=$oType->GetList(array('name'=>'asc'),array('active'=>1));
-				$arMenu['ITEMS']=$oElement->GetList(array('orderation'=>'asc'),array('type_id'=>$arMenu['types'][0]['id'],'parent_id'=>'0'));
-				$this->smarty->assign('menu',$arMenu);
+				if($arMenu['types']=$oType->GetList(array('name'=>'asc'),array('active'=>1)))
+				{
+					$arMenuType=current($arMenu['types']);
+					$arMenu['ITEMS']=$oElement->GetList(array('orderation'=>'asc'),array('type_id'=>$arMenuType['id'],'parent_id'=>'0'));
+					$this->smarty->assign('menu',$arMenu);
+				}
 			}
 
 			/* Получаем дерево для перемещения элемента в другие разделы */
@@ -199,13 +203,13 @@ class CcatsubcatAIindex extends CModuleAdmin
 				{
 					//if($sType=='cat') $KS_URL->Set('CSC_catid',$data['parent_id']);
 					if($this->obEditable instanceof CCategory) $KS_URL->Set('CSC_catid',$data['parent_id']);
-					CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl(Array('ACTION','type','CSC_id')));
+					CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl(Array('ACTION','type','CSC_id')));
 				}
 				else
 				{
 					if($this->obEditable instanceof CCategory) $sAdd='&CSC_catid='.$id;
 					if($this->obEditable instanceof CElement) $sAdd='&CSC_id='.$id.'&CSC_catid='.intval($_POST['CSC_parent_id']);
-					CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl('ACTION','CSC_id','CSC_catid').'&ACTION=edit'.$sAdd);
+					CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl('ACTION','CSC_id','CSC_catid').'&ACTION=edit'.$sAdd);
 				}
 			}
 		}
@@ -276,9 +280,18 @@ class CcatsubcatAIindex extends CModuleAdmin
 			}
 			$arFilter['parent_id']=$arSectionRes['id'];
 			//Определяем количество элементов на странице
-			$iElCount=intval($_REQUEST['n']);
-			$iElCount=($iElCount<10)?10:$iElCount;
-			$iPage=(intval($_REQUEST['p1'])<1)?1:intval($_REQUEST['p1']);
+			$iElCount=10;
+			if(array_key_exists('n',$_REQUEST))
+			{
+				$iElCount=intval($_REQUEST['n']);
+				$iElCount=($iElCount<10)?10:$iElCount;
+			}
+			//Определяем номер страницы
+			$iPage=1;
+			if(array_key_exists('p1',$_REQUEST))
+			{
+				$iPage=(intval($_REQUEST['p1'])<1)?1:intval($_REQUEST['p1']);
+			}
 			$arSortFields=Array('id','title','text_ident','date_add','date_edit','orderation','active','views_count');
 			//Определяем порядок сортировки записей
 			list($sOrderField,$sOrderDir)=$this->InitSort($arSortFields,$_REQUEST['order'],$_REQUEST['dir']);
@@ -363,7 +376,7 @@ class CcatsubcatAIindex extends CModuleAdmin
 			/* Получаем дерево для перемещения разделов и элементов в другие разделы */
 			$tree_to_move_to = $this->obCategory->GetExpandedTree();
 			foreach ($tree_to_move_to as $tree_leaf_key => $tree_leaf)
-				if ($tree_leaf['id'] == $iCurSection)
+				if ($tree_leaf['id'] == $this->iCurSection)
 					unset($tree_to_move_to[$tree_leaf_key]);
 				else
 				{
@@ -483,21 +496,57 @@ class CcatsubcatAIindex extends CModuleAdmin
 		$this->access_level = $this->obUser->GetLevel($this->module);
 		if($this->access_level>3)
 			throw new CAccessError("CATSUBCAT_NOT_MANAGE");
-		$this->iCurSection=(intval($_REQUEST['CSC_catid'])<0)?0:intval($_REQUEST['CSC_catid']);
-		$action=$_REQUEST['ACTION'];
+		if(array_key_exists('CSC_catid',$_REQUEST))
+		{
+			$this->iCurSection=intval($_REQUEST['CSC_catid']);
+		}
+		if(array_key_exists('ACTION',$_REQUEST))
+		{
+			$action=$_REQUEST['ACTION'];
+		}
+		else
+		{
+			$action='';
+		}
 
 		/* Получение типа данных (категория или элемент) */
-		$sType = $_REQUEST['type'];
+		if(array_key_exists('type',$_REQUEST))
+		{
+			$sType = $_REQUEST['type'];
+		}
+		else
+		{
+			$sType='';
+		}
 
 		/* Определение идентификатора записи */
-		$iId = ($sType=='cat') ? intval($_REQUEST['CSC_catid']) : intval($_REQUEST['CSC_id']);
+		$iId=0;
+		if($sType=='cat')
+		{
+			if(array_key_exists('CSC_catid',$_REQUEST))
+				$iId=intval($_REQUEST['CSC_catid']);
+		}
+		else
+		{
+			if(array_key_exists('CSC_id',$_REQUEST))
+				$iId=intval($_REQUEST['CSC_id']);
+		}
+
 		// Обработка действий множественного выбора
 		if(array_key_exists('ACTION',$_POST)&&($_POST['ACTION']=='common'))
 		{
 			$this->CommonActions();
 		}
 
-		$id=intval($_REQUEST['id']);
+		if(array_key_exists('id',$_REQUEST))
+		{
+			$id=intval($_REQUEST['id']);
+		}
+		else
+		{
+			$id=0;
+		}
+
 		if ($sType == "cat")
 			$this->obEditable = $this->obCategory;
 		elseif ($sType == "elm")
@@ -527,7 +576,7 @@ class CcatsubcatAIindex extends CModuleAdmin
 					{
 						$KS_URL->Set('CSC_catid',$arData['parent_id']);
 						$this->obModules->AddNotify('CATSUBCAT_NOTIFY_DELETE_OK',$arData['title'],NOTIFY_MESSAGE);
-						CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl(Array('ACTION')));
+						CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl(Array('ACTION')));
 					}
 					else
 					{
@@ -541,7 +590,7 @@ class CcatsubcatAIindex extends CModuleAdmin
 			default:
 				$page=$this->Table();
 		}
-		if($_GET['mode']=='small')
+		if(array_key_exists('mode',$_GET) && $_GET['mode']=='small')
 		{
 			echo $smarty->get_template_vars('last_error');
 			$smarty->display('admin/catsubcat'.$page.'.tpl');

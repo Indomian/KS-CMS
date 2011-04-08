@@ -1,30 +1,38 @@
 <?php
 /**
- * Класс обеспечивает работу с адресами системы
+ * Класс обеспечивает работу с адресами системы, переделан в singleton объект
  *
  * @since 1.0
  *
  * @author BlaDe39 <blade39@kolosstudio.ru>
- * @version 2.5.4-14
+ * @version 2.6
  */
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 class CUrlParser
 {
-	var $items;
-	var $query;
-	var $path;
+	private $items;
+	private $query;
+	private $path;
 	static protected $bHasHash;
-	/**
-	 * Конструктор, инициализирует внутренние переменные
-	 *
-	 */
-	function __construct()
+	static private $obSelf;
+
+	static function get_instance()
+	{
+		if(!is_object(self::$obSelf))
+		{
+			self::$obSelf=new CUrlParser();
+			self::$obSelf->Init();
+		}
+		return self::$obSelf;
+	}
+
+	protected function Init()
 	{
 		global $smarty;
 		$this->items=Array();
 		$this->query=$_SERVER['QUERY_STRING'];
-		if(strlen($_GET['path'])>0)
+		if(array_key_exists('path',$_GET) && strlen($_GET['path'])>0)
 		{
 			$this->path=$_GET['path'];
 		}
@@ -235,7 +243,7 @@ class CUrlParser
 			unset($_SESSION['backurl']);
 			if($path!='')
 			{
-				CUrlParser::Redirect($path);
+				CUrlParser::get_instance()->Redirect($path);
 			}
 		}
 	}
@@ -312,10 +320,10 @@ class CUrlParser
 	 */
 	function redirect($URL='')
 	{
-		$ar = CUrlParser::AjaxReq();
+		$ar = $this->AjaxReq();
 		if(array_key_exists('ajaxreq',$ar))
 		{
-			 CUrlParser::GetJS($ar);
+			 $this->GetJS($ar);
 			 die();
 		}
 		if($URL=='') $URL=$this->path;

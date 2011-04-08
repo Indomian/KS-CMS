@@ -78,7 +78,7 @@ elseif ($action=='save')
 				$obAccess->Set($id,$key,min($value));
 			}
 		}
-		CUrlParser::Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','id')));
+		CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','id')));
 	}
 	catch (CError $e)
 	{
@@ -99,7 +99,7 @@ elseif ($action=='delete')
 		$USERGROUP->Delete($id);
 		$obAccess=new CModulesAccess();
 		$obAccess->DeleteItems(array('group_id'=>$id));
-		CUrlParser::Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','id')));
+		CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','id')));
 	}
 }
 
@@ -119,4 +119,3 @@ else
 }
 /*подготавливаем данные для вывода*/
 $page='_usersgroup'.$page;
-?>

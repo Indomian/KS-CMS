@@ -3,14 +3,14 @@
  * @file function.ShowEditor.php
  * Плагин для смарти чтобы отобразить текстовый редактор
  * Файл проекта kolos-cms.
- * 
+ *
  * Создан 11.11.2009
  *
  * @author blade39 <blade39@kolosstudio.ru>
  * @version 2.5.5
  * @todo
  */
-/*Обязательно вставляем во все файлы для защиты от взлома*/ 
+/*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 function smarty_function_ShowEditor($params,&$smarty)
@@ -34,7 +34,7 @@ function smarty_function_ShowEditor($params,&$smarty)
 	if($params['theme']=='advanced')
 	{
 		$sResult.='theme : "advanced",'.
-			'plugins : "safari,typograf,table,save,advhr,advimage,advlink,emotions,iespell,insertdatetime,media,searchreplace,print,contextmenu,paste,directionality,fullscreen",'.
+			'plugins : "safari,table,save,advhr,advimage,advlink,emotions,iespell,insertdatetime,media,searchreplace,print,contextmenu,paste,directionality,fullscreen",'.
 			'theme_advanced_buttons1_add_before : "save,newdocument,separator",'.
 			'theme_advanced_buttons1_add : "fontselect,fontsizeselect,typograf",'.
 			'theme_advanced_buttons2_add : "separator,insertdate,inserttime,preview,zoom,separator,forecolor,backcolor",'.

@@ -320,7 +320,7 @@ class CObject extends CBaseList
 	 * @return ID сохраненного элемента или false в случае ошибки.
 	 */
 
-	function Save($prefix = "KS_", $data = "", $my_table = "")
+	function Save($prefix = "KS_", $data = "")
 	{
 		global $ks_db, $bMagicGPC, $KS_FS;
 
@@ -403,11 +403,10 @@ class CObject extends CBaseList
 
 	/**
 	получает одну запись из таблицы по указанным параметрам
-	@param $my_table - имя таблицы БЕЗ префикса
 	@param $where - ассоциативный массив
 	   поле => значение
 	*/
-	function GetRecord($where,$my_table="")
+	function GetRecord($where=false)
 	{
 		if(!is_array(CObject::$arCache)) CObject::$arCache=array();
 		if($arItems=$this->GetList(array('id'=>'asc'),$where,1))
@@ -1138,14 +1137,6 @@ class CObject extends CBaseList
 			}
 			$limits="LIMIT ".join(',',$arLimits);
 		}
-		elseif($this->visible>0)
-		{
-			$page=$this->pages['active'];
-			$low=$this->visible*(($page-1)>=0?$page-1:0);
-			$hi=$low+$this->visible;
-			$arLimits=array($low,$hi);
-			$limits="LIMIT ".join(',',$arLimits);
-		}
 		//$query="SELECT $fields FROM ".PREFIX.$this->sTable." $sWhere $sOrder $limits";
 		if($this->bDistinctMode)
 		{
@@ -1329,7 +1320,7 @@ class CObject extends CBaseList
 		}
 		else
 		{
-			$sWhere=$this->_GenWhere($arFilter);
+			$sWhere=$this->_GenWhere($id);
 		}
 		if (strlen($sWhere)>0)
 		{
