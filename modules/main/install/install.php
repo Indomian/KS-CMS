@@ -19,6 +19,7 @@ $module_name='main';
 include MODULES_DIR.'/main/install/db_structure.php';
 include_once MODULES_DIR.'/main/libs/class.CUserGroup.php';
 include_once MODULES_DIR.'/main/libs/class.CUsersCommon.php';
+include_once MODULES_DIR.'/main/libs/class.CModulesAccess.php';
 
 //Список таблиц модуля
 $arDBList=array(
