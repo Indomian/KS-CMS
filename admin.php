@@ -322,10 +322,11 @@ if (file_exists(MODULES_DIR.'/main'))
 	{
 		if($smarty)
 		{
-			$smarty->assign('isajax',intval($_GET['ajax']));
+			if(array_key_exists('ajax',$_GET))
+				$smarty->assign('isajax',intval($_GET['ajax']));
 			$smarty->assign('VERSION',$KS_VERSION);
 			$smarty->assign('last_error',$e->GetErrorText());
-			if($_GET['lostpwd'] == 'Y')
+			if(array_key_exists('lostpwd',$_GET) && $_GET['lostpwd'] == 'Y')
 			{
 				$page=$KS_MODULES->LoadModulePage('main','password');
 			}

@@ -40,6 +40,14 @@ class CFilesObject extends CObject
 	}
 
 	/**
+	 * Метод возвращает текущий путь сохранения файлов
+	 */
+	function GetUploadFolder()
+	{
+		return $this->sUploadPath;
+	}
+
+	/**
 	 * Метод указывает, что поле с данным именем при сохранении должно загрузить файл
 	 * @param $field - имя поля
 	 * @return true|false - если поле добавлено - true иначе - false.

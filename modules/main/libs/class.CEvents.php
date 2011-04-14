@@ -1,12 +1,14 @@
 <?php
 /*
  * CMS-local
- * 
+ *
  * Created on 10.11.2008
  *
  * Developed by blade39
- * 
+ *
  */
+/*Обязательно вставляем во все файлы для защиты от взлома*/
+if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 include_once MODULES_DIR.'/main/libs/class.CMessage.php';
 
@@ -14,7 +16,7 @@ class CEvents extends CObject
 {
 	var $arList;
 	var $step;
-	
+
 	function __construct($sTable='main_events')
 	{
 		parent::__construct($sTable);
@@ -22,7 +24,7 @@ class CEvents extends CObject
 		$this->arList=array();
 		$this->arFields=array('id','title','address','status','type');
 	}
-	
+
 	function Init()
 	{
 		global $ks_db;
@@ -32,7 +34,7 @@ class CEvents extends CObject
 			$this->arList[]=$arRow;
 		}
 	}
-	
+
 	function Run()
 	{
 		try
@@ -45,7 +47,7 @@ class CEvents extends CObject
 					$obj=new $className;
 				}
 				else
-				{	
+				{
 					$obj=new CMessage();
 				}
 				$obj->Run($item);
@@ -58,12 +60,12 @@ class CEvents extends CObject
 		}
 		return true;
 	}
-	
+
 	function Done()
 	{
-		
+
 	}
-	
+
 	/**
 	 * Функция возвращает запрошеное сообщение
 	 * @param $where - ассоциативный массив
@@ -72,7 +74,7 @@ class CEvents extends CObject
 	function GetEvents($where){
 		return parent::GetRecord($where);
 	}
-	
+
 	/**
 	 * Функция ставит сообщения со статусом error
 	 * в очередь на повторную отправку

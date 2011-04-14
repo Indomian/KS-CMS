@@ -12,6 +12,6 @@ class CPages extends CPageNavigation
 {
 	function __construct($visible=false)
 	{
-		parent::__construct(NULL,false,$visible,$Current);
+		parent::__construct(NULL,false,$visible,false);
 	}
 }

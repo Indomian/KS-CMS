@@ -35,6 +35,23 @@ class CmainAIoptions extends CModuleAdmin
 		$this->smarty->clear_compiled_tpl();
 	}
 
+	/**
+	 * Метод производит полную очистку кэша виджетов
+	 */
+	function DropSystemCache()
+	{
+		global $KS_FS;
+		if(defined('KS_CACHE_HTML_DIR'))
+		{
+			$sCachePath=KS_CACHE_DIR;
+		}
+		else
+		{
+			$sCacheDir=MODULES_DIR.'/main/cache/';
+		}
+		return $KS_FS->cleardir($sCacheDir);
+	}
+
 	function DropImagesCache()
 	{
 		global $KS_FS;
@@ -111,6 +128,17 @@ class CmainAIoptions extends CModuleAdmin
 		{
 			$this->CopyTemplates();
 			$this->obModules->AddNotify('MAIN_OPTIONS_TEMPLATES_COPIED','',NOTIFY_MESSAGE);
+		}
+		elseif(array_key_exists('act_drop_system_cache',$_POST))
+		{
+			if($this->DropSystemCache())
+			{
+				$this->obModules->AddNotify('MAIN_OPTIONS_SYSTEM_CACHE_CLEARED','',NOTIFY_MESSAGE);
+			}
+			else
+			{
+				$this->obModules->AddNotify('MAIN_OPTIONS_SYSTEM_CACHE_CLEAR_ERROR');
+			}
 		}
 		elseif($_SERVER['REQUEST_METHOD']=='POST' && $_POST['action']=='save')
 		{

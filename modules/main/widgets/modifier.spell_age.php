@@ -11,8 +11,6 @@
 /*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
-include_once MODULES_DIR.'/main/libs/class.CMoneyConverter.php';
-
 function smarty_modifier_spell_age($val)
 {
 	$arDate=explode('.',$val);

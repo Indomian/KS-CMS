@@ -66,16 +66,16 @@ try
 
 	try
 	{
-		if($_REQUEST['type']=='AJAX')
+		if(array_key_exists('type',$_REQUEST) && $_REQUEST['type']=='AJAX')
 		{
 			$KS_IND_dir=$_REQUEST['module'];
-			if(!IsTextIdent($_REQUEST['gtpl']))
+			if(array_key_exists('gtpl',$_REQUEST) && IsTextIdent($_REQUEST['gtpl']))
 			{
-				$global_template='.default';
+				$global_template=$_REQUEST['gtpl'];
 			}
 			else
 			{
-				$global_template=$_REQUEST['gtpl'];
+				$global_template='.default';
 			}
 			$smarty->assign("glb_tpl", $global_template);
 			if($KS_MODULES->IsActive($KS_IND_dir))
@@ -88,7 +88,7 @@ try
 		{
 			$global_template =  $KS_MODULES->GetTemplate();
 			$smarty->assign("glb_tpl", $global_template);
-			$output = $KS_MODULES->hook_up( ((is_array($KS_IND_dir)) ? $KS_IND_dir[1] : '' ) );
+			$output = $KS_MODULES->hook_up($KS_MODULES->GetPathPart());
 		}
 	}
 	catch(CAccessError $e)
@@ -116,7 +116,7 @@ try
 		$output['main_content']=$e;
 	}
 
-	if ($output['include_global_template'] != '0')
+	if(array_key_exists('include_global_template',$output) && $output['include_global_template'] != '0')
 	{
 		$smarty->assign('output', $output);
 		$page = $smarty->fetch($global_template.'/'.$KS_MODULES->GetScheme().'.tpl');
@@ -134,14 +134,17 @@ try
 	$obEvents->Run();
 	$obEvents->Done();
 	$end=microtime(1);
-	if($output['include_global_template'] != '0' && KS_DEBUG==1)
+	if(KS_RELEASE!=1)
 	{
-		$sys_info['gen_tyme'] = ($end-$begin);
-		$sys_info['sql_gen_tyme'] = $ks_db->MySQL_time_taken;
-		$sys_info['sql_queries_quant'] = $ks_db->query_num;
-		$sys_info['sql_requests']=$ks_db->GetRequests();
-		$smarty->assign('sys_info', $sys_info);
-		$smarty->display('.default/.sysfooter.tpl');
+		if(array_key_exists('include_global_template',$output) && $output['include_global_template'] != '0' && KS_DEBUG==1)
+		{
+			$sys_info['gen_tyme'] = ($end-$begin);
+			$sys_info['sql_gen_tyme'] = $ks_db->MySQL_time_taken;
+			$sys_info['sql_queries_quant'] = $ks_db->query_num;
+			$sys_info['sql_requests']=$ks_db->GetRequests();
+			$smarty->assign('sys_info', $sys_info);
+			$smarty->display('.default/.sysfooter.tpl');
+		}
 	}
 }
 catch (CError $e)

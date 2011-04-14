@@ -63,7 +63,7 @@ class CUser extends CUsersCommon implements User
 			throw new CError('MAIN_HANDLER_ERROR',0,$KS_EVENTS_HANDLER->GetLastEvent());
 
 		/* Устанавливаем IP пользователя, если он еще не входил */
-		if ($_SESSION['USER_IP'] == '')
+		if(!array_key_exists('USER_IP',$_SESSION) || $_SESSION['USER_IP'] == '')
 			$_SESSION['USER_IP'] = $_SERVER['REMOTE_ADDR'];
 
 		/* Инициализация полей класса CObject */

@@ -56,7 +56,7 @@ class CmainAIusers extends CModuleAdmin
 			$obFilter->AddField(array('FIELD'=>'group_id','METHOD'=>'->','TYPE'=>'SELECT','VALUES'=>$arRes));
 			$obFilter->AddField(array('FIELD'=>'last_visit','TYPE'=>'DATE','METHOD'=>'<>'));
 			$arFilter=$obFilter->GetFilter();
-			if(strlen($arFilter['->group_id'])>0)
+			if(array_key_exists('->group_id',$arFilter) && strlen($arFilter['->group_id'])>0)
 			{
 				$arFilter['->users_grouplinks.group_id']=$arFilter['->group_id'];
 				$arFilter['?users_grouplinks.user_id']='users.id';
@@ -75,8 +75,9 @@ class CmainAIusers extends CModuleAdmin
 		}
 		else $arFilter=false;
 
-		$obPages = new CPageNavigation($USER);
+		$obPages = new CPageNavigation($this->obUser);
 		$iCount=$this->obUser->count($arFilter);
+		$arOrder=array($sOrderField=>$sOrderDir);
 		if($arList=$this->obUser->GetList($arOrder,$arFilter,$obPages->GetLimits($iCount)))
 		{
 			/**
@@ -324,8 +325,14 @@ class CmainAIusers extends CModuleAdmin
 		if ($this->obUser->GetLevel("main") > 9) throw new CAccessError("MAIN_NO_RIGHT_TO_VIEW_USERS");
 
 		$userdata=false;
-		$sAction=$_REQUEST['ACTION'];
-		$iId=intval($_REQUEST['id']);
+		if(array_key_exists('ACTION',$_REQUEST))
+			$sAction=$_REQUEST['ACTION'];
+		else
+			$sAction='';
+		if(array_key_exists('id',$_REQUEST))
+			$iId=intval($_REQUEST['id']);
+		else
+			$iId=0;
 		try
 		{
 			switch($sAction)

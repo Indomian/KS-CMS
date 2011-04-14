@@ -324,9 +324,7 @@ class CObject extends CBaseList
 	{
 		global $ks_db, $bMagicGPC, $KS_FS;
 
-		$table = $my_table;
-		if ($my_table == "")
-			$table = $this->sTable;
+		$table = $this->sTable;
 
 		/* Определяем массив входных данных для сохранения в базе */
 		if ($data == "")
@@ -348,53 +346,57 @@ class CObject extends CBaseList
 		}
 		/* Определение, есть ли запись с заданным id в таблице или нет.
 		   В зависимости от этого обновим старую запись или добавим новую. */
-		$query_select = "SELECT id FROM " . PREFIX . $table . " WHERE id = '" . $data['id'] . "' LIMIT 1";
-		$ks_db->query($query_select);
-		if ($ks_db->num_rows()>0)
+		if(array_key_exists('id',$data))
 		{
-			$query = "";
+			$query_select = "SELECT id FROM " . PREFIX . $table . " WHERE id = '" . $data['id'] . "' LIMIT 1";
+			$ks_db->query($query_select);
+			if ($ks_db->num_rows()>0)
+			{
+				$query = "";
+				foreach($data as $key=>$item)
+					$query .= "`$key` = '" . $item . "', ";
+				$query = chop($query, " ,");
+				$update_query = "UPDATE " . PREFIX . $table . " SET $query WHERE id = '" . $data['id'] . "'";
+				$ks_db->query($update_query);
+				$res = $data['id'];
+				if($res)
+					unset(CObject::$arCache[$this->sTable][$res]);
+				return $res;
+			}
+		}
+
+		$fields = "";
+		$values = "";
+		if (is_array($this->auto_fields))
 			foreach($data as $key=>$item)
-				$query .= "`$key` = '" . $item . "', ";
-			$query = chop($query, " ,");
-			$update_query = "UPDATE " . PREFIX . $table . " SET $query WHERE id = '" . $data['id'] . "'";
-			$ks_db->query($update_query);
-			$res = $data['id'];
+			{
+				if (!in_array($key, $this->auto_fields))
+				{
+					$fields .= "`".$key."`,";
+					$values .= "'$item',";
+				}
+			}
+
+		$fields = chop($fields, " ,");
+		$values = chop($values, " ,");
+		$check = $this->GenCheck($data);		// Проверка на существование записи в таблице
+		if ($check != "")
+		{
+			$ks_db->query("SELECT id FROM ".PREFIX.$table." WHERE $check");
+			$numrows=$ks_db->num_rows();
+		}
+		else
+			$numrows=0;
+		if ($numrows > 0)
+		{
+			throw new CError("MAIN_RECORD_ALREADY_EXISTS",KS_ERROR_MAIN_ALREADY_EXISTS,$this->check_fields);
+			$res = $_REQUEST[$prefix . 'id'];
 		}
 		else
 		{
-			$fields = "";
-			$values = "";
-			if (is_array($this->auto_fields))
-				foreach($data as $key=>$item)
-				{
-					if (!in_array($key, $this->auto_fields))
-					{
-						$fields .= "`".$key."`,";
-						$values .= "'$item',";
-					}
-				}
-
-			$fields = chop($fields, " ,");
-			$values = chop($values, " ,");
-			$check = $this->GenCheck($data);		// Проверка на существование записи в таблице
-			if ($check != "")
-			{
-				$ks_db->query("SELECT id FROM ".PREFIX.$table." WHERE $check");
-				$numrows=$ks_db->num_rows();
-			}
-			else
-				$numrows=0;
-			if ($numrows > 0)
-			{
-				throw new CError("MAIN_RECORD_ALREADY_EXISTS",KS_ERROR_MAIN_ALREADY_EXISTS,$this->check_fields);
-				$res = $_REQUEST[$prefix . 'id'];
-			}
-			else
-			{
-				$query_string = "INSERT INTO " . PREFIX . $table . "($fields) VALUES ($values)";
-				$ks_db->query($query_string);
-				$res = $ks_db->insert_id();
-			}
+			$query_string = "INSERT INTO " . PREFIX . $table . "($fields) VALUES ($values)";
+			$ks_db->query($query_string);
+			$res = $ks_db->insert_id();
 		}
 		if($res)
 			unset(CObject::$arCache[$this->sTable][$res]);
@@ -815,6 +817,7 @@ class CObject extends CBaseList
 		$sOrder='';
 		if (is_array($arOrder))
 		{
+			$arOrderation=array();
 			foreach ($arOrder as $field=>$dir)
 			{
 				/*Добавлена проверка на сложное наименование полей*/
@@ -972,18 +975,32 @@ class CObject extends CBaseList
 		{
 			if (is_array($arSelect))
 			{
-				foreach ($arSelect as $myfield)
+				foreach ($arSelect as $key=>$myfield)
 				{
+					$prefix='';
+					if(is_string($key))
+					{
+						$sNewName=$myfield;
+						$myfield=$key;
+					}
+					else
+					{
+						$sNewName='';
+					}
 					/*Добавлена проверка на сложное наименование полей*/
 					if(substr($myfield,0,1)=='?')
 					{
-						$field[]=substr($myfield,1);
+						$myfield=substr($myfield,1);
+						if($sNewName!='')
+						{
+							$prefix=' AS '.$sNewName;
+						}
+						$field[]=$myfield.$prefix;
 					}
 					elseif(strpos($myfield,'.')>0)
 					{
 						//Значит впереди идет имя таблицы
 						$arField=explode('.',$myfield);
-						$prefix='';
 						if($arField[0]!='')
 						{
 							if(!array_key_exists($arField[0],$this->arTables))
@@ -992,19 +1009,15 @@ class CObject extends CBaseList
 								$code=chr(65+count($this->arTables));
 								$this->arTables[$arField[0]]=$code;
 								$myfield=$code.'.'.$arField[1];
-								if($arField[0]!=$this->sTable) $prefix=' AS '.$arField[0].'_'.$arField[1];
+								if($arField[0]!=$this->sTable) $prefix=' AS '.($sNewName!=''?$sNewName:($arField[0].'_'.$arField[1]));
 							}
 							else
 							{
 								$myfield=$this->arTables[$arField[0]].'.'.$arField[1];
-								if($arField[0]!=$this->sTable) $prefix=' AS '.$arField[0].'_'.$arField[1];
+								if($arField[0]!=$this->sTable) $prefix=' AS '.($sNewName!=''?$sNewName:($arField[0].'_'.$arField[1]));
 							}
 						} else continue;
 						$field[]=$myfield.$prefix;
-						if($bAddCount)
-						{
-							$field[]='COUNT('.$myfield.') AS count_'.$arField[0].'_'.$arField[1];
-						}
 					}
 					else
 					{
@@ -1022,11 +1035,11 @@ class CObject extends CBaseList
 							{
 								$newfield=$this->arTables[$this->sTable].'.'.$myfield;
 							}
-							$field[]=$newfield;
-							if($bAddCount)
+							if($sNewName!='')
 							{
-								$field[]='COUNT('.$newfield.') AS count_'.$myfield;
+								$prefix=' AS '.$sNewName;
 							}
+							$field[]=$newfield.$prefix;
 						}
 					}
 				}
@@ -1303,9 +1316,10 @@ class CObject extends CBaseList
 		}
 
 		if (count($arFil)>0): $sQuery=join(' ,',$arFil);endif;
+		$sWhere='';
 		if(!$bFiltered)
 		{
-			if (is_array($id))
+			if(is_array($id))
 			{
 				foreach ($id as $ItemId)
 				{

@@ -84,11 +84,11 @@ class CHTMLCache extends CCache
 				throw new CError("SYSTEM_CACHE_WRITE_ERROR",1);
 			}
 		}
-		$size = file_put_contents($this->sCacheFile, '<?php /**/?>'.$data);
+		$size = file_put_contents($this->sCacheFile, $data);
 		if ($size == 0)
 		{
 			throw new CError("SYSTEM_CACHE_WRITE_ERROR",0);
 		}
 	}
 }
-?>
+

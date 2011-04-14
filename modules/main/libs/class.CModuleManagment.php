@@ -43,7 +43,7 @@ abstract class CModuleManagment extends CObject
 			$KS_FS->CopyFile(MODULES_DIR.'/main/install/db_structure.php',CONFIG_DIR.'/db_structure.php','');
 		}
 		parent::__construct('main_modules');
-		if(!is_array($_SESSION['notifies'])) $_SESSION['notifies']=array();
+		if(!array_key_exists('notifies',$_SESSION) || !is_array($_SESSION['notifies'])) $_SESSION['notifies']=array();
 		$this->arNotifies=$_SESSION['notifies'];
 		$this->arIsModules=array();
 		$this->arModules=array(
@@ -113,7 +113,7 @@ abstract class CModuleManagment extends CObject
 		$_SESSION['notifies']=array();
 		foreach($this->arNotifies as $arItem)
 		{
-			if(!array_key_exists('life',$arItem))
+			if(array_key_exists('life',$arItem))
 			{
 				$arItem['life']++;
 			}
@@ -505,7 +505,7 @@ abstract class CModuleManagment extends CObject
 	 */
 	function GetHeader()
 	{
-		return join("\n",$this->arHeads)."\n".$this->GetJavaScript();
+		return $this->GetJavaScript()."\n".join("\n",$this->arHeads)."\n";
 	}
 
 	/** Проверяет является ли указанный модуль, модулем.

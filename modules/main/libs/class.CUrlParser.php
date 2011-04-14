@@ -231,7 +231,7 @@ class CUrlParser
 	 */
 	function GoBack()
 	{
-		if($_SESSION['backurl']!='')
+		if(array_key_exists('backurl',$_SESSION) && $_SESSION['backurl']!='')
 		{
 			$arUrl=$this->ParseUrl($_SESSION['backurl']);
 			$arParams=array();

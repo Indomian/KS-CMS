@@ -2,15 +2,17 @@
 /**
  * Класс выполняет операции связанные с обеспечением загрузки файлов
  */
+/*Обязательно вставляем во все файлы для защиты от взлома*/
+if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 class CFileUploader
 {
-	private $sField;
-	private $sSaverName;
-	private $filename;
-	private $extension;
-	private $maxnum;
-	private $sRootDir;
+	protected $sField;
+	protected $sSaverName;
+	protected $filename;
+	protected $extension;
+	protected $maxnum;
+	protected $sRootDir;
 
 	function __construct($sFieldName,$sSaverName='FILE_UPLOADER')
 	{
@@ -18,6 +20,8 @@ class CFileUploader
 		$this->sSaverName=$sSaverName;
 		$this->maxnum=0;
 		$this->sRootDir=UPLOADS_DIR;
+		if(!array_key_exists($this->sSaverName,$_SESSION))
+			$_SESSION[$this->sSaverName]=array();
 	}
 
 	function SetRootDir($sPath)
@@ -124,7 +128,6 @@ class CFileUploader
 					unlink($this->sRootDir.$_SESSION[$this->sSaverName][$this->sField]);
 				}
 			}
-
 			if(strpos($sNewFilename,$this->sRootDir)!==false)
 			{
 				$sNewFilename=substr($sNewFilename,strlen($this->sRootDir));
@@ -141,6 +144,7 @@ class CFileUploader
 			if(!file_exists($this->sRootDir.$arFile['dirname']))
 			{
 				$KS_FS->makedir($this->sRootDir.$arFile['dirname']);
+				$filename=$arFile['basename'];
 			}
 			else
 			{
