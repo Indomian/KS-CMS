@@ -191,7 +191,7 @@ class CFilesObject extends CObject
 						$arItem=$this->GetRecord(array('id'=>$input[$prefix . 'id']));
 						if(is_array($arItem)&&($arItem['id']==$input[$prefix . 'id']))
 						{
-							if (file_exists(UPLOADS_DIR.$arItem[$key]))
+							if (file_exists(UPLOADS_DIR.$arItem[$key])&&is_file(UPLOADS_DIR.$arItem[$key]))
 								unlink(UPLOADS_DIR.$arItem[$key]);
 						}
 					}

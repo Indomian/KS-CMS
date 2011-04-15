@@ -68,7 +68,10 @@ abstract class CBaseList extends CBaseObject
 		$arResult=array();
 		foreach($this->arFields as $field)
 		{
-			$arResult[$field]=$data[$prefix.$field];
+			if(array_key_exists($prefix.$field,$data))
+			{
+				$arResult[$field]=$data[$prefix.$field];
+			}
 		}
 		return $arResult;
 	}

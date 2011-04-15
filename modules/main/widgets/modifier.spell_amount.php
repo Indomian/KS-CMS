@@ -27,6 +27,7 @@ function smarty_modifier_spell_amount($val,$sEnds=false)
 			'def'=>$arEndsTmp[2]
 		);
 	}
+	if($val==0) return $arEnds['def'];
 	if($val==1) return $arEnds['1'];
 	if($val<20)
 	{
