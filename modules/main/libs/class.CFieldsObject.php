@@ -65,7 +65,11 @@ class CFieldsObject extends CFilesObject
 			if (array_key_exists($prefix.$key,$_FILES))
 			{
 				$isFile=$ks_db->safesql(CFieldsValues::ParseValue($value['Field'],$_FILES[$prefix.$key],$prefix));
-				if($isFile!='no')
+				if($isFile=='clear')
+				{
+					$sResult='';
+				}
+				elseif($isFile!='no')
 				{
 					$sResult=$isFile;
 				}

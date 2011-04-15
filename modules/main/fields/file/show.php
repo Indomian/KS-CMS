@@ -14,5 +14,8 @@ if($params['value']!='')
 }
 $sResult.="<input type=\"file\" class=\"form_input\" id=\"".$params['prefix']."ext_".$params['field']['title']."\" name=\"".$params['prefix']."ext_".$params['field']['title']."\">";
 if($params['value']!='')
-$sResult.="<br/><input type=\"checkbox\" name=\"".$params['prefix']."ext_".$params['field']['title']."_del\" value=\"1\"/> Удалить";
+{
+	$sResult.="<br/><input type=\"checkbox\" name=\"".$params['prefix']."ext_".$params['field']['title']."_del\" value=\"1\"/> Удалить";
+	$sResult.="<input type=\"hidden\" name=\"".$params['prefix']."ext_".$params['field']['title']."_path\" value=\"".$params['value']."\"/>";
+}
 ?>
