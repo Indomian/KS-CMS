@@ -15,7 +15,7 @@ require_once 'class.CBaseObject.php';
  * 1. Добавлена поддержка глобальных настроек системы (модуль main);
  *
  * @author North-E <pushkov@kolosstudio.ru>
- * @version 1.1
+ * @version 1.10
  * @since 10.09.2009
  * 1. Сделан читабельный вывод массивов конфигурации в файл
  * 2. Добавлена вложенность массива любого уровня
@@ -81,13 +81,27 @@ class CConfigParser extends CBaseObject
 		else
 		{
 			$dbname = "MODULE_" . $this->sModuleName . "_db_config";
-			$this->arDBConfig = $$dbname;
-			if (!is_array($this->arDBConfig))
-				$this->arDBConfig = false;
+			if(isset($$dbname))
+			{
+				$this->arDBConfig = $$dbname;
+				if (!is_array($this->arDBConfig))
+					$this->arDBConfig = false;
+			}
+			else
+			{
+				$this->arDBConfig=false;
+			}
 			$configname = "MODULE_" . $this->sModuleName . "_config";
-			$this->arConfig = $$configname;
-			if (!is_array($this->arConfig))
-				$this->arConfig = array();
+			if(isset($$configname))
+			{
+				$this->arConfig = $$configname;
+				if (!is_array($this->arConfig))
+					$this->arConfig = array();
+			}
+			else
+			{
+				$this->arConfig=array();
+			}
 		}
 		return $this->arConfig;
 	}

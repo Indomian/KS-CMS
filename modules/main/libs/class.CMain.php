@@ -1259,28 +1259,34 @@ class CObject extends CBaseList
 	 * @param int $incremenet Приращение значения (может быть и отрицательным)
 	 * @return bool
 	 */
-	function Increase($field, $id, $increment = 1)
+	function Increase($field, $arFilter, $increment = 1)
 	{
 		global $ks_db;
 		if(!in_array($field,$this->arFields)) return false;
 		$increment = intval($increment);
-		if (is_array($id) && isset($id['where_field']) && isset($id['where_field_value']))
+		$sWhere=$this->_GenWhere($arFilter);
+		if ($increment)
 		{
-			$where_field = $id['where_field'];
-			$id = $id['where_field_value'];
-		}
-		else
-		{
-			$where_field = "id";
-			$id = intval($id);
-		}
-		if ($increment && $id)
-		{
-			$query = "UPDATE " . PREFIX . $this->sTable . " SET `" . $field . "` = IF((`$field`+$increment)<0,0,`$field`+$increment) WHERE `" . $where_field . "` = '" . $id . "'";
+			if($increment>0)
+			{
+				$query = "UPDATE " . $this->_GenFrom() . " SET `" . $field . "` = IF((`$field`+$increment)<0,0,`$field`+$increment) $sWhere";
+			}
+			else
+			{
+				$query = "UPDATE " . $this->_GenFrom() . " SET `" . $field . "` = IF((`$field`-".abs($increment).")<0 OR `$field`=0,0,`$field`-".abs($increment).") $sWhere";
+			}
 			$ks_db->query($query);
 			return $ks_db->AffectedRows();
 		}
 		return false;
+	}
+
+	/**
+	 * Метод уменьшает значение счётчика на единицу
+	 */
+	function Decrease($field, $arFilter)
+	{
+		return $this->Increase($field, $arFilter,-1);
 	}
 
 	/**Функция выполняет обработку одного элемента при создании списка элементов.

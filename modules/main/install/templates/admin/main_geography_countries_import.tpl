@@ -38,7 +38,7 @@
     		<input type="submit" value="{#import#}" class="save"/>
     	</div>
     	<div>
-    		<a href="{get_url _CLEAR="ACTION type id template"}" class="cancel_button">{#cancel#}</a>
+    		<a href="{get_url _CLEAR="action type id template"}" class="cancel_button">{#cancel#}</a>
     	</div>
    	</div>
 </form>

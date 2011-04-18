@@ -49,7 +49,7 @@ class CModuleAdmin extends CBaseAPI
 		// Обработка порядка вывода элементов
 		if($sortField!='')
 			$sOrderField=(in_array($sortField,$arSortFields))?$sortField:$arSortFields[0];
-		elseif($_SESSION[$this->module]['admin_sort_'.$this->page.'_by']!='')
+		elseif(array_key_exists('admin_sort_'.$this->page.'_by',$_SESSION) && $_SESSION[$this->module]['admin_sort_'.$this->page.'_by']!='')
 			$sOrderField=$_SESSION[$this->module]['admin_sort_'.$this->page.'_by'];
 		else
 			$sOrderField=$this->obModules->GetConfigVar($this->module,'admin_sort_'.$this->page.'_by');

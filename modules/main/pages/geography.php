@@ -190,13 +190,22 @@ class CmainAIgeography extends CModuleAdmin
 		global $KS_URL;
 		$arFields=array(
 			'id'=>intval($_POST['city_id']),
-			'title'=>$_POST['city_title'],
+			'title'=>EscapeHTML($_POST['city_title']),
 			'country_id'=>intval($_POST['city_country_id']),
+			'title_en'=>EscapeHTML($_POST['city_title_en']),
+			'text_ident'=>EscapeHTML($_POST['city_text_ident'])
 		);
 		$bError=0;
 		if(IsEmpty($arFields['title']))
 		{
 			$bError=$this->obModules->AddNotify('MAIN_GEOGRAPHY_CITY_TITLE_REQUIRED');
+		}
+		if(!IsEmpty($arFields['text_ident']))
+		{
+			if(!IsTextIdent($arFields['text_ident']))
+			{
+				$bError=$this->obModules->AddNotify('MAIN_GEOGRAPHY_CITY_TEXT_IDENT_WRONG_REQUIRED');
+			}
 		}
 		if(!$this->obAPI->Country()->GetById($arFields['country_id']))
 		{
@@ -294,7 +303,12 @@ class CmainAIgeography extends CModuleAdmin
 
 	function Run()
 	{
-		switch($_REQUEST['action'])
+		$sAction='';
+		if(array_key_exists('action',$_REQUEST))
+		{
+			$sAction=$_REQUEST['action'];
+		}
+		switch($sAction)
 		{
 			case 'import_countries':
 				return $this->ImportCountriesForm();
@@ -313,6 +327,22 @@ class CmainAIgeography extends CModuleAdmin
 			break;
 			case 'edit_country':
 				return $this->CountryForm(intval($_REQUEST['country_id']));
+			break;
+			case 'delete_city':
+				if(array_key_exists('city_id',$_REQUEST) && intval($_REQUEST['city_id'])>0)
+				{
+					if($arCity=$this->obAPI->City()->GetById(intval($_REQUEST['city_id'])))
+					{
+						$this->obAPI->City()->Delete(intval($_REQUEST['city_id']));
+						$this->obModules->AddNotify('MAIN_GEOGRAPHY_CITY_DELETE_OK','',NOTIFY_MESSAGE);
+						CUrlParser::get_instance()->Redirect("admin.php?".CUrlParser::get_instance()->GetUrl(Array('action','city_id')).'&action=cities');
+					}
+					else
+					{
+						$this->obModules->AddNotify('MAIN_GEOGRAPHY_CITY_NOT_FOUND');
+					}
+				}
+				return $this->TableCities(intval($_REQUEST['country_id']));
 			break;
 			case 'save_country':
 				return $this->SaveCountry();

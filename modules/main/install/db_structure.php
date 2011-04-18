@@ -549,6 +549,14 @@ $arStructure=array(
 			'Default'=>'',
 			'Extra'=>'',
 		),
+		'text_ident'=>array(
+			'Field'=>'text_ident',
+			'Type'=>'char(255)',
+			'Null'=>'NO',
+			'Key'=>'',
+			'Default'=>'',
+			'Extra'=>'',
+		),
 	),
 	'usergroups_levels'=>array(
 		'id' => array(

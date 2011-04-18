@@ -260,7 +260,7 @@
  						foreach ($handlers as $handlerKey => $handler)
  						{
  							/*Проверяем выполнять обработку один раз или много*/
-							if($handler['bOnce']==true)
+							if(array_key_exists('bOnce',$handler) && $handler['bOnce']==true)
 							{
 								unset($this->events[$this->actual_module][$this->actual_event][$handlerKey]);
 							}

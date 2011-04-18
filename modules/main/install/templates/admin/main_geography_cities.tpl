@@ -1,7 +1,7 @@
 <ul class="nav">
 	<li><a href="/admin.php"><img src="{#images_path#}/icons_menu/home.gif" alt="icon_home" height="13" width="13" />&nbsp;<span>{#home#}</span></a></li>
     <li><a href="/admin.php?module=main&modpage=geography"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;<span>{#title_countries#}</span></a></li>
-    <li><a href="{get_url _CLEAR="id"}"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;<span>{$country.title}</span></a></li>
+    <li><a href="{get_url _CLEAR="id city_id" action="cities"}"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;<span>{$country.title}</span></a></li>
 </ul>
 <h1>{#title_cities#} {$country.title}</h1>
 <div class="manage">
@@ -22,17 +22,21 @@
 <div class="users">
 	<table class="layout">
 	    <tr>
-    		<th width="100%">{#field_city_title#}</th>
+    		<th width="50%">{#field_city_title#}</th>
+    		<th width="25%">{#field_city_title_en#}</th>
+    		<th width="25%">{#field_city_text_ident#}</th>
     		<th width="0%"></th>
 		</tr>
 		{if $data}
 			{foreach from=$data item=oItem key=oKey name=fList}
 			<tr {if $smarty.foreach.fList.iteration is even}class="odd"{/if}>
 				<td><a href="/admin.php?module=main&modpage=geography&action=edit_city&country_id={$oItem.country_id}&city_id={$oItem.id}">{$oItem.title}</a></td>
+				<td>{$oItem.title_en}</td>
+				<td>{$oItem.text_ident}</td>
 				<td>
 					<div style="width:60px; text-align: center;">
-						<a href="{get_url ACTION=edit_city country_id=$oItem.country_id city_id=$oItem.id}"><img src="{#images_path#}/icons2/edit.gif" alt="{#edit#}" title="{#edit#}" /></a>
-						<a href="{get_url ACTION=delete_city country_id=$oItem.country_id city_id=$oItem.id}"><img src="{#images_path#}/icons2/delete.gif" alt="{#delete#}" title="{#delete#}" /></a>
+						<a href="{get_url action=edit_city country_id=$oItem.country_id city_id=$oItem.id}"><img src="{#images_path#}/icons2/edit.gif" alt="{#edit#}" title="{#edit#}" /></a>
+						<a href="{get_url action=delete_city country_id=$oItem.country_id city_id=$oItem.id}"><img src="{#images_path#}/icons2/delete.gif" alt="{#delete#}" title="{#delete#}" /></a>
 					</div>
 				</td>
 			</tr>

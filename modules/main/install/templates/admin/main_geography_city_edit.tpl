@@ -29,6 +29,14 @@
 					<td>{Title field="title"}</td>
 					<td><input type="input" style="width:98%" class="form_input" name="city_title" value="{$data.title}"/></td>
 				</tr>
+				<tr>
+					<td>{Title field="title_en"}</td>
+					<td><input type="input" style="width:98%" class="form_input" name="city_title_en" value="{$data.title_en}"/></td>
+				</tr>
+				<tr>
+					<td>{Title field="text_ident"}</td>
+					<td><input type="input" style="width:98%" class="form_input" name="city_text_ident" value="{$data.text_ident}"/></td>
+				</tr>
 			</table>
 		</div>
 		{/strip}{/ksTab}
