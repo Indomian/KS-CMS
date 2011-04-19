@@ -12,6 +12,7 @@ include_once MODULES_DIR.'/main/libs/class.CUsersCommon.php';
 include_once MODULES_DIR.'/main/libs/interface.User.php';
 include_once MODULES_DIR.'/main/libs/class.ImageResizer.php';
 include_once MODULES_DIR.'/main/libs/class.CModulesAccess.php';
+include_once MODULES_DIR.'/main/libs/class.CImageUploader.php';
 
 define('PASSWORD_CHARS','abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890');
 
@@ -460,89 +461,76 @@ class CUser extends CUsersCommon implements User
 				$data[$prefix.'date_register']=time();
 			//Здесь добавлена проверка на то, что файл вобще заливали
 
-			if($_FILES[$prefix.'img']['error']==0)
+			$obImage=new CImageUploader($prefix.'img');
+			$obImage->SetMaxFileSize($this->sSize*1024);
+			$obImage->SetMaxDimension(500,500);
+			$bImage=false;
+			try
 			{
-				//проверка размера файла аватара, если больше чем положено, выводим ошибку
-				if($this->sSize)
-				{
-				    if($_FILES[$prefix."img"]["size"] > ($this->sSize*1024))
-				    {
-					throw new CError('USER_AVA_SIZE_BIG', 0 , '(максимальный размер '.($this->sSize*1024).'кб)');
-				    }
-				}
-				//Проверка расширений файла
-
-				$info = pathinfo(strtolower($_FILES[$prefix."img"]["name"]));
-				if(!in_array($info['extension'],$this->arAllowExt)&&($info['extension']))
-				{
-					throw new CError('PHOTOGALLERY_WRONG_FILE');
-				}
-				//Проверка для самых хитрых, если переименовали расширение файла
-				if ($_FILES[$prefix.'img'])
-				{
-				  $type=getimagesize($_FILES[$prefix . "img"]['tmp_name']);
-				  if($type[2]!=2 &&  $type[2]!=3)
-				  {
-					  throw new CError('PHOTOGALLERY_WRONG_FILE');
-				  }
-				}
+				$bImage=$obImage->IsReady();
 			}
-			else
+			catch(CError $e)
 			{
-				switch($_FILES[$prefix.'img']['error'])
+				switch ($e->getCode())
 				{
-					case UPLOAD_ERR_FORM_SIZE:
-					case UPLOAD_ERR_INI_SIZE:
-						throw new CError('USER_AVA_SIZE_BIG', 0 , '(максимальный размер '.($this->sSize*1024).'кб)');
-					break;
-					case  UPLOAD_ERR_NO_FILE:
-					break;
+					case 1:
+						throw new CError('USER_AVA_SIZE_BIG', 0 , '('.($this->sSize*1024).'Kb)');
 					default:
-						throw new CError('SYSTEM_FILE_NOT_FOUND_OR_NOT_WRITABLE');
+						throw $e;
+					break;
+
 				}
 			}
 			/* Сохраняем данные пользователя и получаем его id */
-			$res = parent::Save($prefix, $data, $mytable);
-			if($_FILES[$prefix.'img']['error']==0)
+			if($res = parent::Save($prefix, $data, $mytable))
 			{
-				//если данные успешно сохранились, делаем проверку дефолтных значений
-    	        if($res && $this->sWidth && $this->sHeight && $_FILES[$prefix.'img'])
-                {
-				    //получаем данные созданного пользователя (существкещего)
-                    $data = $this->GetRecord(array("id" => $res));
-				    //ресайзим картинку как нам надо
-                    $obPhoto = new ImageResizer("/uploads/".$data['img']);
-			    	//дирректорию не создаем, затираем старый файл
-                    $obPhoto->isCreateDir =false;
-                    $obPhoto->Resize($this->sWidth, $this->sHeight, $this->sRatio,$this->sRatio_wb,"/uploads".$this->sUploadPath);
-				}
-			}
-
-			/* Избавляемся от префикса, чтобы в обработчике не заниматься проверкой */
-			if ($prefix != '')
-			{
-				foreach ($data as $data_key => $data_item)
+				if($bImage)
 				{
-					$new_key = preg_replace("#^" . $prefix . "(.*)$#", "$1", $data_key);
-					$onSaveParams[$new_key] = $data_item;
+					//если данные успешно сохранились, делаем проверку дефолтных значений
+					if($res && $this->sWidth && $this->sHeight && $_FILES[$prefix.'img'])
+					{
+						//получаем данные созданного пользователя (существкещего)
+						if($data = $this->GetRecord(array("id" => $res)))
+						{
+							//ресайзим картинку как нам надо
+							$obPhoto = new ImageResizer("/uploads/".$data['img']);
+							//дирректорию не создаем, затираем старый файл
+							$obPhoto->isCreateDir =false;
+							$obPhoto->Resize($this->sWidth, $this->sHeight, $this->sRatio,$this->sRatio_wb,"/uploads".$this->sUploadPath);
+						}
+					}
 				}
+
+				/* Избавляемся от префикса, чтобы в обработчике не заниматься проверкой */
+				if ($prefix != '')
+				{
+					foreach ($data as $data_key => $data_item)
+					{
+						$new_key = preg_replace("#^" . $prefix . "(.*)$#", "$1", $data_key);
+						$onSaveParams[$new_key] = $data_item;
+					}
+				}
+				else
+					$onSaveParams = $data;
+
+				if (!isset($onSaveParams["id"]) || $onSaveParams["id"] <= 0)
+				{
+					/* Устанавливаем id только что созданного пользователя */
+					$onSaveParams["new_user_id"] = $res;
+				}
+				else
+				{
+					/* Запоминаем предыдущие параметры юзера */
+					$onSaveParams["previous_user_row"] = $previous_user_row;
+				}
+
+				if (!$KS_EVENTS_HANDLER->Execute('main', 'onSave', $onSaveParams))
+					throw new CError('MAIN_HANDLER_ERROR');
 			}
 			else
-				$onSaveParams = $data;
-
-			if (!isset($onSaveParams["id"]) || $onSaveParams["id"] <= 0)
 			{
-				/* Устанавливаем id только что созданного пользователя */
-				$onSaveParams["new_user_id"] = $res;
+				throw new CError('MAIN_USER_SAVE_ERROR');
 			}
-			else
-			{
-				/* Запоминаем предыдущие параметры юзера */
-				$onSaveParams["previous_user_row"] = $previous_user_row;
-			}
-
-			if (!$KS_EVENTS_HANDLER->Execute('main', 'onSave', $onSaveParams))
-				throw new CError('MAIN_HANDLER_ERROR');
 		}
 		catch (CError $e)
 		{

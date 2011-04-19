@@ -330,12 +330,24 @@ final class CAdminModuleManagment extends CModuleManagment
 		$this->arModules[$arModule['directory']]=$arModule;
 	}
 
+	/**
+	 * Метод выполняет подключение модуля
+	 */
 	function IncludeModule($arModule)
 	{
-		if(!array_key_exists($arModule['directory'],$this->arModules))
+		if(is_string($arModule) && IsTextIdent($arModule))
 		{
-			$this->InitModule($arModule);
+			$arModule=$this->GetRecord(array('directory'=>$arModule));
 		}
+		if(is_array($arModule))
+		{
+			if(!array_key_exists($arModule['directory'],$this->arModules))
+			{
+				return $this->InitModule($arModule);
+			}
+			return true;
+		}
+		throw new CError('SYSTEM_MODULE_INIT_ERROR','',$arModule);
 	}
 
 	/**

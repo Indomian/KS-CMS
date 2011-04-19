@@ -495,13 +495,19 @@ class CObject extends CBaseList
 				if(($field=='AND'||$field=='OR')&&is_array($value))
 				{
 					//Обработка сложных запросов
-					$sWhere=$this->_GenWhere($value,$field,$step+1);
-					$arFil[]='('.substr($sWhere,7).')';
+					$sWhere=substr($this->_GenWhere($value,$field,$step+1),7);
+					if($sWhere!='')
+					{
+						$arFil[]='('.$sWhere.')';
+					}
 				}
 				elseif(is_numeric($field))
 				{
-					$sWhere=$this->_GenWhere($value,$method,$step+1);
-					$arFil[]='('.substr($sWhere,7).')';
+					$sWhere=substr($this->_GenWhere($value,$method,$step+1),7);
+					if($sWhere!='')
+					{
+						$arFil[]='('.$sWhere.')';
+					}
 				}
 				else
 				{

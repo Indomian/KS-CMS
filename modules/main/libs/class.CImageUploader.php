@@ -27,7 +27,7 @@ class CImageUploader extends CFileUploader
 	function SetMaxDimension($width,$height)
 	{
 		$this->iMaxWidth=$width;
-		$tihs->iMaxHeight=$height;
+		$this->iMaxHeight=$height;
 	}
 
 	function SetMaxFileSize($iSize)

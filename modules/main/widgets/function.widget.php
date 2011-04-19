@@ -62,6 +62,10 @@ function smarty_function_widget($params, &$smarty)
 			return '<!-- widget '.$params['name'].' -->';
 		}
 	}
+	catch (CHTTPError $e)
+	{
+		throw $e;
+	}
 	catch (CError $e)
 	{
 		$smarty->assign($arOldVars);
@@ -72,4 +76,4 @@ function smarty_function_widget($params, &$smarty)
 	}
 }
 
-?>
+

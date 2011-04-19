@@ -240,6 +240,7 @@ class CNavElement extends CFieldsObject
 		{
 			$page_menu['id'] = $res_array['id'];
 			$page_menu['parent_id'] = $res_array['parent_id'];
+			$page_menu['full'] = true;
 		}
 		else
 		{
@@ -256,6 +257,7 @@ class CNavElement extends CFieldsObject
 				{
 					$page_menu['id'] = $res_array['id'];
 					$page_menu['parent_id'] = $res_array['parent_id'];
+					$page_menu['full']=false;
 					break;
 				}
 			}
@@ -272,5 +274,3 @@ class CNavElement extends CFieldsObject
 		return 0;
 	}
 }
-
-?>

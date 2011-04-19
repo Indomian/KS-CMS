@@ -33,6 +33,14 @@ class CModuleAdmin extends CBaseAPI
 		$this->obModules=$parent;
 		$this->sAction='';
 		$this->obUser=&$USER;
+		if($this->obModules->IsActive('interfaces'))
+		{
+			$this->obModules->IncludeModule('interfaces');
+		}
+		else
+		{
+			throw new CError('MAIN_MODULE_NOT_FOUND','','interfaces');
+		}
 	}
 
 	/**
@@ -42,29 +50,48 @@ class CModuleAdmin extends CBaseAPI
 	 * @param $sortDir string - направление сортировки
 	 * @return array - массив, 0 элемент - поле сортировки, 1 - направление
 	 */
-	function InitSort($arSortFields,&$sortField,&$sortDir)
+	protected function InitSort($arSortFields,&$sortField,&$sortDir)
 	{
 		$sOrderField='id';
 		$sOrderDir='asc';
+		if(!array_key_exists($this->module,$_SESSION)) $_SESSION[$this->module]=array();
 		// Обработка порядка вывода элементов
 		if($sortField!='')
 			$sOrderField=(in_array($sortField,$arSortFields))?$sortField:$arSortFields[0];
-		elseif(array_key_exists('admin_sort_'.$this->page.'_by',$_SESSION) && $_SESSION[$this->module]['admin_sort_'.$this->page.'_by']!='')
+		elseif(array_key_exists('admin_sort_'.$this->page.'_by',$_SESSION[$this->module]) && $_SESSION[$this->module]['admin_sort_'.$this->page.'_by']!='')
 			$sOrderField=$_SESSION[$this->module]['admin_sort_'.$this->page.'_by'];
 		else
 			$sOrderField=$this->obModules->GetConfigVar($this->module,'admin_sort_'.$this->page.'_by');
 		//Направление сортировки
 		if($sortDir!='')
-			if($sortDir=='asc')	$sOrderDir='asc';
-			else $sOrderDir='desc';
+		{
+			if($sortDir=='asc')
+				$sOrderDir='asc';
+			else
+				$sOrderDir='desc';
+		}
+		elseif(array_key_exists('admin_sort_'.$this->page.'_dir',$_SESSION[$this->module]) && $_SESSION[$this->module]['admin_sort_'.$this->page.'_dir']!='')
+			$sOrderDir=$_SESSION[$this->module]['admin_sort_'.$this->page.'_dir'];
 		else
-			if($_SESSION[$this->module]['admin_sort_'.$this->page.'_dir']!='')	$sOrderDir=$_SESSION[$this->module]['admin_sort_'.$this->page.'_dir'];
-			else $OrderDir=$this->obModules->GetConfigVar($this->module,'admin_sort_'.$this->page.'_dir');
+			$OrderDir=$this->obModules->GetConfigVar($this->module,'admin_sort_'.$this->page.'_dir');
 		$sOrderField=(in_array($sOrderField,$arSortFields))?$sOrderField:$arSortFields[0];
 		//Сохраняем сортировку в сессию
 		$_SESSION[$this->module]['admin_sort_'.$this->page.'_by']=$sOrderField;
 		$_SESSION[$this->module]['admin_sort_'.$this->page.'_dir']=$sOrderDir;
 		return array($sOrderField,$sOrderDir);
+	}
+
+	/**
+	 * Метод выполняет инициализацию объекта постраничной навигации
+	 */
+	protected function InitPages($iDefault=20)
+	{
+		$iCount=$iDefault;
+		if(array_key_exists('n',$_REQUEST) && $_REQUEST['n']>0)
+		{
+			$iCount=intval($_REQUEST['n']);
+		}
+		return new CPages($iCount);
 	}
 
 	/**

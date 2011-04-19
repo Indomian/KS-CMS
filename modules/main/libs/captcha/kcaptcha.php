@@ -223,7 +223,7 @@ class KCAPTCHA{
 class CCaptcha extends KCAPTCHA
 {
 	/*Производит проверку введенной каптчи и внутренней каптчи, возвращает true или false.*/
-	function CheckCaptcha($code)
+	static function CheckCaptcha($code)
 	{
 		if((strlen($code)>0)&&isset($_SESSION['captcha_keystring']) && $_SESSION['captcha_keystring'] == $code)
 		{
@@ -234,10 +234,9 @@ class CCaptcha extends KCAPTCHA
 		return false;
 	}
 
-	function GetCaptchaUrl()
+	static function GetCaptchaUrl()
 	{
 		return "/modules/main/libs/captcha/index.php?".session_name()."=".session_id().'&rand='.rand(10000,99999);
 	}
 }
 
-?>
