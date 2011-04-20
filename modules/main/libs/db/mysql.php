@@ -7,7 +7,6 @@ KS ENGINE
 
 if( !defined('KS_ENGINE') )  die("Hacking attempt!");
 
-if(!defined('KS_LOG_DB_ERRORS')) define('KS_LOG_DB_ERRORS',1);
 require_once 'class.CDBInterface.php';
 /**
 Класс выполняет роль интерфейса к базе данных типа mysql. Логгирует все SQL запросы

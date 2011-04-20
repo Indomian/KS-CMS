@@ -30,4 +30,12 @@ class CUsersCommon extends CFieldsObject
 		parent::__construct($sTable,$sUploadPath,$sModule);
 		$this->obLinks=new CObject('users_grouplinks');
 	}
+
+	/**
+	 * Метод вызвается при удалении группы пользователей, при этом все пользователи удаляются из этой группы
+	 */
+	function OnDeleteUserGroup($iGroupId)
+	{
+		$this->obLinks->DeleteItems(array('group_id'=>$iGroupId));
+	}
 }

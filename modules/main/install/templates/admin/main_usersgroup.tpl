@@ -21,9 +21,12 @@
 {strip}
 <div class="users">
  	<table class="layout">
+		<col/>
+		<col width="100%"/>
+		<col/>
     	<tr>
-    		<th width="0%"><a href="{get_url order=id dir=$order.newdir}">{#field_id#}</a>&nbsp;{if $order.field=='id'}<img src="{#images_path#}/{if $order.curdir=='asc'}up{else}down{/if}.gif" width="18" height="18" alt="x" />{/if}</th>
-    		<th width="100%"><a href="{get_url order=title dir=$order.newdir}">{#field_title#}</a>&nbsp;{if $order.field=='title'}<img src="{#images_path#}/{if $order.curdir=='asc'}up{else}down{/if}.gif" width="18" height="18" alt="x" />{/if}</th>
+			{TableHead field="id" order=$order}
+			{TableHead field="title" order=$order}
     		<th width="0%"></th>
 		</tr>
 		{foreach from=$list item=oItem key=oKey name=fList}

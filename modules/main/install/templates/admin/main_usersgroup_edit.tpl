@@ -30,7 +30,7 @@
     					<th width="30%">{#header_field#}</th>
     					<th width="70%">{#header_value#}</th>
     				</tr>
-    				<tr>
+    				<tr class="is_necessary_light">
     					<td>{Title field="title"}</td>
     					<td><input type="text" name="CUG_title"  class="form_input"  value="{$userdata.title|htmlspecialchars:2:"UTF-8":false}" style="width:98%"></td>
     				</tr>
@@ -92,6 +92,9 @@
     <div class="form_buttons">
     	<div>
     		<input type="submit" value="{#save#}" class="save"/>
+    	</div>
+    	<div>
+    		<input type="submit" value="{#apply#}" name="update"/>
     	</div>
     	<div>
     		<a href="{get_url _CLEAR="ACTION id"}" class="cancel_button">{#cancel#}</a>

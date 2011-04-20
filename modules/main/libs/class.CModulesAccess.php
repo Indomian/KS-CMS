@@ -49,6 +49,7 @@ class CModulesAccess extends CFieldsObject implements BaseAccess
 		if($res=$ks_db->query("SELECT * FROM ".$this->_GenFrom().$sWhere))
 		{
 			$i=0;
+			$arResult=array();
 			while($arRow=$ks_db->get_row($res))
 			{
 				$arResult[$arRow['module']]=$arRow;

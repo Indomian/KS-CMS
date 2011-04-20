@@ -3,9 +3,9 @@ if($this->obUser->IsLogin())
 {
 	$access = $this->obUser->GetLevel("main");
 	$this->AddMenuItem(MenuItem("GLOBAL", "MAIN", "module=main&modpage=main", $this->GetText('menu_general'), "other_poss"));
-	if ($access<=8)
+	if ($access<=10)
 	{
-		if ($access <= 3) $this->AddMenuItem(MenuItem("USERS","MAIN","module=main&modpage=users",$this->GetText('menu_users'),'user.gif '),"GLOBAL");
+		if ($access <= 9) $this->AddMenuItem(MenuItem("USERS","MAIN","module=main&modpage=users",$this->GetText('menu_users'),'user.gif '),"GLOBAL");
 		if ($access <= 2) $this->AddMenuItem(MenuItem("USERGROUPS","MAIN","module=main&modpage=usergroups",$this->GetText('menu_usergroups'),'group.gif '),"GLOBAL");
 		if ($access == 0) $this->AddMenuItem(MenuItem("MODULES","MAIN","module=main&modpage=modules",$this->GetText('menu_module_control'),'module.gif '),"GLOBAL");
 		if ($access <= 7)

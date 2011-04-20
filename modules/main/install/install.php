@@ -18,7 +18,7 @@ $module_name='main';
 
 include MODULES_DIR.'/main/install/db_structure.php';
 include_once MODULES_DIR.'/main/libs/class.CUserGroup.php';
-include_once MODULES_DIR.'/main/libs/class.CUsersCommon.php';
+include_once MODULES_DIR.'/main/libs/class.CUser.php';
 include_once MODULES_DIR.'/main/libs/class.CModulesAccess.php';
 
 //Список таблиц модуля
@@ -124,7 +124,7 @@ if(is_array($arAccess['groups']))
 	}
 }
 
-$obUser=new CBaseUser();
+$obUser=new CObject('users');
 if(!$obUser->GetRecord(array('id'=>1)))
 {
 	//Добавляем администратора
@@ -137,7 +137,10 @@ if(!$obUser->GetRecord(array('id'=>1)))
 	);
 	$obUser->Save('',$arFields);
 }
-$obUser->SetAllUserGroups(1,array(1));
+if($obUser=new CUser())
+{
+	$obUser->SetAllUserGroups(1,array(1));
+}
 
 //Создаем системные директории
 if(!file_exists(SYS_TEMPLATES_DIR))

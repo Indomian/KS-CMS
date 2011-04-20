@@ -24,6 +24,8 @@ class CmainAIusers extends CModuleAdmin
 	{
 		parent::__construct($module,$smarty,$parent);
 		$this->obGroups=new CUserGroup();
+		//Устанавливаем значение для правильного вывода меню в верхней части шаблона
+		$this->smarty->assign('modpage','users');
 	}
 
 	function Table()
@@ -119,7 +121,7 @@ class CmainAIusers extends CModuleAdmin
 			{
 				/* Чтение пользовательских полей модуля users */
 				$obFields = new CFields();
-				$arFields = $obFields->GetList(array("id" => "asc"), array("module" => "users", "type" => $USER->sTable));
+				$arFields = $obFields->GetList(array("id" => "asc"), array("module" => "users", "type" => $this->obUser->sTable));
 				if (is_array($arFields))
 					foreach($arFields as $item)
 						$data['ext_'.$item["title"]] = $item["default"];
@@ -127,14 +129,15 @@ class CmainAIusers extends CModuleAdmin
 		}
 		else
 		{
-			$data["GROUPS"] = $this->obUser->GetAllGroups($data['id']);
+			if(array_key_exists('id',$data) && $data['id']>0)
+				$data["GROUPS"] = $this->obUser->GetAllGroups($data['id']);
 		}
 		$this->smarty->assign("groupslist",$this->obGroups->GetList());
 		$this->smarty->assign("userdata",$data);
 		if (class_exists("CFields"))
 		{
 			$obFields=new CFields();
-			$arFields=$obFields->GetList(Array("id"=>"asc"),Array("module"=>"users","type"=>$USER->sTable));
+			$arFields=$obFields->GetList(Array("id"=>"asc"),Array("module"=>"users","type"=>$this->obUser->sTable));
 			$this->smarty->assign("addFields",$arFields);
 		}
 		return '_edit';
@@ -148,13 +151,18 @@ class CmainAIusers extends CModuleAdmin
 		global $KS_URL;
 		try
 		{
+			if($this->obUser->GetLevel('main')>8)
+			{
+				$this->obModules->AddNotify('MAIN_NO_RIGHT_TO_MANAGE_USERS');
+				return $this->Table();
+			}
 			/**
 			 * @todo Разобраться с этим кодом, возможно здесь он не нужен
 			 */
 			$this->obUser->AddAutoField("id");
-			$this->obUser->sWidth=$this->obModules->GetConfigVar('users','avasizex',0);
-			$this->obUser->sHeight=$this->obModules->GetConfigVar('users','avasizey',0);
-			$this->obUser->sSize=$this->obModules->GetConfigVar('users','avasize',0);
+			$this->obUser->sWidth=$this->obModules->GetConfigVar('main','avasizex',500);
+			$this->obUser->sHeight=$this->obModules->GetConfigVar('main','avasizey',500);
+			$this->obUser->sSize=$this->obModules->GetConfigVar('main','avasize',100);
 			$this->obUser->sRatio=true;
 			$this->obUser->sRatio_wb=false;
 
@@ -301,18 +309,9 @@ class CmainAIusers extends CModuleAdmin
 				throw new CDataError('MAIN_USERS_FIELDS_ERROR');
 			}
 		}
-		catch(CDataError $e)
-		{
-			$userdata=$this->obUser->GetFromPost('CU_',$_POST);
-			$userdata["GROUPS"] = $this->obUser->GetAllGroups($id);
-			$this->smarty->assign("last_error",$e->__toString());
-			return $this->EditForm($userdata);
-		}
 		catch(CError $e)
 		{
-			$id = intval($_REQUEST["id"]);
-			$userdata=$this->obUser->GetRecord(array('id'=>$id));
-			$userdata["GROUPS"] = $this->obUser->GetAllGroups($id);
+			$userdata=$this->obUser->GetFromPost('CU_',$_POST);
 			$this->smarty->assign("last_error",$e->__toString());
 			return $this->EditForm($userdata);
 		}
@@ -323,7 +322,10 @@ class CmainAIusers extends CModuleAdmin
 		global $KS_URL;
 		/* Проверка прав доступа к редактированию пользователей */
 		if ($this->obUser->GetLevel("main") > 9) throw new CAccessError("MAIN_NO_RIGHT_TO_VIEW_USERS");
-
+		if($this->obUser->GetLevel('main')>8)
+		{
+			$this->smarty->assign('shortMode','Y');
+		}
 		$userdata=false;
 		if(array_key_exists('ACTION',$_REQUEST))
 			$sAction=$_REQUEST['ACTION'];
@@ -379,6 +381,8 @@ class CmainAIusers extends CModuleAdmin
 					$page=$this->Save();
 				break;
 				case 'delete':
+					if ($this->obUser->GetLevel("main") > 3)
+						throw new CAccessError("MAIN_NO_RIGHT_TO_MANAGE_USERS");
 					if($iId!=$this->obUser->ID())
 					{
 						if($arUser=$this->obUser->GetById($iId))

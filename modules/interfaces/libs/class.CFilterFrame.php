@@ -37,6 +37,7 @@ class CFilterFrame extends CFrame
 		{
 			$method='';
 		}
+		$arFrom=array();
 		if(strtolower($method)=='post')
 		{
 			//Ацкий чит из-за точки в пхп
@@ -62,7 +63,8 @@ class CFilterFrame extends CFrame
 				}
 				else
 				{
-					$arFrom[urldecode($arItem[0])]=urldecode($arItem[1]);
+					if(count($arItem)==2)
+						$arFrom[urldecode($arItem[0])]=urldecode($arItem[1]);
 				}
 			}
 		}

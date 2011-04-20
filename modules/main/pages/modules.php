@@ -30,7 +30,7 @@ class CmainAImodules extends CModuleAdmin
 		if ($this->obUser->GetLevel('main') > 0) throw new CAccessError("MAIN_ACCESS_SITE_PREFERENCES_CLOSED");
 
 		/* Проверка, что пользователь является администратором */
-		if (!$this->obUser->is_admin()) throw new CAccessError("MAIN_ACCESS_SITE_PREFERENCES_CLOSED");
+		if (!$this->obUser->IsAdmin()) throw new CAccessError("MAIN_ACCESS_SITE_PREFERENCES_CLOSED");
 
 		/* Проверяем, не нужно ли выполнить общее действие над выбранными модулями */
 		if(array_key_exists('ACTION',$_POST)&&($_POST['ACTION']=='common'))
@@ -53,9 +53,11 @@ class CmainAImodules extends CModuleAdmin
 		}
 
 		$arActivate=array('active'=>0);
-
+		$sAction='';
+		if(array_key_exists('CM_ACTION',$_REQUEST))
+			$sAction=$_REQUEST['CM_ACTION'];
 		/* Определяем запрошенное действие и выбираем соответствующий шаблон для Смарти */
-		switch($_REQUEST['CM_ACTION'])
+		switch($sAction)
 		{
 			case "activate":
 				$arActivate=array('active'=>intval($_REQUEST['ac']==1)?0:1);
@@ -71,7 +73,7 @@ class CmainAImodules extends CModuleAdmin
 				$page='_modules_edit';
 			break;
 			case "save":
-				if ($this->obUser->is_admin())
+				if ($this->obUser->IsAdmin())
 				{
 					try
 					{
@@ -158,7 +160,7 @@ class CmainAImodules extends CModuleAdmin
 				$page='_modules_uninstall';
 			break;
 			case "def":
-				if($this->obUser->is_admin())
+				if($this->obUser->IsAdmin())
 				{
 					if($arModule=$this->obModules->GetRecord(array('URL_ident'=>'default')))
 					{

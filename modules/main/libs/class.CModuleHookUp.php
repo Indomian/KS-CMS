@@ -210,7 +210,7 @@ class CModuleHookUp extends CModuleManagment
    			{
    				include_once MODULES_DIR.'/'.$arModule['directory'].'/init.inc.php';
    			}
-    			if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/main.init.php'))
+    		if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/main.init.php'))
    			{
    				include_once MODULES_DIR.'/'.$arModule['directory'].'/main.init.php';
    			}

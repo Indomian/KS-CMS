@@ -148,12 +148,14 @@
 		{/if}
 	{/ksTabs}
 	<div class="form_buttons">
+		{if $shortMode!='Y'}
     	<div>
     		<input type="submit" value="{#save#}" class="save" name="save"/>
     	</div>
     	<div>
     		<input type="submit" value="{#apply#}" name="update"/>
     	</div>
+    	{/if}
     	<div>
     		<a href="{get_url _CLEAR="ACTION id"}" class="cancel_button">{#cancel#}</a>
     	</div>

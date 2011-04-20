@@ -31,16 +31,20 @@
 	{strip}
 	<div class="users">
 		<table class="layout">
-			<col width="0%"/>
+			{if $shortMode!='Y'}
+				<col width="0%"/>
+			{/if}
 			<col/>
 			<col width="70%"/>
 			<col width="20%"/>
 			<col width="5%"/>
 			<col/>
 			<tr>
+				{if $shortMode!='Y'}
 				<th width="0%">
 					<input type="checkbox" name="sel[ALL]" value="ALL" onClick="checkAll(this.form,this.checked)">
 				</th>
+				{/if}
 				{TableHead field="id" order=$order}
 				{TableHead field="title" order=$order}
 				{TableHead field="last_visit" order=$order}
@@ -49,29 +53,35 @@
 			</tr>
 			{foreach from=$list item=oItem key=oKey name=fList}
 			<tr {if $smarty.foreach.fList.iteration is even}class="odd"{/if}>
+				{if $shortMode!='Y'}
 				<td>
 					<input type="checkbox" name="sel[elm][]" value="{$oItem.id}"/>
 					<input type="hidden" name="title[{$oItem.id}]" value="{$oItem.title}"/>
 				</td>
+				{/if}
 				<td>{$oItem.id}</td>
 				<td>
-					{if $level<4}<a href="{get_url _CLEAR="CU_order.*" ACTION=edit id=$oItem.id}">{/if}
+					<a href="{get_url _CLEAR="CU_order.*" ACTION=edit id=$oItem.id}">
 						{$oItem.title}
-					{if $level<4}</a>{/if}
+					</a>
 				</td>
 				<td>{if $oItem.last_visit==0}{#never#}{else}{$oItem.last_visit|date_format:"%H:%M:%S %d.%m.%y"}{/if}</td>
 				<td align="center"><img src="{#images_path#}/icons2/active{$oItem.active}.gif" border=0></td>
 				<td align="center">
-					{if $level<4}
 					<div style="width:48px;">
+						{if $shortMode=='Y'}
+						<a href="{get_url _CLEAR="CU_order.*" ACTION=edit id=$oItem.id}" title="{#view#}">
+							<img src="{#images_path#}/icons2/view.gif" alt="{#view#}" />
+						</a>
+						{else}
 						<a href="{get_url _CLEAR="CU_order.*" ACTION=edit id=$oItem.id}" title="{#edit#}">
 							<img src="{#images_path#}/icons2/edit.gif" alt="{#edit#}" />
 						</a>
 						<a href="{get_url _CLEAR="CU_order.*" ACTION=delete id=$oItem.id}" onclick="return confirm('{#delete_confirm#}')" title="{#delete#}">
 							<img src="{#images_path#}/icons2/delete.gif" alt="{#delete#}" />
 						</a>
+						{/if}
 					</div>
-					{/if}
 				</td>
 			</tr>
 			{/foreach}
@@ -79,7 +89,7 @@
 	</div>
 	{/strip}
 	{include file='admin/navigation_pagecounter.tpl' pages=$pages}
-	{if $level<4}
+	{if $shortMode!='Y'}
 	<div class="manage">
 		<table class="layout">
 			<tr class="titles">

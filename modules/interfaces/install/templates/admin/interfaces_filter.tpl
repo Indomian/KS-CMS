@@ -37,19 +37,25 @@
 					{/strip}
 					</select></td>
 				{elseif $oItem.TYPE=='DATE'}
-					<td>{#from#} <input type="text" id="ff{$oItem.FIELD}_1" readonly="readonly" name="ff{$oItem.FIELD|replace:".":"^"}[]" value="{$oItem.VALUE[0]|date_format:"%d.%m.%Y %H:%M"}" style="width:100px;" class="form_input"/>
-					<img src="{#images_path#}/calendar/img.gif" id="ff{$oItem.FIELD}_1_btn" style="border: 0pt none ; cursor: pointer;" title="{#select_date#}" align="absmiddle"/>
-					{#to#} <input type="text" id="ff{$oItem.FIELD}_2" readonly="readonly" name="ff{$oItem.FIELD|replace:".":"^"}[]" value="{$oItem.VALUE[1]|date_format:"%d.%m.%Y %H:%M"}" style="width:100px;" class="form_input" title="{#select_date#}"/>
-					<img src="{#images_path#}/calendar/img.gif" id="ff{$oItem.FIELD}_2_btn" style="border: 0pt none ; cursor: pointer;" title="Выбор даты спомощью календаря" align="absmiddle"/>
-					<script type="text/javascript">
-						$(document).bind("InitCalendar",function(){ldelim}
-							$("#ff{$oItem.FIELD}_1").datetimepicker({ldelim}dateFormat:{#date_format#},timeFormat:{#time_format#},dayNames:{#days#},dayNamesMin:{#daysMin#},dayNamesShort:{#daysShort#},monthNames:{#monthes#}{rdelim});
-							$("#ff{$oItem.FIELD}_2").datetimepicker({ldelim}dateFormat:{#date_format#},timeFormat:{#time_format#},dayNames:{#days#},dayNamesMin:{#daysMin#},dayNamesShort:{#daysShort#},monthNames:{#monthes#}{rdelim});
-							$("#ff{$oItem.FIELD}_1_btn").click(function(){ldelim}$("#ff{$oItem.FIELD}_1").datetimepicker('show'){rdelim});
-							$("#ff{$oItem.FIELD}_2_btn").click(function(){ldelim}$("#ff{$oItem.FIELD}_2").datetimepicker('show'){rdelim});
-						{rdelim});
-						$(document).ready(function(){ldelim}$(document).trigger("InitCalendar");{rdelim});
-					</script>
+					<td style="padding:0;vertical-align:middle;">
+						<table class="layout">
+							<tr>
+								<td style="vertical-align:middle;">{#from#}</td>
+								<td>
+									<div class="date_selector">
+										<input type="text" id="ff{$oItem.FIELD}_1" readonly="readonly" name="ff{$oItem.FIELD|replace:".":"^"}[]" value="{$oItem.VALUE[0]|date_format:"%d.%m.%Y %H:%M"}" class="date_input"/>
+										<img src="{#images_path#}/calendar/img.gif" id="ff{$oItem.FIELD}_1_btn" title="{#select_date#}" align="absmiddle" class="date_button"/>
+									</div>
+								</td>
+								<td style="vertical-align:middle;">{#to#}</td>
+								<td>
+									<div class="date_selector">
+										<input type="text" id="ff{$oItem.FIELD}_2" readonly="readonly" name="ff{$oItem.FIELD|replace:".":"^"}[]" value="{$oItem.VALUE[1]|date_format:"%d.%m.%Y %H:%M"}" class="date_input" title="{#select_date#}"/>
+										<img src="{#images_path#}/calendar/img.gif" id="ff{$oItem.FIELD}_2_btn" title="{#select_date#}" align="absmiddle" class="date_button"/>
+									</div>
+								</td>
+							</tr>
+						</table>
 					</td>
 				{elseif $oItem.METHOD=='<>'}
 					<td>{#from#} <input type="text" id="ff{$oItem.FIELD}_1" name="ff{$oItem.FIELD|replace:".":"^"}[]" value="{$oItem.VALUE[0]}" style="width:100px;" class="text_field"/>
@@ -69,3 +75,21 @@
 	</fieldset>
 </form>
 <div class="content_arrow_{if $hideFilter==0}down{else}up{/if}" style="cursor:pointer;" onclick="ToggleFilterPanel(this);"> </div>
+<script type="text/javascript">
+{literal}
+$(document).bind("InitCalendar",function(){
+	$(".date_input").datetimepicker({{/literal}
+			dateFormat:{#date_format#},
+			timeFormat:{#time_format#},
+			dayNames:{#days#},
+			dayNamesMin:{#daysMin#},
+			dayNamesShort:{#daysShort#},
+			monthNames:{#monthes#}
+	{literal}});
+	$(".date_button").click(function(){
+		$(this).parent().children('.date_input').datetimepicker('show')
+	});
+});
+$(document).ready(function(){$(document).trigger("InitCalendar");});
+{/literal}
+</script>

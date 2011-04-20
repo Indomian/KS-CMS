@@ -141,6 +141,7 @@ text-align: left;
 .top_menu ul li.u_s {width: 168px; background: url('/uploads/templates/admin/images/top_menu/03.gif');}
 .top_menu ul li.u_p {width: 208px; background: url('/uploads/templates/admin/images/top_menu/02.gif');}
 .top_menu ul li.u_pl {width: 208px; background: url('/uploads/templates/admin/images/top_menu/022.gif');}
+.top_menu ul li.u_p2_a {width: 208px; background: url('/uploads/templates/admin/images/top_menu/043.gif');}
 .top_menu ul li.u_b {width: 208px; background: url('/uploads/templates/admin/images/top_menu/021.gif');}
 
 .top_menu ul li a {text-transform: uppercase; line-height: 16px; display: block; color:#fff; text-decoration: none; height: 40px; padding: 26px 0 0 74px;}
@@ -233,6 +234,7 @@ input.button_copy
 ------------------- */
 .search {margin: 2px 0 0 0; padding: 0; overflow: hidden; background:#fff; padding: 8px; border: 1px solid #E5E5E5;}
 .search input {padding: 4px; font-family: tahoma; font-size: 12px; color:#70808D; border: 1px solid #D2D2D2; background:#EDEDED;}
+.search input.date_input {background:white;}
 .search .text_field {width: 270px; background:#fff; color:#000;}
 .search .search_button {padding-left: 27px; background: #EDEDED url('/uploads/templates/admin/images/icons2/folder_search.gif') 5px top no-repeat; cursor: pointer;}
 

@@ -20,7 +20,10 @@ class CmainAIpassword extends CModuleAdmin
 		if ($_GET['lostpwd'] == 'Y')
 		{
 			$step = 1;
-			if ($_POST['step'] == 2)
+			$iStep=1;
+			if(array_key_exists('step',$_POST))
+				$iStep=intval($_POST);
+			if ($iStep == 2)
 			{
 				$step = 2;
 				/* Переданный почтовый адрес администратора */
@@ -81,10 +84,9 @@ class CmainAIpassword extends CModuleAdmin
 					}
 				}
 			}
-
-			/* По присланому коду восстанавливаем пароль */
-			if ($_GET['step'] == 3)
+			elseif ($iStep == 3)
 			{
+				/* По присланому коду восстанавливаем пароль */
 				if (array_key_exists('c', $_GET) && array_key_exists('id',$_GET))
 				{
 					if($arUser=$this->obUser->GetRecord(array('id' => intval($_GET['id']),'code'=>$_GET['c'])))

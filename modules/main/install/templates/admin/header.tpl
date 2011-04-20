@@ -58,12 +58,16 @@
 					<td valign="top" width="100%">
 						<div class="top_menu">
 							<ul style="left: -5px;">
-								<li class="u_s{if $modpage!='users' and $modpage!='lite'}_a{/if}"><a href="/admin.php?module=main&modpage=main">{#top_menu_1#}</a></li>
-								{if $bShowTreeView=='Y'}
-								<li class="u_p{if $modpage=='users'}_a{/if}"><a href="/admin.php?module=main&modpage=users">{#top_menu_2#}</a></li>
-								<li class="u_b{if $modpage=='lite'}_a{/if}"><a href="/admin.php?module=main&modpage=lite">{#top_menu_3#}</a></li>
+								{if $bShowOnlyUsers=="Y"}
+									<li class="u_p2{if $modpage=='users'}_a{/if}"><a href="/admin.php?module=main&modpage=users">{#top_menu_2#}</a></li>
 								{else}
-								<li class="u_pl{if $modpage=='users'}_a{/if}"><a href="/admin.php?module=main&modpage=users">{#top_menu_2#}</a></li>
+									<li class="u_s{if $modpage!='users' and $modpage!='lite'}_a{/if}"><a href="/admin.php?module=main&modpage=main">{#top_menu_1#}</a></li>
+									{if $bShowTreeView=='Y'}
+										<li class="u_p{if $modpage=='users'}_a{/if}"><a href="/admin.php?module=main&modpage=users">{#top_menu_2#}</a></li>
+										<li class="u_b{if $modpage=='lite'}_a{/if}"><a href="/admin.php?module=main&modpage=lite">{#top_menu_3#}</a></li>
+									{else}
+										<li class="u_pl{if $modpage=='users'}_a{/if}"><a href="/admin.php?module=main&modpage=users">{#top_menu_2#}</a></li>
+									{/if}
 								{/if}
 							</ul>
 							<div class="hint">

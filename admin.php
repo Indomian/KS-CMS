@@ -247,7 +247,7 @@ elseif(array_key_exists('restore',$_GET))
 		else
 		{
 			//ключа нету..шлем админу письмо о восстановлении
-			include CONFIG_DIR.'/sys_config.php';
+			include_once CONFIG_DIR.'/sys_config.php';
 			if($ks_config['admin_email']!='')
 			{
 				mail($ks_config['admin_email'],'Site restore email',
@@ -291,7 +291,7 @@ if (file_exists(MODULES_DIR.'/main'))
 {
 	/*! инициализация констант, БД, смарти, поиск главного модуля. */
 	//Подгрузка версии системы
-	include CONFIG_DIR.'/version.php';
+	include_once CONFIG_DIR.'/version.php';
  	$KS_VERSION=$arVersion;
 	try
 	{
@@ -301,7 +301,7 @@ if (file_exists(MODULES_DIR.'/main'))
 	}
 	catch(CUserError $e)
 	{
-		if(intval($_GET['ajax'])>0)
+		if(array_key_exists('ajax',$_GET))
 		{
 			echo json_encode(array('error'=>$e->getMessage(),'text'=>$e->GetErrorText()));
 			exit();
@@ -310,7 +310,7 @@ if (file_exists(MODULES_DIR.'/main'))
 		{
 			$smarty->assign('VERSION',$KS_VERSION);
 			$smarty->assign('last_error',$e->GetErrorText());
-			if($_GET['lostpwd'] == 'Y')
+			if(array_key_exists('lostpwd',$_GET) && $_GET['lostpwd'] == 'Y')
 			{
 				$page=$KS_MODULES->LoadModulePage('main','password');
 			}

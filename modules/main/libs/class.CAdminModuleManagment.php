@@ -298,36 +298,46 @@ final class CAdminModuleManagment extends CModuleManagment
 	 */
 	function InitModule($arModule)
 	{
-		if(array_key_exists($arModule['directory'],$this->arModules)) return;
-		if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/config.php'))
+		if(is_string($arModule) && IsTextIdent($arModule))
 		{
-			include(MODULES_DIR.'/'.$arModule['directory'].'/config.php');
-			$var="MODULE_".$arModule['directory']."_config";
-			if(isset($$var))
+			if(array_key_exists($arModule,$this->arModules)) return;
+			$arModule=$this->GetRecord(array('directory'=>$arModule));
+		}
+		if(is_array($arModule))
+		{
+			if(array_key_exists($arModule['directory'],$this->arModules)) return;
+			if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/config.php'))
 			{
-				$arModule['config']=$$var;
+				include(MODULES_DIR.'/'.$arModule['directory'].'/config.php');
+				$var="MODULE_".$arModule['directory']."_config";
+				if(isset($$var))
+				{
+					$arModule['config']=$$var;
+				}
+				else
+				{
+					$arModule['config']=array();
+				}
+			}
+			if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/.access.php'))
+			{
+				$arLevels=array();
+				$this->obLanguage->LoadSection($arModule['directory']);
+				include(MODULES_DIR.'/'.$arModule['directory'].'/.access.php');
+				$arModule['ALEVELS']=$arLevels;
 			}
 			else
 			{
-				$arModule['config']=array();
+				$arModule['ALEVELS']=array('0'=>$this->GetText('access_full'),'10'=>$this->GetText('access_denied'));
 			}
+			if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/admin.init.php'))
+			{
+				include(MODULES_DIR.'/'.$arModule['directory'].'/admin.init.php');
+			}
+			$this->arModules[$arModule['directory']]=$arModule;
+			return;
 		}
-		if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/.access.php'))
-		{
-			$arLevels=array();
-			$this->obLanguage->LoadSection($arModule['directory']);
-			include(MODULES_DIR.'/'.$arModule['directory'].'/.access.php');
-			$arModule['ALEVELS']=$arLevels;
-		}
-		else
-		{
-			$arModule['ALEVELS']=array('0'=>'Полный доступ','10'=>'Доступ закрыт');
-		}
-		if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/admin.init.php'))
-		{
-			include(MODULES_DIR.'/'.$arModule['directory'].'/admin.init.php');
-		}
-		$this->arModules[$arModule['directory']]=$arModule;
+		throw new CError('MAIN_MODULE_NOT_FOUND','',$arModule);
 	}
 
 	/**
