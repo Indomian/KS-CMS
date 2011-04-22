@@ -15,24 +15,17 @@ require_once 'class.CDBInterface.php';
 \version 1.3
 \author dotj <dotj@kolosstudio.ru>
 */
-class mysql extends CDBInterface
+final class mysql extends CDBInterface
 {
-	private $ks_db_id = false; 						/**<Ресурс подключения к базе данных*/
-	var $connected = false;				/**<флаг подключения к базе данных*/
-	var $query_num = 0;					/**<количество выполненных запросов*/
-	var $query_list = array();			/**<список выполненных запросов*/
-	var $mysql_error = '';					/**<ошибка работы db*/
-	protected $iVersion;				/**<Версия mysql*/
-	var $mysql_error_num = 0;			/**<номер ошибки db*/
-	var $mysql_extend = "MySQL";		/**<фиг знает*/
-	var $MySQL_time_taken = 0;			/**<время которое ушло на исполнение запросов*/
-	var $query_id = false;					/**<номер запроса*/
-
-	protected $arBackUpData;						/**<массив содержащий данные которые будут подвергнуты изменениям, необходим для сохранения данных.*/
-	protected $iBegin=0;						/**<обозначет количество вложенных вызовов системы отката*/
-	protected $arRequests;			/**<В массиве храняться тексты всех запросов к БД в рамках одного вызова (если включен режим отладки) \since 1.2*/
-	protected $iDebug;				/**<Флаг указывает на необходимость сохранения запросов к бд \since 1.2*/
-	protected $arColumnTypes;		/**<Массив со списком доступных типов полей*/
+	private $ks_db_id = false; 			/**<Ресурс подключения к базе данных*/
+	private $connected = false;			/**<флаг подключения к базе данных*/
+	private $query_num = 0;				/**<количество выполненных запросов*/
+	private $mysql_error = '';			/**<ошибка работы db*/
+	private $mysql_error_num = 0;			/**<номер ошибки db*/
+	private $MySQL_time_taken = 0;			/**<время которое ушло на исполнение запросов*/
+	private $query_id = false;				/**<номер запроса*/
+	private $iVersion;				/**<Версия mysql*/
+	private $arColumnTypes;		/**<Массив со списком доступных типов полей*/
 
 	/**Конструктор класса.
 	 * \param $debug - устанавливает уровень отладки

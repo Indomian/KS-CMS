@@ -20,7 +20,7 @@
 					</tr>
 					<tr>
 						<td>{Title field="mode"}</td>
-						<td><select name="mode">
+						<td><select name="mode" class="form_input">
 							<option value="list"{if $data.mode=='list'} selected="selected"{/if}>{#mode_list#}</option>
 							<option value="tree"{if $data.mode=='tree'} selected="selected"{/if}>{#mode_tree#}</option>
 							<option value="answer"{if $data.mode=='answer'} selected="selected"{/if}>{#mode_answer#}</option>
@@ -33,9 +33,9 @@
 					<tr>
 						<td>{Title field="use_ratings"}</td>
 						<td>
-							<select name="use_ratings">
+							<select name="use_ratings" class="form_input">
 								<option value="no"{if $data.use_ratings=='no'} selected="selected"{/if}>{#not_use_ratings#}</option>
-								<option value="usefullness" disabled="disabled"{if $data.use_ratings=='usefullness'} selected="selected"{/if}>{#use_ratings_usefullness#}</option>
+								<option value="usefullness" {if $data.use_ratings=='usefullness'} selected="selected"{/if}>{#use_ratings_usefullness#}</option>
 							</select>
 						</td>
 					</tr>

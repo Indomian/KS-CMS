@@ -14,4 +14,9 @@ class CPages extends CPageNavigation
 	{
 		parent::__construct(NULL,false,$visible,false);
 	}
+
+	function SetItems($i)
+	{
+		$this->iItems=intval($i);
+	}
 }

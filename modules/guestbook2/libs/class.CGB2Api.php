@@ -234,7 +234,7 @@ class CGB2API extends CBaseAPI
 			$arAFilter=array(
 				'->post_id'=>array_keys($arID2Key),
 			);
-			if(array_key_exists($arFilter['active']))
+			if(array_key_exists('active',$arFilter))
 			{
 				$arAFilter['active']=$arFilter['active'];
 			}

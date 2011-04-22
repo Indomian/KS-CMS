@@ -31,28 +31,44 @@ function smarty_function_WavePosts($params,&$subsmarty)
 		throw new CAccessError("WAVE_ACCESS_VIEW", 403);
 	if($params['hash']=='')
 		throw new CDataError("WAVE_HASH_REQUIRED");
-	$params['count']=intval($params['count'])>0?intval($params['count']):10;
-	$params['order']=$params['order']=='desc'?'desc':'asc';
+	if(array_key_exists('count',$params))
+		$params['count']=intval($params['count'])>0?intval($params['count']):10;
+	else
+		$params['count']=10;
+	if(array_key_exists('order',$params))
+		$params['order']=$params['order']=='desc'?'desc':'asc';
+	else
+		$params['order']='asc';
 	$obPostsAPI=CWaveAPI::get_instance();
 	$arPost=array();
+	$subsmarty->assign('edit','N');
 	try
 	{
 		if($arData['level']<KS_ACCESS_WAVE_VIEW)
 		{
+			$iAmount=1;
 			if($_SERVER['REQUEST_METHOD']=='POST')
 			{
 				if(array_key_exists('addpost',$_POST))
 					$action='addpost';
+				if(array_key_exists('update',$_POST))
+					$action='update';
+				elseif(array_key_exists('edit',$_POST))
+					$action='edit';
 				elseif(array_key_exists('hide',$_POST))
 					$action='hide';
 				elseif(array_key_exists('show',$_POST))
 					$action='show';
 				elseif(array_key_exists('delete',$_POST))
 					$action='delete';
+				elseif(array_key_exists('votep',$_POST))
+					$action='votep';
+				elseif(array_key_exists('votem',$_POST))
+					$action='votem';
 			}
 			else
 			{
-				if(in_array($_GET['WV_a'],array('addpost','hide','show','delete')))
+				if(in_array($_GET['WV_a'],array('addpost','hide','show','delete','edit','votep','votem')))
 					$action=$_GET['WV_a'];
 			}
 			switch($action)
@@ -96,6 +112,72 @@ function smarty_function_WavePosts($params,&$subsmarty)
 						throw new CDataError('WAVE_FIELDS_ERROR');
 					}
 				break;
+				case 'votem':
+					$iAmount=-$iAmount;
+				case 'votep':
+					try
+					{
+						if(intval($_REQUEST['WV_id'])>0)
+						{
+							if($arPost=$obPostsAPI->Posts()->GetById(intval($_REQUEST['WV_id'])))
+							{
+								$iAmount=$obPostsAPI->VotePost($arPost['id'],$iAmount);
+								if(array_key_exists('type',$_GET) && $_GET['type']=='AJAX')
+								{
+									$arResult=array('value'=>$iAmount,'id'=>$arPost['id']);
+									echo json_encode($arResult);
+									die();
+								}
+							}
+							else
+							{
+								throw new CError('WAVE_POST_NOT_FOUND');
+							}
+						}
+						else
+						{
+							throw new CError('WAVE_WRONG_URL');
+						}
+					}
+					catch(CError $e)
+					{
+						if(array_key_exists('type',$_GET) && $_GET['type']=='AJAX')
+						{
+							$arResult=array('error'=>$KS_MODULES->GetErrorText($e->getMessage()));
+							echo json_encode($arResult);
+							die();
+						}
+						else
+						{
+							$KS_MODULES->AddNotify($e->getMessage());
+						}
+					}
+				break;
+				case 'update':
+					$bError=false;
+					$arPost=array(
+						'content'=>EscapeHTML($_REQUEST['WV_content']),
+					);
+					$id=intval($_REQUEST['WV_id']);
+					if(!$USER->IsLogin())
+					{
+						$bError=$KS_MODULES->AddNotify("WAVE_AUTH_REQUIRED");
+					}
+					$obPostsAPI->Posts()->Update($id,$arPost);
+					$KS_MODULES->AddNotify("WAVE_UPDATE_OK",'',NOTIFY_MESSAGE);
+					$KS_URL->redirect();
+				break;
+				case 'edit':
+					if(array_key_exists('WV_id',$_REQUEST) && $arPost=$obPostsAPI->Posts()->GetById(intval($_REQUEST['WV_id'])))
+					{
+						$subsmarty->assign('post',$arPost);
+						$subsmarty->assign('edit','Y');
+					}
+					else
+					{
+						$KS_MODULES->AddNotify('WAVE_POST_NOT_FOUND');
+					}
+				break;
 				case 'hide':
 					if($obPostsAPI->Hide(intval($_REQUEST['WV_id'])))
 					{
@@ -130,30 +212,20 @@ function smarty_function_WavePosts($params,&$subsmarty)
 		$KS_MODULES->AddNotify($e->getMessage());
 	}
 
-	$obPosts=$obPostsAPI->Posts();
-	//Получаем список сообщений
-	$arFilter=array(
-		'hash'=>$params['hash'],
-		'<?'.$obPosts->sTable.'.user_id'=>$USER->sTable.'.id',
-	);
+	$arFilter=array();
 	if($arData['level']>KS_ACCESS_WAVE_MODERATE)
 		$arFilter['active']=1;
-	if(is_array($params['filter']))
+
+	if(array_key_exists('filter',$params) && is_array($params['filter']))
 		$arFilter=array_merge($arFilter,$params['filter']);
-	$arSelect=$obPosts->GetFields();
-	$arFields=$USER->GetFields();
-	foreach($arFields as $sField)
-		$arSelect[]=$USER->sTable.'.'.$sField;
-	$obPages = new CPageNavigation($obPosts,false,$params['count']);
-	$arOrder=array('left_margin'=>$params['order'],'date_add'=>$params['order']);
-	$iCount=$obPosts->Count($arFilter);
-	if($arPosts=$obPosts->GetList($arOrder,$arFilter,$obPages->GetLimits($iCount),$arSelect))
-	{
-		foreach($arPosts as $key=>$arPost)
-		{
-			$arPosts[$key]['access']=$obPostsAPI->GetPostRights($arPost);
-		}
-	}
+
+	$obPages=new CPages($params['count']);
+	$arSelect=$obPostsAPI->Posts()->GetFields();
+	$arSelect[$USER->sTable.'.title']='author_name';
+	$arSelect[$USER->sTable.'.id']='author_id';
+	$arFilter['<?user_id']=$USER->sTable.'.id';
+
+	$arPosts=$obPostsAPI->GetWave($params['hash'],$params['order'],$arFilter,$arSelect,$obPages);
 	if(!$USER->IsLogin())
 	{
 		if($KS_MODULES->GetConfigVar('wave','use_captcha',0)==1)
@@ -166,7 +238,7 @@ function smarty_function_WavePosts($params,&$subsmarty)
 	$subsmarty->assign('data',$arData);
 	$subsmarty->assign('pages',$obPages->GetPages());
 	//Код для генерации пути к шаблону или вывод ошибки об отсутсвтии шаблона
-	return $res.$KS_MODULES->RenderTemplate($subsmarty,'/wave/WavePosts',$params['global_template'],$params['tpl']);
+	return $KS_MODULES->RenderTemplate($subsmarty,'/wave/WavePosts',$params['global_template'],$params['tpl']);
 }
 
 function widget_params_WavePosts()

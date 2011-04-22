@@ -185,7 +185,7 @@
 					if (isset($arHandler['hFile']) && $arHandler['hFile']!='')
  					{
 						/* Полное имя файла-обработчика */
- 						$hFileName = MODULES_DIR . '/' . $this->actual_module . '/events/' . $handler['hFile'];
+ 						$hFileName = MODULES_DIR . '/' . $this->actual_module . '/events/' . $arHandler['hFile'];
  						if (file_exists($hFileName))
  						{
  							$bHasFile=true;
@@ -196,22 +196,22 @@
 						}
 					}
 					/* Указана функция-обработчик */
-					if (isset($handler['hFunc']))
+					if (isset($arHandler['hFunc']))
 					{
-						if(is_array($handler['hFunc']))
+						if(is_array($arHandler['hFunc']))
 						{
-							if(is_object($handler['hFunc'][0]))
+							if(is_object($arHandler['hFunc'][0]))
 							{
 								$bHasFunc = true;
 							}
-							elseif(is_string($handler['hFunc'][0]))
+							elseif(is_string($arHandler['hFunc'][0]))
 							{
-								if(class_exists($handler['hFunc'][0]))
-									if(method_exists($handler['hFunc'][0], $handler['hFunc'][1]))
+								if(class_exists($arHandler['hFunc'][0]))
+									if(method_exists($arHandler['hFunc'][0], $arHandler['hFunc'][1]))
 										$bHasFunc = true;
 							}
 						}
-						elseif (function_exists($handler['hFunc']))
+						elseif (function_exists($arHandler['hFunc']))
 						{
 							$bHasFunc = true;
 						}
@@ -324,9 +324,9 @@
 									$hFuncExists = true;
 									if (!is_array($hParams) && !$hParams)
 										$hResult = call_user_func($handler['hFunc']);
-									elseif(!is_array($handler['arParams']))
+									elseif(array_key_exists('arParams',$handler) && !is_array($handler['arParams']))
 										$hResult = call_user_func($handler['hFunc'], &$hParams);
-									else
+									elseif(array_key_exists('arParams',$handler) && is_array($handler['arParams']))
 										$hResult = call_user_func($handler['hFunc'], &$hParams,$handler['arParams']);
 								}
 							}

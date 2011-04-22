@@ -15,7 +15,7 @@ if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 //Задаем название модуля
 $module='guestbook2';
 //Определяем глобальные переменные которые могут понадобиться внутри модуля
-global $USER,$KS_IND_matches,$smarty,$KS_IND_dir,$global_template;
+global $USER,$KS_IND_matches,$smarty;
 
 //Получаем переменные прав на доступ к модулю и разделам модуля
 $access_level=$USER->GetLevel($module);
@@ -49,15 +49,15 @@ try
 	if(is_numeric($KS_IND_matches[3]))
 	{
 		$smarty->assign('element_id',intval($KS_IND_matches[3]));
-		$res=$this->RenderTemplate($smarty,'/guestbook2/gb2item',$this->GetTemplate(),$module_parameters['tpl']);
+		$res=$this->RenderTemplate($smarty,'/guestbook2/gb2item',$this->GetTemplate());
 	}
 	elseif(count($KS_IND_matches[1])>2)
 	{
-		$res=$this->RenderTemplate($smarty,'/guestbook2/gb2inner',$this->GetTemplate(),$module_parameters['tpl']);
+		$res=$this->RenderTemplate($smarty,'/guestbook2/gb2inner',$this->GetTemplate());
 	}
 	else
 	{
-		$res=$this->RenderTemplate($smarty,'/guestbook2/gb2index',$this->GetTemplate(),$module_parameters['tpl']);
+		$res=$this->RenderTemplate($smarty,'/guestbook2/gb2index',$this->GetTemplate());
 	}
 	$smarty->assign('TITLE',$this->GetTitle($module));
 }

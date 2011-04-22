@@ -24,6 +24,7 @@ class CWaveAPI extends CBaseAPI
 	private $obPosts;
 	private $obVoteLocks;
 	private $sMode;
+	private $arLocksCache;
 
 	/**
 	 * Метод заменяющий конструктор. Используется для инициализации.
@@ -32,8 +33,9 @@ class CWaveAPI extends CBaseAPI
 	{
 		global $KS_MODULES;
 		$this->obPosts=new CWavePosts();
-		$this->obVoteLocks=new CObject('wave_rating_locks');
+		$this->obVoteLocks=false;
 		$this->sMode=$KS_MODULES->GetConfigVar('wave','mode','list');
+		$this->arLocksCache=false;
 	}
 
 	/**
@@ -56,7 +58,20 @@ class CWaveAPI extends CBaseAPI
 	 */
 	function Posts()
 	{
+		if(!$this->obPosts)
+		{
+			$this->obPosts=new CWavePosts();
+		}
 		return $this->obPosts;
+	}
+
+	function Locks()
+	{
+		if(!$this->obVoteLocks)
+		{
+			$this->obVoteLocks=new CObject('wave_rating_locks');
+		}
+		return $this->obVoteLocks;
 	}
 
 	/**
@@ -69,7 +84,7 @@ class CWaveAPI extends CBaseAPI
 
 		if(!is_array($id))
 		{
-			$arPost=$this->GetById($id);
+			$arPost=$this->Posts()->GetById($id);
 		}
 		else
 		{
@@ -81,13 +96,21 @@ class CWaveAPI extends CBaseAPI
 			'canEdit'=>false,
 			'canDelete'=>false,
 			'canModerate'=>false,
+			'canVote'=>false,
 		);
 		if($this->sMode!='list')
 		{
 			if($this->sMode=='tree')
 			{
-				if($arPost['depth']<$KS_MODULES->GetConfigVar('wave','max_depth',100))
+				if($KS_MODULES->GetConfigVar('wave','max_depth',10)>0)
+				{
+					if($arPost['depth']<$KS_MODULES->GetConfigVar('wave','max_depth',10))
+						$arAccess['canAnswer']=$USER->GetLevel('wave')<=KS_ACCESS_WAVE_ANSWER;
+				}
+				else
+				{
 					$arAccess['canAnswer']=$USER->GetLevel('wave')<=KS_ACCESS_WAVE_ANSWER;
+				}
 			}
 			elseif($this->sMode=='answer')
 			{
@@ -118,7 +141,93 @@ class CWaveAPI extends CBaseAPI
 				$arAccess['canModerate']=true;
 			}
 		}
+		if($KS_MODULES->GetConfigVar('wave','use_ratings','')=='usefullness')
+		{
+			$bUser=false;
+			if($KS_MODULES->GetConfigVar('wave','usefullness_dsv','1')==1)
+			{
+				if($arPost['user_id']!=$USER->ID())
+				{
+					$bUser=true;
+				}
+			}
+			else
+			{
+				$bUser=true;
+			}
+			if($KS_MODULES->GetConfigVar('wave','usefullness_dvr','1')==1)
+			{
+				$bLocked=true;
+				//Плохой вариант, но что поделать
+				if(!$this->arLocksCache)
+				{
+					$this->arLocksCache=array();
+					$arFilter=array(
+						'<?'.$this->Locks()->sTable.'.comment_id'=>$this->Posts()->sTable.'.id',
+						'user_id'=>$USER->ID(),
+						$this->Posts()->sTable.'.hash'=>$arPost['hash'],
+					);
+					$arSelect=array(
+						'comment_id'=>'id',
+						'user_id',
+						'date',
+					);
+					if($arLocks=$this->Locks()->GetList(false,$arFilter,false,$arSelect))
+						$this->arLocksCache=$arLocks;
+				}
+				if(array_key_exists($arPost['id'],$this->arLocksCache))
+					$bLocked=false;
+			}
+			$arAccess['canVote']=$bLocked & $bUser & $arPost['active'] & $USER->IsLogin();
+		}
 		return $arAccess;
+	}
+
+	/**
+	 * Метод выполняет голосвание за позицию и возвращает текущую разницу
+	 */
+	function VotePost($id,$amount)
+	{
+		global $KS_MODULES,$USER;
+		if($arPost=$this->Posts()->GetById($id))
+		{
+			$arAccess=$this->GetPostRights($id);
+			if($arAccess['canVote'])
+			{
+				if($amount>0)
+				{
+					$arFields=array('rate_usefull'=>$amount+$arPost['rate_usefull']);
+					$iValue=$arFields['rate_usefull']-$arPost['rate_useless'];
+				}
+				else
+				{
+					$arFields=array('rate_useless'=>abs($amount)+$arPost['rate_useless']);
+					$iValue=$arPost['rate_usefull']-$arFields['rate_useless'];
+					if($KS_MODULES->GetConfigVar('wave','usefullness_useless_min',10)>0)
+					{
+						if(abs($arFields['rate_useless'])>=$KS_MODULES->GetConfigVar('wave','usefullness_useless_min',10))
+							$arFields['active']=0;
+					}
+				}
+				$this->Posts()->Update($arPost['id'],$arFields);
+				if($KS_MODULES->GetConfigVar('wave','usefullness_dvr','1')==1)
+				{
+					$this->arLocksCache=false;
+					$arFields=array(
+						'user_id'=>$USER->ID(),
+						'comment_id'=>$arPost['id'],
+						'date'=>time()
+					);
+					$this->Locks()->Save('',$arFields);
+				}
+				return $iValue;
+			}
+			else
+			{
+				throw new CError('WAVE_CANT_VOTE');
+			}
+		}
+		throw new CError('WAVE_POST_NOT_FOUND');
 	}
 
 	/**
@@ -168,9 +277,12 @@ class CWaveAPI extends CBaseAPI
 						return $this->obPosts->Update($arChild['id'],$arFields);
 					}
 				}
-				if($arParentPost['depth']+1>$KS_MODULES->GetConfigVar('wave','max_depth',10))
+				if($KS_MODULES->GetConfigVar('wave','max_depth',10)>0)
 				{
-					$parent_id=$arParentPost['parent_id'];
+					if($arParentPost['depth']+1>$KS_MODULES->GetConfigVar('wave','max_depth',10))
+					{
+						$parent_id=$arParentPost['parent_id'];
+					}
 				}
 				$arFields['parent_id']=$parent_id;
 			}
@@ -324,5 +436,97 @@ class CWaveAPI extends CBaseAPI
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Метод возвращает список комментариев в виде дерева
+	 * Древовидные комментарии нельзя разбить на страницы
+	 */
+	private function _GetTreeList($sHash,$sOrderDir='asc',$arFilter=false,$arSelect=false)
+	{
+		global $USER;
+		$arOrder=array(
+			'left_margin'=>$sOrderDir,
+			'date_add'=>$sOrderDir
+		);
+		if(!$arSelect || !is_array($arSelect))
+		{
+			$arSelect=$this->Posts()->GetFields();
+			$arFields=$USER->GetFields();
+			foreach($arFields as $sField)
+				$arSelect[]=$USER->sTable.'.'.$sField;
+		}
+		if(!$arFilter) $arFilter=array();
+		$arFilter['hash']=$sHash;
+		$arResult=array();
+		if($arPosts=$this->Posts()->GetList($arOrder,$arFilter,false,$arSelect))
+		{
+			foreach($arPosts as $arPost)
+			{
+				$arPosts[$arPost['id']]['access']=$this->GetPostRights($arPost);
+			}
+			$arResult=$arPosts;
+		}
+		return $arResult;
+	}
+
+	function _GetAnswerList($sHash,$sOrderDir='asc',$arFilter=false,$arSelect=false,$obPage=false)
+	{
+		global $USER;
+		$arOrder=array(
+			'left_margin'=>$sOrderDir,
+			'date_add'=>$sOrderDir
+		);
+		if(!$arSelect || !is_array($arSelect))
+		{
+			$arSelect=$this->Posts()->GetFields();
+			$arFields=$USER->GetFields();
+			foreach($arFields as $sField)
+				$arSelect[]=$USER->sTable.'.'.$sField;
+		}
+		if(!$arFilter) $arFilter=array();
+		$arFilter['hash']=$sHash;
+		$arResult=array();
+		$iCount=$this->Posts()->Count($arFilter);
+		if($obPage instanceof CPages)
+		{
+			$arLimits=$obPage->GetLimits($iCount);
+		}
+		else
+		{
+			$arLimits=false;
+		}
+		if($arPosts=$this->Posts()->GetList($arOrder,$arFilter,$arLimits,$arSelect))
+		{
+			foreach($arPosts as $arPost)
+			{
+				if($arPost['depth']>2) $arPosts[$arPost['id']]['depth']=2;
+				$arPosts[$arPost['id']]['access']=$this->GetPostRights($arPost);
+			}
+			$arResult=$arPosts;
+		}
+		return $arResult;
+	}
+
+	/**
+	 * Метод возвращает обсуждение посвящённое определённой теме.
+	 */
+	function GetWave($sHash,$sOrderDir='asc',$arFilter=false,$arSelect=false,$obPage=false)
+	{
+		global $KS_MODULES;
+		if(!is_string($sHash) || $sHash=='') throw new CDataError('WAVE_HASH_REQUIRED');
+		$sMode=$KS_MODULES->GetConfigVar('wave','mode','list');
+		switch($sMode)
+		{
+			case 'tree':
+				$arResult=$this->_GetTreeList($sHash,$sOrderDir,$arFilter,$arSelect);
+				if($obPage instanceof CPages)
+					$obPage->SetItems(count($arResult));
+			break;
+			case 'answer':
+				$arResult=$this->_GetAnswerList($sHash,$sOrderDir,$arFilter,$arSelect,$obPage);
+			default:
+		}
+		return $arResult;
 	}
 }

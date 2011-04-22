@@ -14,7 +14,7 @@ if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 require_once MODULES_DIR.'/main/libs/class.CModuleAdmin.php';
 require_once MODULES_DIR.'/main/libs/class.CUserGroup.php';
-require_once MODULES_DIR.'/main/libs/class.CAccess.php';
+require_once MODULES_DIR.'/main/libs/class.CModulesAccess.php';
 require_once MODULES_DIR.'/main/libs/class.CConfigParser.php';
 require_once MODULES_DIR.'/wave/libs/class.CWavePosts.php';
 
@@ -82,7 +82,7 @@ class CwaveAIoptions extends CModuleAdmin
 		);
 		$arUserFields=$this->obWave->GetUserFields();
 		$arWavePosts=array_merge($arStandartFields,$arUserFields);
-		if ($_POST['action']=='save')
+		if (array_key_exists('action',$_POST) && $_POST['action']=='save')
 		{
 			try
 			{
@@ -123,8 +123,14 @@ class CwaveAIoptions extends CModuleAdmin
 				foreach($arWavePosts as $id=>$arItem)
 				{
 					$obConfig->Set('field_title_'.$arItem['title'],$_POST['field_title_user'][$arItem['title']]);
-					$obConfig->Set('field_show_'.$arItem['title'],intval($_POST['field_show_user'][$arItem['title']]));
-					$obConfig->Set('field_necessary_'.$arItem['title'],intval($_POST['field_necessary_user'][$arItem['title']]));
+					if(array_key_exists('field_show_user',$_POST) && array_key_exists($arItem['title'],$_POST['field_show_user']))
+						$obConfig->Set('field_show_'.$arItem['title'],intval($_POST['field_show_user'][$arItem['title']]));
+					else
+						$obConfig->Set('field_show_'.$arItem['title'],0);
+					if(array_key_exists('field_necessary_user',$_POST) && array_key_exists($arItem['title'],$_POST['field_necessary_user']))
+						$obConfig->Set('field_necessary_'.$arItem['title'],intval($_POST['field_necessary_user'][$arItem['title']]));
+					else
+						$obConfig->Set('field_necessary_'.$arItem['title'],0);
 				}
 				$obConfig->WriteConfig();
 				//Выполняем сохранение прав доступа

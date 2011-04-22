@@ -13,7 +13,6 @@
 /*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 include_once MODULES_DIR.'/guestbook2/libs/class.CGB2Api.php';
-include_once MODULES_DIR.'/interfaces/libs/CInterface.php';
 
 /**
  * Функция производит вывод сообщение гостевой книги
