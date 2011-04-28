@@ -24,9 +24,7 @@ class CcatsubcatAIoptions extends CModuleAdmin
 
 	function __construct($module='catsubcat',&$smarty,&$parent)
 	{
-		global $USER;
 		parent::__construct($module,$smarty,$parent);
-		$this->obUser=$USER;
 		$this->obElement=new CElement();
 	}
 

@@ -224,6 +224,25 @@ input.button_copy
 	width:100px;
 }
 
+input.button_module_add
+{
+	background: #EDEDED url('/uploads/templates/admin/images/icons2/cog_add.png') no-repeat 5px 4px;
+	padding-left: 27px;
+	width:100px;
+}
+
+input.button_layout
+{
+	background: #EDEDED url('/uploads/templates/admin/images/icons2/layout_add.png') no-repeat 5px 4px;
+	padding-left: 27px;
+}
+
+input.button_script_add
+{
+	background: #EDEDED url('/uploads/templates/admin/images/icons2/script_add.png') no-repeat 5px 4px;
+	padding-left: 27px;
+}
+
 .manage .add_div {padding-left: 27px; background: #EDEDED url('/uploads/templates/admin/images/icons2/create_folder.gif') 5px top no-repeat;}
 .manage .add_div2 {padding-left: 27px; background: #EDEDED url('/uploads/templates/admin/images/icons2/create_file.gif') 5px top no-repeat;}
 .manage .create {padding-left: 27px; background: #EDEDED url('/uploads/templates/admin/images/icons2/add.gif') 5px top no-repeat;}
@@ -756,4 +775,12 @@ div.date_selector img.date_button
 	float: right;
 	border: 0pt none;
 	cursor: pointer;
+}
+
+td.icons_list label
+{
+	display:block;
+	text-align:center;
+	padding:5px 10px;
+	float:left;
 }

@@ -21,7 +21,7 @@
     		</tr>
 		    <tr>
     			<td>{Title field='name'}</td>
-    			<td><input type="text" name="CM_name" class="form_input" value="{$data.name|htmlspecialchars:2:"UTF-8":false}" style="width:80%"/></td>
+    			<td><input type="text" name="CM_name" class="form_input" value="{$data.name|htmlspecialchars:2:"UTF-8":false}" style="width:98%"/></td>
     		</tr>
     		<tr>
     			<td>{Title field="URL_ident"}
@@ -29,20 +29,20 @@
     			</td>
     			<td>
 					{if $data.URL_ident=='default'}
-						<input type="text" name="CM_URL_ident" class="form_input" value="{$data.URL_ident|htmlspecialchars:2:"UTF-8":false}" style="width:80%;display:none;"{if $data.allow_url_edit==0}disabled{/if}/>
+						<input type="text" name="CM_URL_ident" class="form_input" value="{$data.URL_ident|htmlspecialchars:2:"UTF-8":false}" style="width:98%;display:none;"{if $data.allow_url_edit==0}disabled{/if}/>
 						<div id="hint_URL_ident_d" style="cursor: pointer;"
 							onmouseover="floatMessage.showMessage(document.getElementById('hint_URL_ident_d'),
 							'{#field_URL_ident_d_hint#}');">{#field_URL_ident_d#},&nbsp;
 						<a href="#" onclick="this.parentNode.previousSibling.style.display='';this.parentNode.style.display='none';return false;">{#change#}</a>.</div>
 					{else}
-						<input type="text" name="CM_URL_ident" class="form_input" value="{$data.URL_ident}" style="width:80%"{if $data.allow_url_edit==0}disabled{/if} />
+						<input type="text" name="CM_URL_ident" class="form_input" value="{$data.URL_ident}" style="width:98%"{if $data.allow_url_edit==0}disabled{/if} />
 					{/if}
 				</td>
     		</tr>
     		<tr>
     			<td>{Title field="include_global_template"}</td>
     			<td>
-					<select name="CM_include_global_template" style="width:80%" class="form_input">
+					<select name="CM_include_global_template" style="width:100%" class="form_input">
 						<option value="1" {if $data.include_global_template==1}selected="selected"{/if}>{#use#}</option>
 						<option value="0" {if $data.include_global_template==0}selected="selected"{/if}>{#not_use#}</option>
         			</select>
@@ -50,7 +50,7 @@
     		</tr>
    			<tr>
     			<td>{Title field="active"}</td>
-    			<td><select name="CM_active" style="width:80%" class="form_input">
+    			<td><select name="CM_active" style="width:100%" class="form_input">
         			<option value="1" {if $data.active==1}selected="selected"{/if}>{#active#}</option>
         			<option value="0" {if $data.active==0}selected="selected"{/if}>{#inactive#}</option>
         			</select>

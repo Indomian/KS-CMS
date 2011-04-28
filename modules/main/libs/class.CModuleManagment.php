@@ -167,6 +167,7 @@ abstract class CModuleManagment extends CObject
 	{
 		$sPath=MODULES_DIR;
 		$arNotModules=Array('.','..');
+		$arResult=false;
 		if (is_dir($sPath))
 		{
 			if ($hDir = @opendir($sPath))

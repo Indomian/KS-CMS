@@ -73,7 +73,7 @@
 </div>
 </form>
 {/ksTab}
-{if count($ulist)>0}
+{if $ulist and count($ulist)>0}
 	{ksTab NAME=$smarty.config.tab_uninstalled}
 	<form action="{get_url}" method="POST" name="form_main_modules">
 		<input type="hidden" name="CM_ACTION" value="install"/>
@@ -91,7 +91,7 @@
 					<td align="left">{$oItem.name}</td>
 					<td align="left">{$oItem.description}</td>
 					<td align="center">
-						<input type="submit" name="install_{$oItem.name}" value="{#install#}"/>
+						<input type="submit" name="install_{$oItem.name}" value="{#install#}" class="button button_module_add"/>
 					</td>
 				</tr>
 				{/foreach}
