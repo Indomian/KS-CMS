@@ -68,9 +68,9 @@ if(array_key_exists('go',$_POST))
 	$arAccess['groups']=$USERGROUP->GetList(array('title'=>'asc'));
 	$obAccess=new CModulesAccess();
 	//Выполняем сохранение прав доступа
-   	if(is_array($arAccess['groups']))
-   	{
-	   	foreach($arAccess['groups'] as $key=>$value)
+	if(is_array($arAccess['groups']))
+	{
+		foreach($arAccess['groups'] as $key=>$value)
 		{
 			if($value['id']=='1')
 			{
@@ -81,7 +81,7 @@ if(array_key_exists('go',$_POST))
 				$obAccess->Set($value['id'],$module_name,7);
 			}
 		}
-   	}
+	}
 
 	$arModule=array(
 		'name'=>$arDescription['title'],
@@ -97,7 +97,7 @@ if(array_key_exists('go',$_POST))
 	$this->AddAutoField('id');
 	$this->Save('',$arModule);
 	//Устанавливаем файлы административного интерфейса
-	if($_POST['installTemplates']==1)
+	if(array_key_exists('installTemplates', $_POST) && ($_POST['installTemplates']==1))
 	{
 		if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/catsubcat/install/templates/.default/'))
 		{
@@ -128,7 +128,7 @@ if(array_key_exists('go',$_POST))
 			$KS_FS->CopyFile(MODULES_DIR.'/catsubcat/install/js/'.$sFile,ROOT_DIR.JS_DIR.'/catsubcat/'.$sFile,'');
 		}
 	}
-	$this->AddNotify(SYSTEM_MODULE_INSTALL_OK,$arDescription['title'],NOTIFY_MESSAGE);
+	$this->AddNotify('SYSTEM_MODULE_INSTALL_OK',$arDescription['title'],NOTIFY_MESSAGE);
 }
 else
 {

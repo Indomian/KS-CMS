@@ -60,18 +60,18 @@ final class CAdminModuleManagment extends CModuleManagment
 
 	/**
 	 * This implements the 'singleton' design pattern
-   	 *
-     * @return object CMain The one and only instance
-     */
-  	static function get_instance()
-  	{
-	    if (!self::$instance)
-	    {
-    		self::$instance = new CAdminModuleManagment();
-      		self::$instance->init();  // init AFTER object was linked with self::$instance
-    	}
-	    return self::$instance;
-  	}
+	 *
+	 * @return object CMain The one and only instance
+	 */
+	static function get_instance()
+	{
+		if (!self::$instance)
+		{
+			self::$instance = new CAdminModuleManagment();
+			self::$instance->init();  // init AFTER object was linked with self::$instance
+		}
+		return self::$instance;
+	}
 
 	/**
 	 * Метод устанавливает режим отрисовки системы администрирования
@@ -504,8 +504,8 @@ final class CAdminModuleManagment extends CModuleManagment
 			//Добавляем корневой пункт меню
 			$this->menu[$sModule]=array(
 				'module' => $sModule,
-  				'href' => 'module='.$sModule,
-  				'title' => $sTitle,
+				'href' => 'module='.$sModule,
+				'title' => $sTitle,
 			);
 			if(is_array($arAdd)&&count($arAdd)>0)
 			{
@@ -517,8 +517,8 @@ final class CAdminModuleManagment extends CModuleManagment
 			//Добавляем корневой пункт меню
 			$this->menu[$sModule]['items'][$sPage]=array(
 				'module' => $sModule,
-  				'href' => 'module='.$sModule.'&page='.$sPage,
-  				'title' => $sTitle,
+				'href' => 'module='.$sModule.'&page='.$sPage,
+				'title' => $sTitle,
 			);
 			if(is_array($arAdd)&&count($arAdd)>0)
 			{
