@@ -131,7 +131,7 @@ class CSimpleFs extends CFileSystem
 		$fail = 0;
 		$sizetotal = 0;
 		$fifail = '';
-		$ret='';
+		$ret='0,0,0,0';
 		if(!is_dir($dstdir)) self::makedir($dstdir);
 		if($curdir = opendir($srcdir))
 		{
@@ -165,11 +165,6 @@ class CSimpleFs extends CFileSystem
 					else if(is_dir($srcfile))
 					{
 						$res = explode(",",$ret);
-						if(count($res)<4)
-						{
-							$res_complite = array_fill(count($res),4-count($res),'');
-							if($res_complite !== false) $res = array_merge($res,$res_complite);
-						}
 						$ret = self::dircopy($srcfile, $dstfile, $verbose);
 						$mod = explode(",",$ret);
 						$imp = array($res[0] + $mod[0],$mod[1] + $res[1],$mod[2] + $res[2],$mod[3].$res[3]);

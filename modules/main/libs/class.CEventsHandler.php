@@ -313,7 +313,7 @@
 									{
 										if (!is_array($hParams) && !$hParams)
 											$hResult = call_user_func($handler['hFunc']);
-										elseif(!is_array($handler['arParams']))
+										elseif(!array_key_exists('arParams',$handler) || !is_array($handler['arParams']))
 											$hResult = call_user_func($handler['hFunc'], $hParams);
 										else
 											$hResult = call_user_func($handler['hFunc'], $hParams,$handler['arParams']);
@@ -324,7 +324,7 @@
 									$hFuncExists = true;
 									if (!is_array($hParams) && !$hParams)
 										$hResult = call_user_func($handler['hFunc']);
-									elseif(array_key_exists('arParams',$handler) && !is_array($handler['arParams']))
+									elseif(!array_key_exists('arParams',$handler) || !is_array($handler['arParams']))
 										$hResult = call_user_func($handler['hFunc'], $hParams);
 									elseif(array_key_exists('arParams',$handler) && is_array($handler['arParams']))
 										$hResult = call_user_func($handler['hFunc'], $hParams,$handler['arParams']);
@@ -396,7 +396,7 @@
 		"\n/**
 			 * Конфигурационный файл обработчиков событий
 			*
-			* В этом файле должен быть определён конфигурационный массив обработчиков событий $KS_EVENTS,
+			* В этом файле должен быть определён конфигурационный массив обработчиков событий \$KS_EVENTS,
 			* структура которого описана в классе CEventsHandler
 			*
 			* @filesource events_config.php
@@ -415,7 +415,7 @@
 				$arWasActions=array();
 				foreach($arActions as $arAction)
 				{
-					if(!array_key_exists('hSave',$arAction)&&!$arAction['bOnce']&&(!in_array($arAction,$arWasActions)))
+					if(!array_key_exists('hSave',$arAction)&&!array_key_exists('bOnce',$arAction)&&(!in_array($arAction,$arWasActions)))
 					{
 						$sFilecontent.="array('hFile'=>'".$arAction['hFile']."','hFunc'=>";
 						if(is_array($arAction['hFunc']))
