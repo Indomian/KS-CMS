@@ -28,8 +28,8 @@ class CError extends Exception
 	{
 		parent::__construct($message,intval($code));
 		$this->error=$code;
- 		$this->error_text=$text;
- 		$this->errorTpl='error.tpl';
+		$this->error_text=$text;
+		$this->errorTpl='error.tpl';
 	}
 
 	/**
@@ -93,11 +93,11 @@ class CError extends Exception
 	/**
 	 * Метод оформляет вывод ошибки в рамку, используется в административном разделе.
 	 */
- 	function _error_form($message,$code)
- 	{
- 		$content='';
- 		if (strlen($message)>0)
- 		{
+	function _error_form($message,$code)
+	{
+		$content='';
+		if (strlen($message)>0)
+		{
 			$content="<div class=\"atention\" style=\"background:#FFF6C4 url('/uploads/templates/admin/images/error.gif') left 50% no-repeat; color:#D13B00; border: 1px solid #CC0000; margin: 0 0 6px; padding: 11px 0 11px 59px;\">";
 			if(ERROR_LEVEL==0)
 			{
@@ -112,15 +112,15 @@ class CError extends Exception
 			$content.="</div>";
 		}
 		return $content;
- 	}
+	}
 
- 	/**
- 	 * Статический метод, используется для обработки обычных ошибок пхп
- 	 */
- 	static function PhpErrorHandler($errno, $errstr, $errfile, $errline)
- 	{
- 		switch ($errno)
- 		{
+	/**
+	 * Статический метод, используется для обработки обычных ошибок пхп
+	 */
+	static function PhpErrorHandler($errno, $errstr, $errfile, $errline)
+	{
+		switch ($errno)
+		{
 			case E_USER_ERROR:
 				throw new CError($errstr,$errno);
 				break;
@@ -136,9 +136,9 @@ class CError extends Exception
 			default:
 				return false;
 		}
-    	/* Don't execute PHP internal error handler */
-    	return true;
- 	}
+		/* Don't execute PHP internal error handler */
+		return true;
+	}
 }
 
 /**
