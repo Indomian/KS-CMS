@@ -67,13 +67,13 @@ class CSimpleFs extends CFileSystem
 	 */
 	function renamedir($old, $new)
 	{
-        $old = str_replace('//','/',$old);
-        $new = str_replace('//','/',$new);
-        if(!@rename($old,$new))
-        {
-        	throw new CFileError('SYSTEM_CANT_RENAME',1,$old.' '.$new);
-        }
-        return true;
+		$old = str_replace('//','/',$old);
+		$new = str_replace('//','/',$new);
+		if(!@rename($old,$new))
+		{
+			throw new CFileError('SYSTEM_CANT_RENAME',1,$old.' '.$new);
+		}
+		return true;
 	}
 
 
@@ -81,42 +81,42 @@ class CSimpleFs extends CFileSystem
 	 * \param $path -- удаляемый каталог.*/
 	function remdir($path)
 	{
-    	$origipath = $path;
-    	$handler = @opendir($path);
-    	if(!$handler) throw new CFileError("SYSTEM_FOLDER_NOT_EXIST", 0);
-    	while (true)
-    	{
-        	$item = readdir($handler);
-        	if ($item == "." or $item == "..")
-        	{
-            	continue;
-        	}
-        	elseif (gettype($item) == "boolean")
-        	{
-            	closedir($handler);
-            	if (!@rmdir($path))
-            	{
-                	throw new CFileError('SYSTEM_FILE_DELETE_ERROR',0,$path);
-            	}
-            	if ($path == $origipath)
-            	{
-                	break;
-            	}
-            	$path = substr($path, 0, strrpos($path, "/"));
-            	$handler = opendir($path);
-        	}
-        	elseif (is_dir($path."/".$item))
-        	{
-            	closedir($handler);
-            	$path = $path."/".$item;
-            	$handler = opendir($path);
-        	}
-        	else
-        	{
-        	    if(!@unlink($path."/".$item)) throw new CFileError('SYSTEM_FILE_DELETE_ERROR',0,$path.'/'.$item);
-        	}
-    	}
-    	return true;
+		$origipath = $path;
+		$handler = @opendir($path);
+		if(!$handler) throw new CFileError("SYSTEM_FOLDER_NOT_EXIST", 0);
+		while (true)
+		{
+			$item = readdir($handler);
+			if ($item == "." or $item == "..")
+			{
+				continue;
+			}
+			elseif (gettype($item) == "boolean")
+			{
+				closedir($handler);
+				if (!@rmdir($path))
+				{
+					throw new CFileError('SYSTEM_FILE_DELETE_ERROR',0,$path);
+				}
+				if ($path == $origipath)
+				{
+					break;
+				}
+				$path = substr($path, 0, strrpos($path, "/"));
+				$handler = opendir($path);
+			}
+			elseif (is_dir($path."/".$item))
+			{
+				closedir($handler);
+				$path = $path."/".$item;
+				$handler = opendir($path);
+			}
+			else
+			{
+				if(!@unlink($path."/".$item)) throw new CFileError('SYSTEM_FILE_DELETE_ERROR',0,$path.'/'.$item);
+			}
+		}
+		return true;
 	}
 
 	/*!Выполняет копирование всех файлов из одной папки в другую.
@@ -127,55 +127,60 @@ class CSimpleFs extends CFileSystem
 	function dircopy($srcdir, $dstdir, $offset=0, $verbose = false)
 	{
 		if(!isset($offset)) $offset=0;
-  		$num = 0;
-  		$fail = 0;
-  		$sizetotal = 0;
-  		$fifail = '';
-  		$ret='';
-  		if(!is_dir($dstdir)) self::makedir($dstdir);
-  		if($curdir = opendir($srcdir))
-  		{
-    		while($file = readdir($curdir))
-    		{
-      			if($file != '.' && $file != '..')
-      			{
-        			$srcfile = $srcdir . '/' . $file;
-        			$dstfile = $dstdir . '/' . $file;
-        			if(is_file($srcfile))
-        			{
-          				if(is_file($dstfile)) $ow = filemtime($srcfile) - filemtime($dstfile); else $ow = 1;
-          				if($ow > 0)
-          				{
-            				if($verbose) echo "Copying '$srcfile' to '$dstfile'...";
-            				if(copy($srcfile, $dstfile))
-            				{
-              					touch($dstfile, filemtime($srcfile));
-              					$num++;
-              					$sizetotal = ($sizetotal + filesize($dstfile));
-              					if($verbose) echo "OK\n";
-            				}
-            				else
-            				{
-            					throw new CError("SYSTEM_UNABLE_COPY_FILE", 0, $srcfile);
-                 				$fail++;
-                 				$fifail = $fifail.$srcfile."|";
-            				}
-          				}
-        			}
-        			else if(is_dir($srcfile))
-        			{
-          				$res = explode(",",$ret);
-          				$ret = self::dircopy($srcfile, $dstfile, $verbose);
-          				$mod = explode(",",$ret);
-          				$imp = array($res[0] + $mod[0],$mod[1] + $res[1],$mod[2] + $res[2],$mod[3].$res[3]);
-         				$ret = implode(",",$imp);
-        			}
-      			}
-    		}
-    		closedir($curdir);
-  		}
-  		$red = explode(",",$ret);
-  		if(is_array($red) && count($red)>2)
+		$num = 0;
+		$fail = 0;
+		$sizetotal = 0;
+		$fifail = '';
+		$ret='';
+		if(!is_dir($dstdir)) self::makedir($dstdir);
+		if($curdir = opendir($srcdir))
+		{
+			while($file = readdir($curdir))
+			{
+				if($file != '.' && $file != '..')
+				{
+					$srcfile = $srcdir . '/' . $file;
+					$dstfile = $dstdir . '/' . $file;
+					if(is_file($srcfile))
+					{
+						if(is_file($dstfile)) $ow = filemtime($srcfile) - filemtime($dstfile); else $ow = 1;
+						if($ow > 0)
+						{
+							if($verbose) echo "Copying '$srcfile' to '$dstfile'...";
+							if(copy($srcfile, $dstfile))
+							{
+								touch($dstfile, filemtime($srcfile));
+								$num++;
+								$sizetotal = ($sizetotal + filesize($dstfile));
+								if($verbose) echo "OK\n";
+							}
+							else
+							{
+								throw new CError("SYSTEM_UNABLE_COPY_FILE", 0, $srcfile);
+								$fail++;
+								$fifail = $fifail.$srcfile."|";
+							}
+						}
+					}
+					else if(is_dir($srcfile))
+					{
+						$res = explode(",",$ret);
+						if(count($res)<4)
+						{
+							$res_complite = array_fill(count($res),4-count($res),'');
+							if($res_complite !== false) $res = array_merge($res,$res_complite);
+						}
+						$ret = self::dircopy($srcfile, $dstfile, $verbose);
+						$mod = explode(",",$ret);
+						$imp = array($res[0] + $mod[0],$mod[1] + $res[1],$mod[2] + $res[2],$mod[3].$res[3]);
+						$ret = implode(",",$imp);
+					}
+				}
+			}
+			closedir($curdir);
+		}
+		$red = explode(",",$ret);
+		if(is_array($red) && count($red)>2)
 		{
 			$ret = ($num + $red[0]).",".(($fail-$offset) + $red[1]).",".($sizetotal + $red[2]).",".$fifail.$red[3];
 		}
@@ -183,7 +188,7 @@ class CSimpleFs extends CFileSystem
 		{
 			$ret = ($num).",".(($fail-$offset)).",".($sizetotal).",".$fifail;
 		}
-  		return $ret;
+		return $ret;
 	}
 
 	/**
@@ -337,45 +342,45 @@ class CSimpleFs extends CFileSystem
 	 * @param $path -- удаляемый каталог.*/
 	function cleardir($path)
 	{
-    	$origipath = $path;
-    	$handler = @opendir($path);
-    	if(!$handler) throw new Exception('SYSTEM_FILE_NOT_FOUND');
-    	while (true)
-    	{
-        	$item = readdir($handler);
-        	if ($item == "." or $item == "..")
-        	{
-            	continue;
-        	}
-        	elseif (gettype($item) == "boolean")
-        	{
-            	closedir($handler);
-            	if($path!=$origipath)
-            	{
-            		if (!@rmdir($path))
-            		{
-	                	return false;
-    	        	}
-            	}
-            	else
-            	{
-            		break;
-            	}
-            	$path = substr($path, 0, strrpos($path, "/"));
-            	$handler = opendir($path);
-        	}
-        	elseif (is_dir($path."/".$item))
-        	{
-            	closedir($handler);
-            	$path = $path."/".$item;
-            	$handler = opendir($path);
-        	}
-        	else
-        	{
-        	    unlink($path."/".$item);
-        	}
-    	}
-    	return true;
+		$origipath = $path;
+		$handler = @opendir($path);
+		if(!$handler) throw new Exception('SYSTEM_FILE_NOT_FOUND');
+		while (true)
+		{
+			$item = readdir($handler);
+			if ($item == "." or $item == "..")
+			{
+				continue;
+			}
+			elseif (gettype($item) == "boolean")
+			{
+				closedir($handler);
+				if($path!=$origipath)
+				{
+					if (!@rmdir($path))
+					{
+						return false;
+					}
+				}
+				else
+				{
+					break;
+				}
+				$path = substr($path, 0, strrpos($path, "/"));
+				$handler = opendir($path);
+			}
+			elseif (is_dir($path."/".$item))
+			{
+				closedir($handler);
+				$path = $path."/".$item;
+				$handler = opendir($path);
+			}
+			else
+			{
+				unlink($path."/".$item);
+			}
+		}
+		return true;
 	}
 }
 

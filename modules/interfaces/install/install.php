@@ -103,7 +103,7 @@ if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/interfaces/install/js/'))
 		$KS_FS->CopyFile(MODULES_DIR.'/interfaces/install/js/'.$sFile,ROOT_DIR.JS_DIR.'/interfaces/'.$sFile,'');
 	}
 }
-$this->AddNotify(SYSTEM_MODULE_INSTALL_OK,'interfaces',NOTIFY_MESSAGE);
+$this->AddNotify('SYSTEM_MODULE_INSTALL_OK','interfaces',NOTIFY_MESSAGE);
 
 
 

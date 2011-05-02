@@ -41,8 +41,8 @@ try
 		 * 2 - имя файла (может отсутствовать) (с расширением)
 		 * 3 - имя файла (может отсутствовать) (без расширения)
 		 */
-		$KS_IND_matches[0]=$_GET['path'];
-		$KS_IND_matches[1]=explode('/',$_GET['path']);
+		$KS_IND_matches[0]=(isset($_GET['path']))?$_GET['path']:'';
+		$KS_IND_matches[1]=(isset($_GET['path']))?explode('/',$_GET['path']):array('');
 		$KS_IND_matches[2]=array_pop($KS_IND_matches[1]);
 		$KS_IND_matches[3]=substr($KS_IND_matches[2],0,strrpos($KS_IND_matches[2],'.'));
 

@@ -105,43 +105,43 @@ if(array_key_exists('update',$_GET))
 					//Очищаем архив файлов
 					$origipath = MODULES_DIR.'/main/updates/setup/cms/';
 					$path=$origipath;
-			    	$handler = @opendir($path);
-			    	if(!$handler) throw new Exception('Delete folder error');
-			    	while (true)
-			    	{
-			        	$item = readdir($handler);
-			        	if ($item == "." or $item == "..")
-			        	{
-			            	continue;
-			        	}
-			        	elseif (gettype($item) == "boolean")
-			        	{
-			            	closedir($handler);
-			            	if($path!=$origipath)
-			            	{
-			            		if (!@rmdir($path))
-			            		{
-				                	return false;
-			    	        	}
-			            	}
-			            	else
-			            	{
-			            		break;
-			            	}
-			            	$path = substr($path, 0, strrpos($path, "/"));
-			            	$handler = opendir($path);
-			        	}
-			        	elseif (is_dir($path."/".$item))
-			        	{
-			            	closedir($handler);
-			            	$path = $path."/".$item;
-			            	$handler = opendir($path);
-			        	}
-			        	else
-			        	{
-			        	    unlink($path."/".$item);
-			        	}
-			    	}
+					$handler = @opendir($path);
+					if(!$handler) throw new Exception('Delete folder error');
+					while (true)
+					{
+						$item = readdir($handler);
+						if ($item == "." or $item == "..")
+						{
+							continue;
+						}
+						elseif (gettype($item) == "boolean")
+						{
+							closedir($handler);
+							if($path!=$origipath)
+							{
+								if (!@rmdir($path))
+								{
+									return false;
+								}
+							}
+							else
+							{
+								break;
+							}
+							$path = substr($path, 0, strrpos($path, "/"));
+							$handler = opendir($path);
+						}
+						elseif (is_dir($path."/".$item))
+						{
+							closedir($handler);
+							$path = $path."/".$item;
+							$handler = opendir($path);
+						}
+						else
+						{
+							unlink($path."/".$item);
+						}
+					}
 				}
 				$arResult['done']=$_SESSION['update']['doneFiles'];
 				$arResult['total']=$_SESSION['update']['totalFiles'];
@@ -164,13 +164,13 @@ if(array_key_exists('update',$_GET))
 					</head>
 					<body>
 						<table>
-							<?foreach($arResult as $key=>$value):?>
-							<tr><td><?=$key?></td><td><?=$value?></td></tr>
-							<?endforeach?>
+							<?php foreach($arResult as $key=>$value):?>
+							<tr><td><?php echo $key;?></td><td><?php echo $value;?></td></tr>
+							<?php endforeach;?>
 						</table>
 					</body>
 				</html>
-				<?
+				<?php
 				die();
 			}
 		}
@@ -192,57 +192,57 @@ elseif(array_key_exists('restore',$_GET))
 						Подождите 5 минут.</p>
 					</body>
 				</html>
-			<?
+			<?php
 			//Очищаем архив файлов
 			$origipath = MODULES_DIR.'/main/updates/restore/';
 			$path=$origipath;
-	    	$handler = @opendir($path);
-	    	if($handler)
-	    	{
-	    		$cutNew=strlen(MODULES_DIR.'/main/updates/restore/');
-	    		while (true)
-	    		{
-		        	$item = readdir($handler);
-		        	if ($item == "." or $item == "..")
-	    	    	{
-	        	    	continue;
-	        		}
-	        		elseif (gettype($item) == "boolean")
-	        		{
-	            		closedir($handler);
-	            		if($path!=$origipath)
-	            		{
-	            			if (!@rmdir($path))
-	            			{
-			                	throw new Exception('DELETE ERROR: '.$path);
-		    	        	}
-	    	        	}
-	        	    	else
-	            		{
-	            			break;
-	            		}
-	            		$path = substr($path, 0, strrpos($path, "/"));
-	            		$handler = opendir($path);
-	        		}
-	        		elseif (is_dir($path."/".$item))
-	        		{
-		            	closedir($handler);
-		            	$path = $path."/".$item;
-	    	        	$handler = opendir($path);
-	        		}
-		        	else
-		        	{
+			$handler = @opendir($path);
+			if($handler)
+			{
+				$cutNew=strlen(MODULES_DIR.'/main/updates/restore/');
+				while (true)
+				{
+					$item = readdir($handler);
+					if ($item == "." or $item == "..")
+					{
+						continue;
+					}
+					elseif (gettype($item) == "boolean")
+					{
+						closedir($handler);
+						if($path!=$origipath)
+						{
+							if (!@rmdir($path))
+							{
+								throw new Exception('DELETE ERROR: '.$path);
+							}
+						}
+						else
+						{
+							break;
+						}
+						$path = substr($path, 0, strrpos($path, "/"));
+						$handler = opendir($path);
+					}
+					elseif (is_dir($path."/".$item))
+					{
+						closedir($handler);
+						$path = $path."/".$item;
+						$handler = opendir($path);
+					}
+					else
+					{
 						$filename=substr($path."/".$item,$cutNew);
-	    	    	    if(!@copy($path."/".$item,ROOT_DIR.'/'.$filename))
+						if(!@copy($path."/".$item,ROOT_DIR.'/'.$filename))
 						{
 							throw new Exception('RESTORE FILE ERROR: '.$path."/".$item.' '.ROOT_DIR.'/'.$filename);
 						}
 						unlink($path."/".$item);
-	        		}
-	    		}
-	    	}
-	    	@rmdir($origipath);
-	    	die();
+					}
+				}
+			}
+			@rmdir($origipath);
+			die();
 		}
 		else
 		{
@@ -266,7 +266,7 @@ elseif(array_key_exists('restore',$_GET))
 						восстановления системы.</p>
 					</body>
 				</html>
-				<?
+				<?php
 				die();
 			}
 			else
@@ -281,7 +281,7 @@ elseif(array_key_exists('restore',$_GET))
 						администратора.</p>
 					</body>
 				</html>
-				<?
+				<?php
 				die();
 			}
 		}
@@ -292,7 +292,7 @@ if (file_exists(MODULES_DIR.'/main'))
 	/*! инициализация констант, БД, смарти, поиск главного модуля. */
 	//Подгрузка версии системы
 	include_once CONFIG_DIR.'/version.php';
- 	$KS_VERSION=$arVersion;
+	$KS_VERSION=$arVersion;
 	try
 	{
 		//! Подключение главного модуля ЦМС, определение пользователя и др.
