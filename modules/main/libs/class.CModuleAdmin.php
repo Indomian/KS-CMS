@@ -101,7 +101,12 @@ class CModuleAdmin extends CBaseAPI
 	{
 		if($this->sAction=='')
 		{
-			if($action=='') $action=$_REQUEST['action'];
+			if(($action=='') && array_key_exists('action',$_REQUEST))
+				$action=$_REQUEST['action'];
+			elseif($action=='')
+			{
+				$action='index';
+			}
 			$this->sAction=$action;
 		}
 	}
@@ -159,7 +164,7 @@ class CAdminTable extends CModuleAdmin
 	/**
 	 * Метод выполняет обработку операций
 	 */
-	function Run()
+	function Run($action='')
 	{
 		global $KS_URL;
 		$this->ParseAction($action);

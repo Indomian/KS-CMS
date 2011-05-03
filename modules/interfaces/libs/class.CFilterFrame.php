@@ -186,7 +186,7 @@ class CFilterFrame extends CFrame
 		$arResult=array();
 		foreach($this->arFields as $key=>$value)
 		{
-			if(strlen($value['VALUE'])>0)
+			if(!empty($value['VALUE'])>0)
 			{
 				if($value['TYPE']=='DATE')
 				{
