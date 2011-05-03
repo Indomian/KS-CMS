@@ -56,10 +56,10 @@ class CcatsubcatAIindex extends CModuleAdmin
 			$arData=$this->obEditable->GetList(array('orderation'=>'desc'),array('parent_id'=>$ithis->CurSection),array(1),array('orderation'));
 			$data=$arDefaults;
 			$data['orderation']=intval($arData[0]['orderation'])+10;
-	    	$data['type']=$sType;
-	    	$data['id']=-1;
-	    	$data['active']=1;
-	    	$data['parent_id']=$this->iCurSection;
+			$data['type']=$sType;
+			$data['id']=-1;
+			$data['active']=1;
+			$data['parent_id']=$this->iCurSection;
 
 		}
 		if($data) $this->smarty->assign('data',$data);
@@ -188,7 +188,7 @@ class CcatsubcatAIindex extends CModuleAdmin
 					include_once MODULES_DIR . "/navigation/libs/class.CNav.php";
 					$oElement = new CNavElement();
 					$oElement->AddAutoField('id');
-   					$oElement->AddFileField('img');
+					$oElement->AddFileField('img');
 					$oElement->Save('CM_', $_POST);
 				}
 
