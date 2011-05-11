@@ -14,7 +14,7 @@ function setField(from,to)
 
 <h1>Редактирование смайлика</h1>
 {strip}
-<form action="{get_url _CLEAR="CM_.*" action=save}" method="POST" enctype="multipart/form-data">
+<form action="{get_url _CLEAR='CM_.*' action='save'}" method="post" enctype="multipart/form-data">
 	<input type="hidden" name="module" value="interfaces">
 	<input type="hidden" name="page" value="smilies">
 	<input type="hidden" name="FG_id" value="{$data.id}">
@@ -27,7 +27,7 @@ function setField(from,to)
     		</tr>
     		<tr>
 	    		<td>Символ:</td>
-    			<td><input type="text" name="FG_smile" value="{$data.smile|htmlspecialchars:2:"UTF-8":false}" style="width:95%" class="form_input"/></td>
+    			<td><input type="text" name="FG_smile" value="{$data.smile|htmlspecialchars:2:'UTF-8':false}" style="width:95%" class="form_input"/></td>
     		</tr>
     		<tr>
 		    	<td>Изображение:</td>
@@ -39,7 +39,7 @@ function setField(from,to)
     		<tr>
 				<td>Группа:</td>
 				<td>
-					<input type="text" name="FG_group" id="FG_group" value="{$data.group|htmlspecialchars:2:"UTF-8":false}" class="form_input"/>
+					<input type="text" name="FG_group" id="FG_group" value="{$data.group|htmlspecialchars:2:'UTF-8':false}" class="form_input"/>
 					&lt;&lt;
 					<select id="FG_group_list" onchange="setField('FG_group_list','FG_group');" class="form_input">
 						<option value="">Выбрать из списка</option>

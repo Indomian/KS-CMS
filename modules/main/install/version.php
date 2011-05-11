@@ -4,7 +4,7 @@ $arVersion=array(
 	'BUILD'=>'b6',
 	'NAME'=>'corn',
 	'TITLE'=>'KOLOS-CMS',
-	'COPYRIGHT'=>'&copy; 2011 Все права защишены <a href="http://www.kolosstudio.ru/">www.kolosstudio.ru</a>',
+	'COPYRIGHT'=>'&copy; 2011 <a href="http://www.kolosstudio.ru/">www.kolosstudio.ru</a>',
 	'DESCRIPTION'=>'Версия 2.6 Поддержка многоязычного интерфейса',
 	'UPDATES'=>array(
 		'b2'=>'Базовый билд системы',

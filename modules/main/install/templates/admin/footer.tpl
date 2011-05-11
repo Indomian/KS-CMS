@@ -7,7 +7,7 @@
 	   			<div class="copy">
     				{$VERSION.COPYRIGHT}
     			</div>
-    			<div style="float:left;margin:17px 0 0 0px;">
+    			<div class="version">
     				{#system_version#} {$VERSION.ID} build {$VERSION.BUILD}
 				</div>
     			<ul class="footer_menu">
