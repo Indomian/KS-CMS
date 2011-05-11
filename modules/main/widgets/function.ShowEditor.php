@@ -16,26 +16,36 @@ if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 function smarty_function_ShowEditor($params,&$smarty)
 {
 	global $KS_MODULES;
-	if($params['object']=='') $params['object']='textarea';
-	if($params['theme']=='') $params['theme']='advanced';
-	if($params['path']=='') $params['path']='/';
+	if(!isset($params['theme'])) $params['theme']='advanced';
+	if(!isset($params['path'])) $params['path']='/';
 	$sTemplate=$KS_MODULES->GetTemplate($params['path']);
 	$sContentCss='';
 	if(file_exists(TEMPLATES_DIR.'/'.$sTemplate.'/css/content.css'))
 	{
 		$sContentCss='content_css:"'.str_replace(ROOT_DIR,'',TEMPLATES_DIR.'/'.$sTemplate.'/css/content.css').'",';
 	}
-	$sResult='<script type="text/javascript">'.
+	$sResult='';
+	if(array_key_exists('field',$params))
+	{
+		$sResult='<textarea name="'.$params['field'].'" class="form_textarea">'.(isset($params['value'])?htmlspecialchars($params['value']):'').'</textarea><br/><a href="#" class="showEditor">'.$KS_MODULES->GetText('show_editor').'</a><a href="#" class="hideEditor">'.$KS_MODULES->GetText('hide_editor').'</a>';
+		if(!isset($params['object']))
+			$params['object']='textarea[name='.$params['field'].']';
+	}
+	if(!isset($params['object'])) $params['object']='textarea';
+	$sResult.='<script type="text/javascript">'.
 	'$(document).bind("InitTiny",function(event)'.
 	'{'.
-		'if($(\''.$params['object'].'\').attr("isTiny")!=1)' .
+		'$(\'.showEditor\').click(function(e){$(this).hide().parent().children(\'.hideEditor\').show().parent().children(\'textarea:tinymce\').tinymce().show();e.preventDefault()});'.
+		'$(\'.hideEditor\').click(function(e){$(this).hide().parent().children(\'.showEditor\').show().parent().children(\'textarea:tinymce\').tinymce().hide();e.preventDefault()});'.
+		'if($(\''.$params['object'].'\').attr("isTiny")!=1){' .
+			'$(\'.showEditor\').hide();'.
 		'$(\''.$params['object'].'\').attr("isTiny","1").tinymce({'."\n".
 			'script_url : "/js/tiny_mce/tiny_mce.js",';
 	if($params['theme']=='advanced')
 	{
 		$sResult.='theme : "advanced",'.
 			'plugins : "safari,table,save,advhr,advimage,advlink,emotions,iespell,insertdatetime,media,searchreplace,print,contextmenu,paste,directionality,fullscreen",'.
-			'theme_advanced_buttons1_add_before : "save,newdocument,separator",'.
+			'theme_advanced_buttons1_add_before : "save,separator",'.
 			'theme_advanced_buttons1_add : "fontselect,fontsizeselect,typograf",'.
 			'theme_advanced_buttons2_add : "separator,insertdate,inserttime,preview,zoom,separator,forecolor,backcolor",'.
 			'theme_advanced_buttons2_add_before: "cut,copy,paste,pastetext,pasteword,separator,search,replace,separator",'.
@@ -79,9 +89,8 @@ function smarty_function_ShowEditor($params,&$smarty)
 			"q[cite],samp,select[disabled|multiple|name|size],small,".
 			'textarea[cols|rows|disabled|name|readonly],tt,var,big",'.
 			'file_browser_callback : "myFileBrowser"'.
-		'});});'.
+		'});}});'.
 	'$(document).ready(function(){$(document).trigger("InitTiny")});'.
 	'</script>';
 	return $sResult;
 }
-?>

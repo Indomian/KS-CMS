@@ -15,7 +15,7 @@ if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 //Задаем название модуля
 $module='guestbook2';
 //Определяем глобальные переменные которые могут понадобиться внутри модуля
-global $USER,$KS_IND_matches,$smarty;
+global $USER,$smarty;
 
 //Получаем переменные прав на доступ к модулю и разделам модуля
 $access_level=$USER->GetLevel($module);
@@ -37,21 +37,21 @@ try
 			CNNavChain::get_instance()->Add($this->GetTitle($module),$root_path);
 		$sUrl='/'.$root_path.'';
 		$iBase=2;
-		if(count($KS_IND_matches[1])>3) throw new CError('SYSTEM_FILE_NOT_FOUND');
+		if(count($this->GetPathDirs())>3) throw new CError('SYSTEM_FILE_NOT_FOUND');
 	}
 	else
 	{
 		$sUrl='';
 		$iBase=1;
-		if(count($KS_IND_matches[1])>1) throw new CError('SYSTEM_FILE_NOT_FOUND');
+		if(count($this->GetPathDirs())>1) throw new CError('SYSTEM_FILE_NOT_FOUND');
 	}
 
-	if(is_numeric($KS_IND_matches[3]))
+	if($this->IsPage() && is_numeric($this->CurrentTextIdent()))
 	{
-		$smarty->assign('element_id',intval($KS_IND_matches[3]));
+		$smarty->assign('element_id',intval($this->CurrentTextIdent()));
 		$res=$this->RenderTemplate($smarty,'/guestbook2/gb2item',$this->GetTemplate());
 	}
-	elseif(count($KS_IND_matches[1])>2)
+	elseif(count($this->GetPathDirs())>2)
 	{
 		$res=$this->RenderTemplate($smarty,'/guestbook2/gb2inner',$this->GetTemplate());
 	}

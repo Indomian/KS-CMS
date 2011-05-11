@@ -37,6 +37,7 @@ class CTabs extends CInterface
 
 	function _smarty_begin_tabs($params,$content, &$smarty, $repeat)
 	{
+		global $KS_MODULES;
 		$tabsname=$params['NAME'].'_'.$this->iTimeStart;
 		if($tabsname!=$this->tabs['NAME'])
 		{
@@ -47,8 +48,9 @@ class CTabs extends CInterface
 		if ($content)
 		{
 			if(!is_array($this->tabs['ITEMS'])) return '';
-			$header='<script type="text/javascript" src="/js/interfaces/tabs.js"></script>'."\n";
-			$header.='<ul class="'.$params['head_class'].'" clear_after" id="'.$tabsname.'">';
+			$KS_MODULES->UseJavaScript('/interfaces/tabs.js',12);
+			//$header='<script type="text/javascript" src="/js/interfaces/tabs.js"></script>'."\n";
+			$header='<ul class="'.$params['head_class'].' clear_after" id="'.$tabsname.'">';
 	       	if(count($this->tabs['ITEMS'])==1)
         	{
         		$sClass=' class="one" ';

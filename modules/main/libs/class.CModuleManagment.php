@@ -23,6 +23,7 @@ abstract class CModuleManagment extends CObject
 	protected $obSmarty;
 	protected $obLanguage;
 	protected $obLanguageError;
+	protected $arVersion;
 
 	function __construct()
 	{
@@ -55,6 +56,10 @@ abstract class CModuleManagment extends CObject
 				'mess'=>'',
 				'ALEVELS'=>array('0'=>'full_access','10'=>'access_denied')),
 		);
+		//Подгрузка версии системы
+		$arVersion=array();
+		include MODULES_DIR.'/main/install/version.php';
+		$this->arVersion=$arVersion;
 		if($ks_config['go_install']==1)
 		{
 			//Надо провести самодиагностику и самоустановку
@@ -64,16 +69,42 @@ abstract class CModuleManagment extends CObject
 		$this->arHeadScripts=array();
 	}
 
+	/**
+	 * Метод возвращает версию системы
+	 */
+	function Version()
+	{
+		return isset($this->arVersion['ID'])?$this->arVersion['ID']:'Uknown';
+	}
+
+	/**
+	 * Метод возвращает полную информацию по версии системы
+	 */
+	function GetVersionData()
+	{
+		return $this->arVersion;
+	}
+
+	/**
+	 * Метод "устанавливает" объект пользователя в систему, т.е. связывает
+	 * созданный объект пользователя и объект системы модуля
+	 */
 	function SetUser($obUser)
 	{
 		$this->obUser=$obUser;
 	}
 
+	/**
+	 * Метод привязывает к объекту класса объект шаблонизатора smarty
+	 */
 	function SetSmarty($obSmarty)
 	{
 		$this->obSmarty=$obSmarty;
 	}
 
+	/**
+	 * Метод привязывает объект языковых констант к объекту управления модулями.
+	 */
 	function SetLanguage($obLanguage)
 	{
 		$this->obLanguage=$obLanguage;
@@ -85,6 +116,9 @@ abstract class CModuleManagment extends CObject
 		}
 	}
 
+	/**
+	 * Метод возвращает значение текстовой константы
+	 */
 	function GetText($code)
 	{
 		if(!is_object($this->obLanguage)) return $code;
@@ -92,12 +126,18 @@ abstract class CModuleManagment extends CObject
 		return $this->obLanguage->Text($code);
 	}
 
+	/**
+	 * Метод устанавливает объект языковых констант ошибок
+	 */
 	function SetLanguageError($obLanguage)
 	{
 		$this->obLanguageError=$obLanguage;
 		$this->obLanguageError->LoadSection(null);
 	}
 
+	/**
+	 * Метод возвращает значение текстовой константы ошибки
+	 */
 	function GetErrorText($code)
 	{
 		if(!is_object($this->obLanguageError)) return $code;
@@ -482,6 +522,18 @@ abstract class CModuleManagment extends CObject
 				$this->arHeadScripts[$position][]=$script;
 			}
 			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Метод проверяет наличие загруженного яваскрипта
+	 */
+	function HasJavaScript($script,$position=10)
+	{
+		if(isset($this->arHeadScripts[$position]) && is_array($this->arHeadScripts[$position]))
+		{
+			return in_array($script,$this->arHeadScripts[$position]);
 		}
 		return false;
 	}

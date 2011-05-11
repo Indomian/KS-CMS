@@ -16,14 +16,14 @@ include_once MODULES_DIR.'/navigation/libs/class.CNav.php';
 
 function smarty_function_ShowNavMenu($params, &$smarty)
 {
-	global $global_template, $KS_IND_matches,$KS_MODULES;
+	global $KS_MODULES;
 	try
 	{
 		$menuItem = new CNavTypes;
 		$menu_arr = $menuItem->GetMenu($params['type']);		// получаем полный список элементов меню
 		$arMenuType=$menuItem->GetLastMenuType();
 		$menuElement = new CNavElement;
-		if ($current_page = $menuElement->GetCurrentPageMenuIds($KS_IND_matches[0],$arMenuType['id']))
+		if ($current_page = $menuElement->GetCurrentPageMenuIds($KS_MODULES->GetCurrentRequest(),$arMenuType['id']))
 			$smarty->assign("current_page", $current_page);		// устанавливаем массив с id выбранного элемента меню
 		$smarty->assign('menuType',$menuItem->GetLastMenuType());
 		$smarty->assign("menu", $menu_arr);

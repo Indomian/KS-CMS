@@ -24,6 +24,7 @@ class CModuleAdmin extends CBaseAPI
 	protected $obModules;
 	protected $obUser;
 	protected $sAction;
+	protected $obUrl;
 
 	function __construct($module_name,&$smarty,&$parent)
 	{
@@ -33,6 +34,7 @@ class CModuleAdmin extends CBaseAPI
 		$this->obModules=$parent;
 		$this->sAction='';
 		$this->obUser=&$USER;
+		$this->obUrl=CUrlParser::get_instance();
 		if($this->obModules->IsActive('interfaces'))
 		{
 			$this->obModules->IncludeModule('interfaces');
@@ -118,6 +120,17 @@ class CModuleAdmin extends CBaseAPI
 	function Run()
 	{
 		return '';
+	}
+
+	/**
+	 * Данный метод вызывается при выполнении ajax запроса к административному интерфейсу
+	 */
+	function RunAjax()
+	{
+		$arResult=array(
+			'result'=>'ok',
+		);
+		return json_encode();
 	}
 }
 

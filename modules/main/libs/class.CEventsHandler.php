@@ -322,12 +322,12 @@
 								elseif (function_exists($handler['hFunc']))
 								{
 									$hFuncExists = true;
-									if (!is_array($hParams) && !$hParams)
-										$hResult = call_user_func($handler['hFunc']);
-									elseif(!array_key_exists('arParams',$handler) || !is_array($handler['arParams']))
-										$hResult = call_user_func($handler['hFunc'], $hParams);
+									if(!array_key_exists('arParams',$handler) || !is_array($handler['arParams']))
+										$hResult = call_user_func($handler['hFunc'], &$hParams);
 									elseif(array_key_exists('arParams',$handler) && is_array($handler['arParams']))
-										$hResult = call_user_func($handler['hFunc'], $hParams,$handler['arParams']);
+										$hResult = call_user_func($handler['hFunc'], &$hParams,$handler['arParams']);
+									else
+										$hResult = call_user_func($handler['hFunc']);
 								}
 							}
 							/* Если обработчик не был задан, то метод должен вернуть корректный результат */
@@ -444,5 +444,3 @@
 		$this->events[$module][$event][]=$arParams;
 	}
  }
-
-?>

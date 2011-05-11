@@ -1,27 +1,5 @@
 <script type="text/javascript" src="/js/catsubcat/admin.js"></script>
 {ShowEditor object="textarea[name=CSC_content]" theme="advanced" path=$data.URL}
-<script type="text/javascript">
-	$(document).bind("InitCalendar",function()
-		{ldelim}
-		$("#date_add").datetimepicker(
-			{ldelim}
-				dateFormat:{#date_format#},
-				timeFormat:{#time_format#},
-				dayNames:{#days#},
-				dayNamesMin:{#daysMin#},
-				dayNamesShort:{#daysShort#},
-				monthNames:{#monthes#}
-			{rdelim}
-		);
-		$("#date_add_btn").click(function()
-			{ldelim}
-				$("#date_add").datetimepicker('show')
-			{rdelim}
-		);
-		{rdelim}
-	);
-	$(document).ready(function(){ldelim}$(document).trigger("InitCalendar");{rdelim});
-</script>
 <ul class="nav" id="navChain">
 	<li><a href="/admin.php"><img src="{#images_path#}/icons_menu/home.gif" alt="icon_home" height="13" width="13" />&nbsp;<span>{#home#}</span></a></li>
     <li><a href="{get_url _CLEAR="ACTION type CSC_catid id i p1 CSC_id"}"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;<span>{#title#}</span></a></li>
@@ -129,13 +107,12 @@
     	</tr>
     	<tr>
     		<td>{if $data.type=='cat'}{Title field="orderation_category"}{else}{Title field="orderation_record"}{/if}</td>
-    		<td><input type="text" name="CSC_orderation" value="{$data.orderation|intval}" size="3"/></td>
+    		<td><input type="text" name="CSC_orderation" value="{$data.orderation|intval}" size="3" class="form_input"/></td>
     	</tr>
     	<tr>
 			<td>{Title field="date_add"}</td>
 			<td>
-				<input type="text" id="date_add" readonly="readonly" name="CSC_date_add" value="{if $data.date_add!=0}{$data.date_add|date_format:"%d.%m.%Y %H:%M"}{/if}" style="width:110px;" class="form_input"/>
-				<img src="{#images_path#}/calendar/img.gif" id="date_add_btn" style="border: 0pt none ; cursor: pointer;" title="{#calendar_hint#}" align="absmiddle"/>
+				{ShowCalendar field="CSC_date_add" title=$smarty.config.select_date value=$data.date_add}
 			</td>
 		</tr>
     	{if $data.id > 0}

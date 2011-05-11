@@ -3,14 +3,14 @@
  * \file function.BlogCalendar.php
  * В файле находится виджет реализующий календарь по элементам текстовых страниц
  * Файл проекта kolos-cms.
- * 
+ *
  * Создан 1.03.2010
  *
- * \author fox 
+ * \author fox
  * \version 1.0
  * \todo
  */
-/*Обязательно вставляем во все файлы для защиты от взлома*/ 
+/*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 require_once MODULES_DIR.'/interfaces/libs/class.CAjax.php';
@@ -21,16 +21,11 @@ require_once MODULES_DIR.'/interfaces/libs/class.CAjax.php';
  */
 function smarty_function_CatCalendar($params,&$smarty)
 {
-	global $KS_IND_matches,$USER,$KS_MODULES,$global_template,$ks_db,$ks_config;
+	global $USER,$KS_MODULES,$ks_db;
 	try
 	{
-		if(KS_DEBUG==1) 
-		{
-			$startTime=microtime(true);
-			$oldMode=$ks_db->SetDebugMode(1007);
-		}
 		//Проверка и инициализация аякса
-		if($params['isAjax']=='Y') 
+		if($params['isAjax']=='Y')
 		{
 			/*Ключ о том это аякс запрос или нет*/
 			$oldAjax=false;
@@ -45,27 +40,27 @@ function smarty_function_CatCalendar($params,&$smarty)
 				else
 					return '';
 			}
-			
+
 		}
 		//Подготавливаем данные для работы
 		$module_directory = MODULES_DIR . "/catsubcat/";
 		include_once($module_directory . "libs/class.CCategoryEdit.php");
 		include MODULES_DIR.'/catsubcat/config.php';
-		
+
 		$access_level=$USER->GetLevel('catsubcat');
 		$arUserGroups=$USER->GetGroups();
 		//Проверяем права на доступ к самому модулю
 		if($access_level>8) throw new CAccessError('CATSUBCAT_NOT_VIEW_ANNOUNCE');
-		
-		
+
+
 		$obRecord=new CElement();
 		$obCategory = new CCategory();
-		
+
 		//Обрабатываем текущую переданную дату, определяем год и месяц.
 		if(($_GET['month']=='')||($_GET['year']==''))
 		{
 			$arDate=getdate();
-		} 
+		}
 		$params['month']=($_GET['month']!=''?intval($_GET['month']):$arDate['mon']);
 		$params['year']=($_GET['year']!=''?intval($_GET['year']):$arDate['year']);
 		if($params['month']<1)
@@ -128,15 +123,15 @@ function smarty_function_CatCalendar($params,&$smarty)
 						$children_ids = array_merge(array($parent_id), $obCategory->GetChildrenIds($parent_id));
 						$arFilter['->parent_id'] = "(" . implode(", ", $children_ids) . ")";
 					}
-					
-				} 
+
+				}
 				else
 				{
 					$arFilter['parent_id']=$parent_id;
 				}
-			
+
 		}
-		
+
 		if($access_level>=8)
 		{
 			$arGroups=$USER->GetGroups();
@@ -150,7 +145,7 @@ function smarty_function_CatCalendar($params,&$smarty)
 			$iday=idate('d',$arRes[$i]['date_add']);
 			$arEvents[$iday]++;
 		}
-		
+
 		while($day<=$arMonthesLength[$params['month']-1])
 		{
 			for($wDay=0;$wDay<7;$wDay++)
@@ -180,13 +175,13 @@ function smarty_function_CatCalendar($params,&$smarty)
 			}
 			$week++;
 		}
-		
+
 		$module_url_ident = $KS_MODULES->arModules['catsubcat']["URL_ident"];
         if ($module_url_ident && $module_url_ident != "default")
            	$data['filterPage']='/'.$module_url_ident.'/';
         else
         	$data['filterPage']='/';
-		
+
 		$smarty->assign('data', $data);
     	//Код для генерации пути к шаблону или вывод ошибки об отсутсвтии шаблона
     	$sResult=$KS_MODULES->RenderTemplate($smarty,'/catsubcat/CatCalendar',$params['global_template'],$params['tpl']);
@@ -209,7 +204,7 @@ function smarty_function_CatCalendar($params,&$smarty)
 	catch(CError $e)
 	{
 		return $e;
-	}	
+	}
 }
 
 function widget_params_CatCalendar()

@@ -6,6 +6,7 @@
 <div class="manage">
 	<table class="layout">
 		<tr>
+			{if $rights.canEdit}
 			<td>
 				<div>
 					<form action="{get_url action=new}" method="post">
@@ -13,6 +14,7 @@
 					</form>
 				</div>
 			</td>
+			{/if}
 			<td width="100%">
 				<span>{#small_hint#} {$pages.TOTAL|default:0}</span>
 			</td>
@@ -50,16 +52,26 @@
 			<td>
 				<input type="checkbox" name="sel[elm][]" value="{$oItem.id}" onclick="isAnythingChecked(this.form)">
 			</td>
-			<td class="namet">{$oItem.title}</td>
+			<td class="namet"><a href="{get_url action=edit id=$oItem.id}">{$oItem.title}</a></td>
 			<td><img src="{#images_path#}/active{$oItem.active|default:"0"}.gif" border="0" alt="{if $oItem.active==1}{#active#}{else}{#inactive#}{/if}"/></td>
-			<td>{$oItem.date_add|date_format:"%d.%m.%Y %H:%i"}</td>
+			<td>{$oItem.date_add|date_format:"%d.%m.%Y %H:%M"}</td>
 			<td class="namet">{$oItem.client_title|default:"-"}</td>
 			<td class="namet">{$oItem.type_title}</td>
 			<td align="center">
 				<div style="width:80px;">
-					<a href="{get_url action=edit id=$oItem.id}" title="{#edit#}"><img src="{#images_path#}/icons2/edit.gif" alt="{#edit#}" /></a>
-					<a href="{get_url action=delete id=$oItem.id}" onclick="return confirm('{#delete_confirm#}');" title="{#delete#}"><img src="{#images_path#}/icons2/delete.gif" alt="{#delete#}" /></a>
-					<a href="{get_url action=edit id=$oItem.id}#banners_12345678910_tab3" title="{#statistics#}"><img src="{#images_path#}/icons2/chart_up_color.png" alt="{#statistics#}" /></a>
+					<a href="{get_url action=edit id=$oItem.id}">
+						{if not $rights.canEdit}
+							<img src="{#images_path#}/icons2/view.gif" alt="{#view#}" title="{#view#}"/>
+						{else}
+							<img src="{#images_path#}/icons2/edit.gif" alt="{#edit#}" title="{#edit#}"/>
+						{/if}
+					</a>
+					{if $rights.canEdit}
+						<a href="{get_url action=delete id=$oItem.id}" onclick="return confirm('{#delete_confirm#}');" title="{#delete#}"><img src="{#images_path#}/icons2/delete.gif" alt="{#delete#}" /></a>
+					{/if}
+					{if $oItem.save_stats==1}
+					<a href="{get_url action=edit id=$oItem.id}#banners_edit_12345678910_tab4" title="{#statistics#}"><img src="{#images_path#}/icons2/chart_up_color.png" alt="{#statistics#}" /></a>
+					{/if}
 				</div>
 			</td>
 		</tr>
@@ -71,6 +83,7 @@
 </div>
 {/strip}
 {include file='admin/navigation_pagecounter.tpl' pages=$pages}
+{if $rights.canEdit}
 <div class="manage">
 	<table class="layout">
 		<tr class="titles">
@@ -80,6 +93,7 @@
 		</tr>
 	</table>
 </div>
+{/if}
 </form>
 {strip}
 <dl class="def" style="background:#FFF6C4 url('{#images_path#}/big_icons/statistics.gif') left 50% no-repeat;{if $smarty.cookies.showHelpBar==1}display:none;{/if}">

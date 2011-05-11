@@ -129,7 +129,7 @@ class CUser extends CUsersCommon implements User
 							if ($arRow['active'] == 1)
 							{
 								$this->GetGroups();
-								$this->OnAfterLogin($arRow);
+								$this->OnSessionUpdate($arRow);
 							}
 							else
 							{
@@ -168,13 +168,16 @@ class CUser extends CUsersCommon implements User
 	/**
 	 * Метод вызывается после выполнения базовых операций по авторизации
 	 */
-	private function OnAfterLogin($arUser)
+	private function OnSessionUpdate($arUser)
 	{
 		global $KS_EVENTS_HANDLER;
 		$this->userdata=$arUser;
 		$this->arUserVars=json_decode($arUser['user_vars'],true);
 		$this->userdata['vars']=$this->arUserVars;
-		$_SESSION['cu_user'] = time() + $this->obModules->GetConfigVar('main','user_inactive_time',3600);
+		//Проверка является ли данный запрос хитом, не лучший вариант, но позволяет блокировать не нужные хиты
+		//на продление авторизации
+		if(!(isset($_REQUEST['ishit']) && $_REQUEST['ishit']=='no'))
+			$_SESSION['cu_user'] = time() + $this->obModules->GetConfigVar('main','user_inactive_time',3600);
 		$this->Update($this->userdata['id'],array('last_visit'=>time()));
 		$this->is_login = true;
 		/* Вызов обработчика при обновлении времени жизни сессии */
@@ -277,7 +280,7 @@ class CUser extends CUsersCommon implements User
 			$this->obDB->query("UPDATE ks_users SET pwd_updated=0,number_of_log_tries=0,last_visit=".time()." WHERE id='".$this->obDB->safesql($arUser['id'])."'");
 			$onLoginParams = $this->userdata;
 			$KS_EVENTS_HANDLER->Execute('main', 'onLogin', $onLoginParams);
-			$this->OnAfterLogin($arUser);
+			$this->OnSessionUpdate($arUser);
 			return true;
 		}
 		return false;

@@ -1,15 +1,14 @@
 <?php
 /*
  * CMS-remote
- * 
+ *
  * Created on 27.10.2008
  *
  * Developed by blade39
- * 
+ *
  * Виджет, выполняет функцию поиска элемента по его коду и пути, если путь и код элемента верные,
  * возвращаются данные иначе выбрасывается 404 ошибка.
  * входные данные
- * $KS_IND_matches - разобранный GET запрос, структуру видно в файле /index.php.
  * Параметры функции
  * params:
  * addToNavChain - Y|N добавлять найденный элемент в навигационную цепочку
@@ -20,30 +19,30 @@
 
 function smarty_function_CatElement($params, &$smarty)
 {
-	global $KS_IND_matches,$MODULE_catsubcat_config,$USER,$KS_MODULES,$global_template;
-	
+	global $USER,$KS_MODULES;
+
 	$sUrl = '';
 	$data = array();
-	
+
 	$access_level=$USER->GetLevel('catsubcat');
 	if($access_level>8) throw new CAccessError("SYSTEM_NOT_ACCESS_MODULE");
 	$arElmFilter=array('text_ident'=>$params['text_ident']);
 	//Если не указан номер элемента который надо найти (т.е. работаем как основной контент или по адресу)
 	//то пытаемся найти этот элемент в данном адресе.
-	if(($params['ID']==''))
+	if(!isset($params['ID']) || ($params['ID']==''))
 	{
 		if(!array_key_exists('parent_id',$params))
 		{
 			//Пробуем определить верность указанного пути
 			$parent_id=0;
 			$obCategory=new CCategory();
-			foreach($KS_IND_matches[1] as $path)
+			foreach($this->GetPathDirs() as $path)
 			{
-				if(($path!='')&&($path!=$KS_IND_matches[2]))
+				if(($path!='')&&($path!=$this->CurrentTextIdent()))
 				{
 					$arFilter=array('text_ident'=>$path,'parent_id'=>$parent_id);
 					if($arRow=$obCategory->GetRecord($arFilter))
-					{	
+					{
 						$parent_id=$arRow['id'];
 						$sUrl.='/'.$arRow['text_ident'];
 						$data['parent']=$arRow;
@@ -58,12 +57,12 @@ function smarty_function_CatElement($params, &$smarty)
 		else
 		{
 			$parent_id=$params['parent_id'];
-		}	
+		}
 		$arElmFilter['parent_id']=$parent_id;
 	}
 	else
 	{
-		$arElmFilter=array('id'=>$params['ID']);	
+		$arElmFilter=array('id'=>$params['ID']);
 	}
 	$obElement=new CElement();
 	/* обратились к элементу */
@@ -72,7 +71,7 @@ function smarty_function_CatElement($params, &$smarty)
 	{
 		/* Неплохо бы добавить дату добавления в понятном формате, чтобы юзеры в Смарти не мучились :) */
 		$data['main_content']['date'] = date("d.m.Y", $data['main_content']['date_add']);
-		
+
 		//Проверка прав доступа
 		if($access_level>8) throw new CAccessError("CATSUBCAT_NOT_VIEW_ELEMENTS");
 		if($access_level>7)
@@ -92,12 +91,12 @@ function smarty_function_CatElement($params, &$smarty)
 			{
 				$arFilter=array('id'=>$parent_id);
 				if($arRow=$obCategory->GetRecord($arFilter))
-				{	
+				{
 					$parent_id=$arRow['parent_id'];
 					$sUrl='/'.$arRow['text_ident'].$sUrl;
 				}
 				$i++;
-			}	
+			}
 		}
 		else
 		{
@@ -105,7 +104,7 @@ function smarty_function_CatElement($params, &$smarty)
 		}
 		$smarty->assign('data', $data);
 		$smarty->assign('url',$sUrl);
-		if($params['addToNavChain']=='Y' && $KS_MODULES->arModules['navigation']['active']==1)
+		if(array_key_exists('addToNavChain',$params) && $params['addToNavChain']=='Y' && $KS_MODULES->IsActive('navigation'))
 			CNNavChain::get_instance()->Add( $data['main_content']['title'],$sUrl);
 		if($params['setPageTitle']=='Y')
 		{
@@ -116,7 +115,7 @@ function smarty_function_CatElement($params, &$smarty)
 		}
 		$sResult=$KS_MODULES->RenderTemplate($smarty,'/catsubcat/CatElement',$params['global_template'],$params['tpl']);
 		/* Шаблон найдем, можно увеличить количество показов страницы на единицу */
-		if($_COOKIE['cscp'.$data['main_content']['id']]!='1')
+		if(!isset($_COOKIE['cscp'.$data['main_content']['id']]) || $_COOKIE['cscp'.$data['main_content']['id']]!='1')
 		{
 			$obElement->Update($data['main_content']['id'],array('views_count'=>intval($data['main_content']['views_count']) + 1));
 			setcookie('cscp'.$data['main_content']['id'],1,time()+30000);

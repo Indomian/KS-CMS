@@ -26,16 +26,63 @@ class CModuleHookUp extends CModuleManagment
 	 */
 	private function init()
 	{
-		global $KS_IND_matches;
 		$this->arWidgetStack=array();
 		$this->sTemplate='.default';
 		$this->sScheme='index';
+		$this->ParseCurrentRequest();
+	}
+
+	/**
+	 * Метод обрабатывает текущий запрос от пользователя
+	 */
+	private function ParseCurrentRequest()
+	{
+		/**
+		 * Структура массива $KS_IND_matches
+		 * 0 - полный путь переданный пользователем
+		 * 1 - массив директорий со слешем на конце ОБЯЗТЕЛЬНО (по-другому не отработает)
+		 * 2 - имя файла (может отсутствовать) (с расширением)
+		 * 3 - имя файла (может отсутствовать) (без расширения)
+		 */
+		$sPath='';
+		if(array_key_exists('path',$_GET))
+		{
+			$sPath=$_GET['path'];
+		}
+		else
+		{
+			$sPath=$_SERVER['REQUEST_URI'];
+		}
+		if($sPath=='/')
+		{
+			$sPath='/index.html';
+		}
 		$this->arRequestData=array(
-			'path'=>$KS_IND_matches[0],
-			'dirs'=>$KS_IND_matches[1],
-			'page'=>$KS_IND_matches[2],
-			'text_ident'=>$KS_IND_matches[3]
+			'path'=>$sPath,
+			'dirs'=>explode('/',$sPath)
 		);
+		if(is_array($this->arRequestData['dirs']) && count($this->arRequestData['dirs'])>0)
+		{
+			$this->arRequestData['page']=array_pop($this->arRequestData['dirs']);
+			if(strrpos($this->arRequestData['page'],'.')>0)
+			{
+				$this->arRequestData['text_ident']=substr($this->arRequestData['page'],0,strrpos($this->arRequestData['page'],'.'));
+			}
+			else
+			{
+				$this->arRequestData['text_ident']=$this->arRequestData['page'];
+			}
+		}
+		else
+		{
+			$this->arRequestData['page']='';
+			$this->arRequestData['text_ident']='';
+		}
+	}
+
+	function GetCurrentRequest()
+	{
+		return $this->arRequestData['path'];
 	}
 
 	/**
@@ -43,8 +90,7 @@ class CModuleHookUp extends CModuleManagment
 	 */
 	public function InitTemplates()
 	{
-		global $KS_IND_matches;
-		if($sTemplate=$this->select_global_template($KS_IND_matches[0]))
+		if($sTemplate=$this->select_global_template($this->GetCurrentRequest()))
 		{
 			$arTemplate=explode(':',$sTemplate);
 			if(is_array($arTemplate)&&count($arTemplate)>1)
@@ -90,20 +136,39 @@ class CModuleHookUp extends CModuleManagment
 	function CheckPath($sPath,$bInModule=true)
 	{
 		$arPath=explode('/',$sPath);
-		foreach($arPath as $sElement)
+		$arResult=array();
+		$sPage='';
+		if(is_array($arPath) && count($arPath)>0)
 		{
-			if(trim($sElement)!='')
+			$sPage=array_pop($arPath);
+			if(strrpos($this->arRequestData['page'],'.')>0)
+			{
+				$sPage=substr($sPage,0,strrpos($sPage,'.'));
+			}
+			foreach($arPath as $sElement)
+			{
+				if($bInModule && trim($sElement)=='') continue;
 				$arResult[]=trim($sElement);
+			}
 		}
 		$iRequestCount=count($this->arRequestData['dirs']);
-		foreach($arResult as $i=>$sElement)
+		if(count($arResult)>0)
 		{
-			if($i+2<$iRequestCount)
+			$iShift=2;
+			if(!$bInModule) $iShift=0;
+			foreach($arResult as $i=>$sElement)
 			{
-				if($sElement!=$this->arRequestData['dirs'][$i+2]) return false;
+				if($i+$iShift<$iRequestCount)
+				{
+					if($sElement!=$this->arRequestData['dirs'][$i+$iShift]) return false;
+				}
+				else
+					return false;
 			}
-			else
-				return false;
+			if($sPage!='')
+			{
+				return $sPage==$this->CurrentTextIdent();
+			}
 		}
 		return true;
 	}
@@ -122,7 +187,11 @@ class CModuleHookUp extends CModuleManagment
 	 */
 	function GetPathDirs($from=1)
 	{
-		return array_slice($this->arRequestData['dirs'],$from);
+		if(is_array($this->arRequestData['dirs']) && count($this->arRequestData['dirs'])>=$from)
+		{
+			return array_slice($this->arRequestData['dirs'],$from);
+		}
+		return array();
 	}
 
 	/**
@@ -210,7 +279,7 @@ class CModuleHookUp extends CModuleManagment
    			{
    				include_once MODULES_DIR.'/'.$arModule['directory'].'/init.inc.php';
    			}
-    		if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/main.init.php'))
+    			if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/main.init.php'))
    			{
    				include_once MODULES_DIR.'/'.$arModule['directory'].'/main.init.php';
    			}

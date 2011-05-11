@@ -36,7 +36,7 @@
     		<td>{$oItem.id}</td>
     		<td><a href="{get_url ACTION=edit id=$oItem.id}">{$oItem.title}</a></td>
     		<td>{$oItem.description}</td>
-    		<td>{$oItem.module}</td>
+    		<td>{$oItem.module_title}::{$oItem.type_title}</td>
     		<td>{$oItem.script}</td>
     		<td>
     			<div style="width:50px;">

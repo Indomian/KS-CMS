@@ -112,7 +112,8 @@ class CObject extends CBaseList
 	static protected $arCache;
 	static protected $dbStructure;
 
-	protected $bDistinctMode;
+	protected $bDistinctMode; /*!<Ключ режима выборки из базы данных*/
+	protected $bJustAdd; /*!<Индекс массива - ключ записи, если ложь, индекс массива по порядку если истина*/
 
 	/*!Конструктор класса. Заполняет атрибуты класса значениями по умолчанию.
 	 \param $sTable -- имя таблицы для работы (без префикса).*/
@@ -139,6 +140,7 @@ class CObject extends CBaseList
 		$this->checkMethod='AND';
 		$this->arTables=array();
 		$this->bDistinctMode=false;
+		$this->bJustAdd=false;
 		if(array_key_exists($sTable,self::$dbStructure))
 		{
 			$this->arFields=array_keys(self::$dbStructure[$sTable]);
@@ -167,8 +169,20 @@ class CObject extends CBaseList
 	}
 
 	/**
+	 * Метод устанавливает значение режима добавления записей в результат
+	 * @param $bMode - режим, ложь - по ключам, истина - просто добавлять
+	 * @return boolean - предыдущее значение режима.
+	 */
+	function SetKeyMode($bMode)
+	{
+		$old=$this->bJustAdd;
+		$this->bJustAdd=$bMode;
+		return $old;
+	}
+
+	/**
 	 * Метод добавляет поле для проверки перед сохранением элемента в базу.
-	 * Если добавить несколько методов, проверка будет идти по принципу "�?"
+	 * Если добавить несколько методов, проверка будет идти по принципу "ИЛИ"
 	 */
 	function AddCheckField($field)
 	{
@@ -449,7 +463,10 @@ class CObject extends CBaseList
 		if($data=='') $data=$_POST;
 		foreach ($this->arFields as $field)
 		{
-			$arResult[$field]=$data[$prefix.$field];
+			if(array_key_exists($prefix.$field,$data))
+				$arResult[$field]=$data[$prefix.$field];
+			else
+				$arResult[$field]='';
 		}
 		return $arResult;
 	}
@@ -1005,6 +1022,7 @@ class CObject extends CBaseList
 							$prefix=' AS '.$sNewName;
 						}
 						$field[]=$myfield.$prefix;
+						if($bAddCount) $field[]='COUNT('.$myfield.')';
 					}
 					elseif(strpos($myfield,'.')>0)
 					{
@@ -1027,6 +1045,7 @@ class CObject extends CBaseList
 							}
 						} else continue;
 						$field[]=$myfield.$prefix;
+						if($bAddCount) $field[]='COUNT('.$newfield.')';
 					}
 					else
 					{
@@ -1049,6 +1068,7 @@ class CObject extends CBaseList
 								$prefix=' AS '.$sNewName;
 							}
 							$field[]=$newfield.$prefix;
+							if($bAddCount) $field[]='COUNT('.$newfield.')';
 						}
 					}
 				}
@@ -1159,7 +1179,6 @@ class CObject extends CBaseList
 			}
 			$limits="LIMIT ".join(',',$arLimits);
 		}
-		//$query="SELECT $fields FROM ".PREFIX.$this->sTable." $sWhere $sOrder $limits";
 		if($this->bDistinctMode)
 		{
 			$query="SELECT DISTINCT $fields FROM $sFrom $sWhere $sGroupBy $sOrder $limits";
@@ -1180,7 +1199,7 @@ class CObject extends CBaseList
 		{
 			if($this->_ParseItem($item))
 			{
-				if(array_key_exists('id',$item))
+				if(array_key_exists('id',$item)&&$this->bJustAdd==false)
 					$res[$item['id']]=$item;
 				else
 					$res[]=$item;
@@ -1357,12 +1376,9 @@ class CObject extends CBaseList
 			//echo $query;
 			$this->obDB->query($query);
 			unset(CObject::$arCache[$this->sTable]);
-			return mysql_affected_rows();
+			return $this->obDB->AffectedRows();
 		}
-		else
-		{
-			return -1;
-		}
+		return -1;
 	}
 
 	/**

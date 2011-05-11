@@ -403,18 +403,6 @@ function MenuItem($name,$module,$href="",$title="menuitem",$class="", $parent_mo
 	return $res;
 }
 
-/*!Функция Lang - выводит сообщения для текущего модуля из текущей локали
-	mess - код сообщения;
-	module - название модуля (необязательно)
-	\todo избавиться от необходимости передавать название модуля
-*/
-function Lang($mess,$module="")
-{
-	global $KS_MODULES;
-	if($module=="") $module=$KS_MODULES->current;
-	return $mess;
-}
-
 /**
  * Функция выполняет транслитерацию переданной строки.
  * \param $input входная строка требующая транслитерации.

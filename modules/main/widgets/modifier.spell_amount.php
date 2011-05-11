@@ -27,6 +27,11 @@ function smarty_modifier_spell_amount($val,$sEnds=false)
 			'def'=>$arEndsTmp[2]
 		);
 	}
+	if($val>1000000) $val=$val%1000000;
+	if($val>100000) $val=$val%100000;
+	if($val>10000) $val=$val%10000;
+	if($val>1000) $val=$val%1000;
+	if($val>100) $val=$val%100;
 	if($val==0) return $arEnds['def'];
 	if($val==1) return $arEnds['1'];
 	if($val<20)
@@ -38,6 +43,7 @@ function smarty_modifier_spell_amount($val,$sEnds=false)
 	{
 		$minor=$val%10;
 		if($minor==1) return $arEnds['1'];
+		if($minor==0) return $arEnds['def'];
 		if($minor<5) return $arEnds['2-5'];
 	}
 	return $arEnds['def'];

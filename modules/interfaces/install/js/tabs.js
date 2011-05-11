@@ -13,6 +13,12 @@ function ChangeActive(caller,list)
 				oDiv=document.getElementById(oTab.id+'cont');
 				oDiv.style.display='block';
 			}
+			//Меняем ссылку в окне браузера
+			var ss = window.location.href;
+			var linx = new Array();
+			linx = ss.split('#');
+			window.location.href = linx[0] + '#'+$(oTab).attr('id');
+			//Вешаем печеньку
 			var cookieTime=new Date();
 			cookieTime.setTime(cookieTime.getTime()+360000000);
 			setCookie('lastSelectedTab',oTab.id,cookieTime.toGMTString());
@@ -24,7 +30,10 @@ function ChangeActive(caller,list)
 			{
 				oDiv=document.getElementById(oTab.id+'cont');
 				oDiv.style.display='none';
-			}        }    }}
+			}
+        }
+    }
+}
 
 function ShowTabs(ulname)
 {
@@ -45,3 +54,25 @@ function ShowTabs(ulname)
 	return true;
 }
 
+/**
+ * Переключение вкладки по запросу из адресной строки
+ */
+$(document).ready(function(){
+	addr=location.href;
+    linx = addr.split('#');
+	anchor=linx[1];
+	R=/^([a-z0-9_]+)_[0-9]{11}_tab([0-9]{1,2})$/i;
+	if(R.test(anchor))
+	{
+		matches=anchor.match(R);
+		tabs=$('ul.tabs2[id^='+matches[1]+']');
+		if(tabs.length>0)
+		{
+			tab=$('li[id$=tab'+matches[2]+']');
+			if(tab.length>0)
+			{
+				ChangeActive(tab.attr('id'),tabs.attr('id'));
+			}
+		}
+	}
+});

@@ -77,7 +77,7 @@ class CmainAImodules extends CModuleAdmin
 				{
 					try
 					{
-						if($_POST['CM_URL_ident']=='default')
+						if(isset($_POST['CM_URL_ident']) && $_POST['CM_URL_ident']=='default')
 						{
 							$arModules=$this->obModules->GetList(array('id'=>'asc'),array('URL_ident'=>'default','!id'=>intval($_POST['CM_id'])));
 							if(is_array($arModules))

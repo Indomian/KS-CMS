@@ -33,29 +33,6 @@ try
 		 * $_GET['path'] -- полный вызываемый путь вида: dir1/dir2/file.html
 		 * $_GET['<другие перменные>']
 		 */
-
-		/**
-		 * Структура массива $KS_IND_matches
-		 * 0 - полный путь переданный пользователем
-		 * 1 - массив директорий со слешем на конце ОБЯЗТЕЛЬНО (по-другому не отработает)
-		 * 2 - имя файла (может отсутствовать) (с расширением)
-		 * 3 - имя файла (может отсутствовать) (без расширения)
-		 */
-		$KS_IND_matches[0]=(isset($_GET['path']))?$_GET['path']:'';
-		$KS_IND_matches[1]=(isset($_GET['path']))?explode('/',$_GET['path']):array('');
-		$KS_IND_matches[2]=array_pop($KS_IND_matches[1]);
-		$KS_IND_matches[3]=substr($KS_IND_matches[2],0,strrpos($KS_IND_matches[2],'.'));
-
-		if( isset($KS_IND_matches[1]) )
-		{
-			/* обратились к какой-либо директории относително корня */
-			/**
-			 * Массив $KS_IND_dir - список папок для получения адреса материала
-			 * 0 - первая папка (по ней идентифицируем модуль)
-			 * <$KS_IND_dir[<n>]> - последующие директории
-			 */
-			$KS_IND_dir = $KS_IND_matches[1];
-		}
 		require_once MODULES_DIR.'/main/main.inc.php';
 	}
 	catch(CUserError $e)
@@ -176,4 +153,3 @@ catch(Exception $e)
 		echo $e;
 	}
 }
-?>

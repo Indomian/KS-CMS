@@ -27,7 +27,7 @@ require_once MODULES_DIR.'/interfaces/libs/class.CAjax.php';
 function smarty_function_CatAnnounce($params, &$subsmarty)
 {
 	/* Необходимые глобальные объекты и переменные */
-	global $KS_IND_matches, $KS_URL, $USER, $KS_MODULES, $global_template,$ks_db;
+	global $KS_URL, $USER, $KS_MODULES, $ks_db;
 	try
 	{
 		//Проверка и инициализация аякса

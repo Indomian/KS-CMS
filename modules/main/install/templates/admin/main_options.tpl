@@ -83,16 +83,35 @@
 							</select>
 						</td>
 					</tr>
-					<tr>
-						<td>{Title field="user_inactive_time"}</td>
-						<td><input type="text" name="sc_user_inactive_time" value="{$data.user_inactive_time|default:"3600"}" class="form_input"/></td>
-					</tr>
+
 					<tr>
 						<td>{Title field="lifetime"}</td>
 						<td><input type="text" name="sc_lifetime" value="{$data.lifetime|default:"864000"}" class="form_input"/></td>
 					</tr>
     			</table>
     		</div>
+    	{/strip}{/ksTab}
+    	{ksTab NAME=$smarty.config.tabs_auth|default:"Auth"}{strip}
+		<div class="form">
+			<table class="layout">
+				<tr>
+					<th width="30%">{#header_field#}</th>
+					<th width="70%">{#header_value#}</th>
+				</tr>
+				<tr>
+					<td>{Title field="user_inactive_time"}</td>
+					<td><input type="text" name="sc_user_inactive_time" value="{$data.user_inactive_time|default:"3600"}" class="form_input"/></td>
+				</tr>
+				<tr>
+					<td>{Title field="user_inactive_check"}</td>
+					<td><input type="checkbox" name="sc_user_inactive_check" value="1" {if $data.user_inactive_check==1}checked="checked"{/if}/></td>
+				</tr>
+				<tr>
+					<td>{Title field="enable_auth_save"}</td>
+					<td><input type="checkbox" name="sc_enable_auth_save" value="1" {if $data.enable_auth_save}checked="checked"{/if}/></td>
+				</tr>
+    		</table>
+    	</div>
     	{/strip}{/ksTab}
     	{ksTab NAME=$smarty.config.tabs_language|default:"Lang"}{strip}
     	<div class="form">

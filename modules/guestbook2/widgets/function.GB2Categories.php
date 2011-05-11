@@ -13,7 +13,7 @@ include_once MODULES_DIR.'/guestbook2/libs/class.CGB2Api.php';
 function smarty_function_GB2Categories($params, &$subsmarty)
 {
 	/* Необходимые глобальные объекты и переменные */
-	global $KS_IND_matches, $global_template,$USER,$KS_MODULES;
+	global $USER,$KS_MODULES;
 	try
 	{
 		/* Проверка прав доступа пользователя к анонсам */
@@ -23,9 +23,9 @@ function smarty_function_GB2Categories($params, &$subsmarty)
 		/* Создаём объект для работы с категориями */
 		$obGB2API=CGB2API::get_instance();
 
-		if(IsTextIdent($KS_IND_matches[1][2]))
+		if(IsTextIdent($KS_MODULES->GetPathPart(2)))
 		{
-			$sCurrent=$KS_IND_matches[1][2];
+			$sCurrent=$KS_MODULES->GetPathPart(2);
 		}
 
 		//Определяем сортировку

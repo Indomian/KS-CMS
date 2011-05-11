@@ -247,7 +247,7 @@ elseif(array_key_exists('restore',$_GET))
 		else
 		{
 			//ключа нету..шлем админу письмо о восстановлении
-			include_once CONFIG_DIR.'/sys_config.php';
+			include CONFIG_DIR.'/sys_config.php';
 			if($ks_config['admin_email']!='')
 			{
 				mail($ks_config['admin_email'],'Site restore email',
@@ -289,49 +289,17 @@ elseif(array_key_exists('restore',$_GET))
 }
 if (file_exists(MODULES_DIR.'/main'))
 {
-	/*! инициализация констант, БД, смарти, поиск главного модуля. */
-	//Подгрузка версии системы
-	include_once CONFIG_DIR.'/version.php';
-	$KS_VERSION=$arVersion;
 	try
 	{
 		//! Подключение главного модуля ЦМС, определение пользователя и др.
 		include_once(MODULES_DIR.'/main/admin.inc.php');
-		$smarty->assign('VERSION',$KS_VERSION);
-	}
-	catch(CUserError $e)
-	{
-		if(array_key_exists('ajax',$_GET))
-		{
-			echo json_encode(array('error'=>$e->getMessage(),'text'=>$e->GetErrorText()));
-			exit();
-		}
-		else
-		{
-			$smarty->assign('VERSION',$KS_VERSION);
-			$smarty->assign('last_error',$e->GetErrorText());
-			if(array_key_exists('lostpwd',$_GET) && $_GET['lostpwd'] == 'Y')
-			{
-				$page=$KS_MODULES->LoadModulePage('main','password');
-			}
-			$smarty->display('admin/login.tpl');
-			exit();
-		}
 	}
 	catch(CAccessError $e)
 	{
 		if($smarty)
 		{
-			if(array_key_exists('ajax',$_GET))
-				$smarty->assign('isajax',intval($_GET['ajax']));
-			$smarty->assign('VERSION',$KS_VERSION);
 			$smarty->assign('last_error',$e->GetErrorText());
-			if(array_key_exists('lostpwd',$_GET) && $_GET['lostpwd'] == 'Y')
-			{
-				$page=$KS_MODULES->LoadModulePage('main','password');
-			}
-			$smarty->display('admin/login.tpl');
-			exit();
+			$KS_MODULES->LoadModulePage('main','password');
 		}
 		else
 		{
@@ -343,7 +311,6 @@ if (file_exists(MODULES_DIR.'/main'))
 	{
 		if($smarty)
 		{
-			$smarty->assign('VERSION',$KS_VERSION);
 			$smarty->assign('last_error',$e->GetErrorText());
 		}
 		else
@@ -356,28 +323,18 @@ if (file_exists(MODULES_DIR.'/main'))
 	/* Пользователь не вошел на сайт */
 	if (!$USER->IsLogin())
 	{
-		if($_GET['lostpwd'] == 'Y')
-		{
-			$page=$KS_MODULES->LoadModulePage('main','password');
-		}
-		else
-		{
-			$smarty->assign('VERSION',$KS_VERSION);
-			$smarty->assign('isajax',intval($_GET['ajax']));
-			$smarty->assign('backurl',$_SERVER['REQUEST_URI']);
-			//Отображаем окно входа и заканчиваем.
-			$smarty->display('admin/login.tpl');
-			exit();
-		}
+		$KS_MODULES->LoadModulePage('main','password');
 	}
-
-	//Проверяем наличие модуля справки, если он установлен, вызываем генерацию ссылки помощи
-	if($KS_MODULES->IsModule('help'))
+	else
 	{
-		include_once(MODULES_DIR.'/help/pages/getHelpUrl.php');
+		//Проверяем наличие модуля справки, если он установлен, вызываем генерацию ссылки помощи
+		if($KS_MODULES->IsModule('help'))
+		{
+			include_once(MODULES_DIR.'/help/pages/getHelpUrl.php');
+		}
+		// Выводим текущий модуль (определяется по параметрам в УРЛ).
+		$KS_MODULES->AdminShowModule($KS_MODULES->current);
 	}
-	// Выводим текущий модуль (определяется по параметрам в УРЛ).
-	$KS_MODULES->AdminShowModule($KS_MODULES->current);
 	$KS_MODULES->Draw($smarty);
 }
 else
@@ -385,4 +342,3 @@ else
 	echo "Система KS-CMS не установлена! (KS-CMS system is not setup)";
 	die();
 }
-?>

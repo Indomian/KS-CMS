@@ -19,6 +19,7 @@ define('KS_ACCESS_BANNERS_TYPES',5);
 define('KS_ACCESS_BANNERS',7);
 define('KS_ACCESS_BANNERS_VIEW',8);
 define('KS_ACCESS_BANNERS_DENIED',10);
+define('DEFAULT_SHOW_RATE',1000);
 
 class CBannersAPI extends CBaseAPI
 {
@@ -28,6 +29,7 @@ class CBannersAPI extends CBaseAPI
 	private $obBannerLinks;
 	private $obBannerHits;
 	private $obBannerClient;
+	private $obBannerTimes;
 
 	private $arBannerTypes;
 
@@ -63,6 +65,7 @@ class CBannersAPI extends CBaseAPI
 		$this->obBannerHits=false;
 		$this->arBannerTypes=false;
 		$this->obBannerClient=false;
+		$this->obBannerTimes=false;
 	}
 
 	/**
@@ -158,62 +161,112 @@ class CBannersAPI extends CBaseAPI
 	 */
 	function GetBanner($id)
 	{
-		$arBanner=$this->Banner()->GetRecord(array('id'=>$id));
-		if(is_array($arBanner))
+		if($arBanner=$this->Banner()->GetRecord(array('id'=>$id)))
 		{
 			$arPath=$this->Link()->GetList(false,array('banner_id'=>$id));
 			if(is_array($arPath)&&count($arPath)>0)
 			{
+				$arBanner['exc_path']='';
+				$arBanner['inc_path']='';
 				foreach($arPath as $arRow)
 				{
 					$arBanner[$arRow['type'].'_path'].=$arRow['path']."\n";
 				}
 			}
+			if($arTimes=$this->Time()->GetList(false,array('banner_id'=>$arBanner['id'])))
+			{
+				$arBanner['times']=array();
+				foreach($arTimes as $arRow)
+				{
+					if(!array_key_exists($arRow['wday']-1,$arBanner['times']))
+						$arBanner['times'][$arRow['wday']-1]=array();
+					$arBanner['times'][$arRow['wday']-1][$arRow['hour']-1]=1;
+				}
+			}
 		}
 		return $arBanner;
 	}
+
+	/**
+	 * Метод разбирает список путей, фильтрует его и возвращает в виде подходящем для
+	 * сохранения в базу данных
+	 */
+	private function ParsePath($input)
+	{
+		if(is_string($input))
+			$input=explode("\n",$input);
+		if(is_array($input))
+		{
+			$output=array();
+			foreach($input as $sLine)
+			{
+				$sLine=preg_replace('#[^a-z0-9/-_+?&.]#i','',$sLine);
+				if(strlen($sLine)>0) $output[]=$sLine;
+			}
+			return $output;
+		}
+		return array();
+	}
+
 	/**
 	 * Метод сохраняет запись баннера. Обрабатывает ключевые слова и адреса вывода
 	 */
 	function SaveBanner($prefix="",$data=false)
 	{
 		if(!$data) $data=$_POST;
-		$arIncPath=explode("\n",$data[$prefix.'inc_path']);
-		$arExcPath=explode("\n",$data[$prefix.'exc_path']);
-		$arIncKeywords=explode(',',$data[$prefix.'inc_keywords']);
-		$arExcKeywords=explode(',',$data[$prefix.'exc_keywords']);
-		foreach($arIncKeywords as $key=>$sKeyword)
+		//Пути включаемые
+		if(array_key_exists($prefix.'inc_path',$data))
+			$arIncPath=$this->ParsePath($data[$prefix.'inc_path']);
+		else
+			$arIncPath=array();
+		//Пути исключаемые
+		if(array_key_exists($prefix.'exc_path',$data))
+			$arExcPath=$this->ParsePath($data[$prefix.'exc_path']);
+		else
+			$arExcPath=array();
+		//Время показа
+		if(array_key_exists('times',$data) && is_array($data['times']))
 		{
-			$arIncKeywords[$key]=trim($sKeyword);
-		}
-		foreach($arExcKeywords as $key=>$sKeyword)
-		{
-			$arExcKeywords[$key]=trim($sKeyword);
-		}
-		$data[$prefix.'inc_keywords']=join(', ',$arIncKeywords);
-		$data[$prefix.'exc_keywords']=join(', ',$arExcKeywords);
-		$this->obBanners->AddFileField('img');
-		$id=$this->obBanners->Save($prefix,$data);
-		if($id>0)
-		{
-			$this->obBannerLinks->DeleteItems(array('banner_id'=>$id));
-			foreach($arIncPath as $sPath)
+			$arTimes=array();
+			for($i=1;$i<8;$i++)
 			{
-				$sPath=trim($sPath);
-				$sPath=str_replace(array('\n','\r'),'',$sPath);
-				if($sPath!='')
+				$arTimes[$i-1]=array();
+				if(array_key_exists($i,$data['times']) && is_array($data['times'][$i]))
 				{
-					$arFields=array(
-						'banner_id'=>$id,
-						'path'=>$sPath,
-						'type'=>'inc',
-					);
-					$this->obBannerLinks->Save('',$arFields);
+					for($j=1;$j<25;$j++)
+						if(array_key_exists($j,$data['times'][$i]))
+							$arTimes[$i-1][$j-1]=1;
+						else
+							$arTimes[$i-1][$j-1]=0;
+				}
+				else
+				{
+					for($j=1;$j<25;$j++)
+						$arTimes[$i-1][$j-1]=0;
 				}
 			}
-			/**
-			 * @todo Разобраться с исключением баннеров
-
+		}
+		else
+		{
+			$arTimes=array();
+			for($i=1;$i<8;$i++)
+				for($j=1;$j<25;$j++)
+					$arTimes[$i-1][$j-1]=1;
+		}
+		//Собственно баннер
+		$this->Banner()->AddFileField('img');
+		if($id=$this->Banner()->Save($prefix,$data))
+		{
+			$this->Link()->DeleteItems(array('banner_id'=>$id));
+			foreach($arIncPath as $sPath)
+			{
+				$arFields=array(
+					'banner_id'=>$id,
+					'path'=>$sPath,
+					'type'=>'inc',
+				);
+				$this->Link()->Save('',$arFields);
+			}
 			foreach($arExcPath as $sPath)
 			{
 				$arFields=array(
@@ -221,9 +274,26 @@ class CBannersAPI extends CBaseAPI
 					'path'=>$sPath,
 					'type'=>'exc',
 				);
-				$this->obBannerLinks->Save('',$arFields);
-			}*/
+				$this->Link()->Save('',$arFields);
+			}
+			//Времечко
+			$this->Time()->DeleteItems(array('banner_id'=>$id));
+			for($i=1;$i<8;$i++)
+				for($j=1;$j<25;$j++)
+				{
+					if($arTimes[$i-1][$j-1]==1)
+					{
+						$arFields=array(
+							'banner_id'=>$id,
+							'wday'=>$i,
+							'hour'=>$j,
+						);
+						$this->Time()->Save('',$arFields);
+					}
+				}
+			return $id;
 		}
+		return false;
 	}
 
 	/**
@@ -249,14 +319,14 @@ class CBannersAPI extends CBaseAPI
 	{
 		global $ks_db;
 		$now=mktime(date('H'),0,0);
-		$arHit=$this->obBannerHits->GetRecord(array('banner_id'=>$bannerId,'date'=>$now));
+		$arHit=$this->Hit()->GetRecord(array('banner_id'=>$bannerId,'date'=>$now));
 		if(is_array($arHit))
 		{
-			$this->obBannerHits->Update($arHit['id'],array('views'=>$arHit['views']+1));
+			$this->Hit()->Update($arHit['id'],array('views'=>$arHit['views']+1));
 		}
 		else
 		{
-			$this->obBannerHits->Save('',array('banner_id'=>$bannerId,'date'=>$now,'hits'=>0,'views'=>1));
+			$this->Hit()->Save('',array('banner_id'=>$bannerId,'date'=>$now,'hits'=>0,'views'=>1));
 		}
 	}
 
@@ -266,15 +336,56 @@ class CBannersAPI extends CBaseAPI
 	function AddHit($bannerId)
 	{
 		$now=floor(time()/3600)*3600;
-		$arHit=$this->obBannerHits->GetRecord(array('banner_id'=>$bannerId,'date'=>intval($now)));
+		$arHit=$this->Hit()->GetRecord(array('banner_id'=>$bannerId,'date'=>intval($now)));
 		if(is_array($arHit))
 		{
-			$this->obBannerHits->Update($arHit['id'],array('hits'=>$arHit['hits']+1));
+			$this->Hit()->Update($arHit['id'],array('hits'=>$arHit['hits']+1));
 		}
 		else
 		{
-			$this->obBannerHits->Save('',array('banner_id'=>$bannerId,'date'=>$now,'hits'=>1,'views'=>1));
+			$this->Hit()->Save('',array('banner_id'=>$bannerId,'date'=>$now,'hits'=>1,'views'=>1));
 		}
+	}
+
+	/**
+	 * Метод возвращает статистику по показам и кликам по баннеру
+	 * @param $bannerId - номер баннера
+	 * @param $dateFrom - с какой даты выводить статистику
+	 * @param $dateTo - по какую дату выводить статистику
+	 * @return array
+	 */
+	function GetStatistics($bannerId,$dateFrom=false,$dateTo=false)
+	{
+		if($this->Banner()->GetRecord(array('id'=>$bannerId)))
+		{
+			if($dateFrom==false && $dateTo==false)
+			{
+				$dateFrom=time()-86400*7;
+				$dateTo=time();
+			}
+			elseif($dateFrom==false && $dateTo>0)
+			{
+				$dateFrom=$dateTo-86400*7;
+			}
+			elseif($dateTo==false && $dateFrom>0)
+			{
+				$dateTo=$dateFrom+86400*7;
+			}
+			if($dateFrom>$dateTo)
+			{
+				$tmp=$dateFrom;
+				$dateFrom=$dateTo;
+				$dateTo=$tmp;
+			}
+			$arFilter=array(
+				'banner_id'=>$bannerId,
+				'>=date'=>$dateFrom,
+				'<=date'=>$dateTo,
+			);
+			$arList=$this->Hit()->GetList(array('date'=>'desc'),$arFilter);
+			return array('list'=>$arList,'date_from'=>$dateFrom,'date_to'=>$dateTo);
+		}
+		return false;
 	}
 
 	/**
@@ -288,7 +399,7 @@ class CBannersAPI extends CBaseAPI
 		global $KS_MODULES,$KS_URL;
 		if(!is_array($this->arBannerTypes))
 		{
-			$arTypes=$this->obBannerTypes->GetList(false,array('active'=>1));
+			$arTypes=$this->Type()->GetList(false,array('active'=>1));
 			foreach($arTypes as $arBT)
 				$this->arBannerTypes[$arBT['text_ident']]=$arBT;
 		}
@@ -296,7 +407,7 @@ class CBannersAPI extends CBaseAPI
 		if(is_array($arType))
 		{
 			$arFilter=array(
-				'<?'.$this->obBanners->sTable.'.id'=>$this->obBannerLinks->sTable.'.banner_id',
+				'<?'.$this->Banner()->sTable.'.id'=>$this->Link()->sTable.'.banner_id',
 				'type_id'=>$arType['id'],
 				//$this->obBannerLinks->sTable.'.type'=>'inc',
 				'active'=>1,
@@ -304,40 +415,33 @@ class CBannersAPI extends CBaseAPI
 					array('OR'=>array('>=active_to'=>time(),'active_to'=>0)),
 					array('OR'=>array('<=active_from'=>time(),'active_from'=>0)),
 				)
-
 			);
-			$arSelect=array(
-				'id',
-				'text_ident',
-				'title',
-				'img',
-				'content',
-				'href',
-				$this->obBannerLinks->sTable.'.path',
-			);
-			$arBanners=$this->obBanners->GetList(array($this->obBannerLinks->sTable.'.path'=>'desc'),$arFilter,false,$arSelect);
+			$arSelect=$this->Banner()->GetFields();
+			$arSelect[$this->Link()->sTable.'.path']='path';
+			$arSelect[$this->Link()->sTable.'.type']='path_type';
+			$bOldMode=$this->Banner()->SetKeyMode(true);
+			$arBanners=$this->Banner()->GetList(array($this->Link()->sTable.'.path'=>'desc'),$arFilter,false,$arSelect);
 			if(is_array($arBanners)&&count($arBanners)>0)
 			{
 				$path=$KS_URL->GetPath();
 				$maxLength=0;
 				foreach($arBanners as $arBanner)
 				{
-					if($arBanner['type']=='exc') continue;
-					if($arBanner[$this->obBannerLinks->sTable.'_path']!='')
+					if($arBanner['path_type']=='inc' && $arBanner[$this->Link()->sTable.'_path']!='')
 					{
 						//Если строка - регулярное выражение
-						if(substr($arBanner[$this->obBannerLinks->sTable.'_path'],0,1)=='#')
+						if(substr($arBanner[$this->Link()->sTable.'_path'],0,1)=='#')
 						{
-							if(preg_match($arBanner[$this->obBannerLinks->sTable.'_path'],$path))
+							if(preg_match($arBanner[$this->Link()->sTable.'_path'],$path))
 							{
 								$arResultBanners[1][$arBanner['id']]=$arBanner;
 								if($maxLength<1) $maxLength=1;
 							}
 						}
-						elseif(strpos($path,$arBanner[$this->obBannerLinks->sTable.'_path'])!==false)
+						elseif(strpos($path,$arBanner[$this->Link()->sTable.'_path'])!==false)
 						{
-							$arResultBanners[strlen($arBanner[$this->obBannerLinks->sTable.'_path'])][$arBanner['id']]=$arBanner;
-							if(strlen($arBanner[$this->obBannerLinks->sTable.'_path'])>$maxLength) $maxLength=strlen($arBanner[$this->obBannerLinks->sTable.'_path']);
+							$arResultBanners[strlen($arBanner[$this->Link()->sTable.'_path'])][$arBanner['id']]=$arBanner;
+							if(strlen($arBanner[$this->Link()->sTable.'_path'])>$maxLength) $maxLength=strlen($arBanner[$this->Link()->sTable.'_path']);
 						}
 					}
 					else
@@ -367,11 +471,129 @@ class CBannersAPI extends CBaseAPI
 					{
 						$arBanner['path']=$KS_MODULES->GetSitePath('banners');
 						$arResultBanners[]=$arBanner;
+						if($arBanner['save_stats']==1)
+						{
+							$this->AddView($arBanner['id']);
+						}
 						$_SESSION['banner_views'][$arType['text_ident']][$arBanner['id']]=time();
 					}
 					return $arResultBanners;
 				}
 			}
+			$this->Banner()->SetKeyMode($bOldMode);
+		}
+		return false;
+	}
+
+	/**
+	 * Метод выполняет расчёт уменьшения коэффициента показа баннера
+	 * @param $arBanner - массив описания баннера подготавливаемый методом CBannersAPI::SelectBanner2()
+	 * @return integer - число на которое следует уменьшить коэффициент в случае показа данного баннера
+	 */
+	private function RecountBannerCoeff($arBanner)
+	{
+		global $KS_MODULES;
+		if(array_key_exists('inc',$arBanner) && count($arBanner['inc'])>0)
+		{
+			foreach($arBanner['inc'] as $sPath)
+			{
+				if($KS_MODULES->CheckPath($sPath))
+					return 3;
+			}
+		}
+		return 5;
+	}
+
+	/**
+	 * Метод выбирает баннер используя прогрессивный алгоритм
+	 */
+	function SelectBanner2($type)
+	{
+		global $KS_MODULES,$KS_EVENTS_HANDLER;
+		$KS_URL=CUrlParser::get_instance();
+		if(!is_array($this->arBannerTypes))
+		{
+			$arTypes=$this->Type()->GetList(false,array('active'=>1));
+			foreach($arTypes as $arBT)
+				$this->arBannerTypes[$arBT['text_ident']]=$arBT;
+		}
+		$arType=$this->arBannerTypes[$type];
+		if(is_array($arType))
+		{
+			$wDay=date('w');
+			if($wDay==0) $wDay=7;
+			$h=date('G')+1;
+			$arFilter=array(
+				'<?'.$this->Banner()->sTable.'.id'=>$this->Link()->sTable.'.banner_id',
+				'type_id'=>$arType['id'],
+				'active'=>1,
+				'?'.$this->Time()->sTable.'.banner_id'=>$this->Banner()->sTable.'.id',
+				$this->Time()->sTable.'.wday'=>$wDay,
+				$this->Time()->sTable.'.hour'=>$h,
+				'AND'=>array(
+					array('OR'=>array('>=active_to'=>time(),'active_to'=>0)),
+					array('OR'=>array('<=active_from'=>time(),'active_from'=>0)),
+				)
+			);
+			$arSelect=$this->Banner()->GetFields();
+			$arSelect[$this->Link()->sTable.'.path']='path';
+			$arSelect[$this->Link()->sTable.'.type']='path_type';
+			$bOldMode=$this->Banner()->SetKeyMode(true);
+			if($arBannersTmp=$this->Banner()->GetList(array('show_rate'=>'desc'),$arFilter,false,$arSelect))
+			{
+				$arBanners=array();
+				$arExcluded=array();
+				foreach($arBannersTmp as $arBanner)
+				{
+					if(in_array($arBanner['id'],$arExcluded)) continue;
+					if($arBanner['path_type']=='exc' && $KS_MODULES->CheckPath($arBanner['path'],false))
+					{
+						$arExcluded[]=$arBanner['id'];
+						continue;
+					}
+					if(!array_key_exists($arBanner['id'],$arBanners))
+					{
+						$arBanners[$arBanner['id']]=$arBanner;
+						$arBanners[$arBanner['id']]['path']=array();
+						$arBanners[$arBanner['id']]['path']['inc']=array();
+						if($arBanner['path_type']=='inc')
+							$arBanners[$arBanner['id']]['path']['inc'][]=$arBanner['path'];
+					}
+					else
+					{
+						if($arBanner['path_type']=='inc')
+							$arBanners[$arBanner['id']]['path']['inc'][]=$arBanner['path'];
+					}
+				}
+			}
+			if(count($arBanners)>0)
+			{
+				$arBanner=array_shift($arBanners);
+				if($KS_EVENTS_HANDLER->HasHandler('banners','onRecountShowCoeff'))
+				{
+					$arCheckArray=array(
+						'banner'=>$arBanner,
+					);
+					$iCoeff=$KS_EVENTS_HANDLER->Execute("banners", "onRecountShowCoeff",$arCheckArray);
+				}
+				else
+				{
+					$iCoeff=$this->RecountBannerCoeff($arBanner);
+				}
+				if($arBanner['show_rate']-$iCoeff>0)
+				{
+					$this->Banner()->Update($arBanner['id'],array('show_rate'=>$arBanner['show_rate']-$iCoeff));
+				}
+				else
+				{
+					//Коэффициент самого удачного баннера упал до нуля, по идее надо сбросить коэффициент всех баннеров на данную позицию
+					$this->Banner()->Update(array('type_id'=>$arBanner['type_id']),array('show_rate'=>DEFAULT_SHOW_RATE));
+				}
+				if($arBanner['save_stats']==1)
+					$this->AddView($arBanner['id']);
+				return $arBanner;
+			}
+			$this->Banner()->SetKeyMode($bOldMode);
 		}
 		return false;
 	}

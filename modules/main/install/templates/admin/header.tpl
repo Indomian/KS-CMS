@@ -23,9 +23,6 @@
 		{MainHeadStrings}
 	</head>
 	<body>
-		<script type="text/javascript"><!--
-		window.ksLogoutTimeout={if $ks_config.user_inactive_time==0 || $ks_config.user_inactive_time==''}3240000{else}{$ks_config.user_inactive_time*900}{/if};
-		//--></script>
 		<div id="Ruler">&nbsp;</div>
 		<div class="wrap">
 			<table class="layout_nw" width="100%">
