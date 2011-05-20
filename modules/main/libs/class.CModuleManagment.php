@@ -687,10 +687,16 @@ abstract class CModuleManagment extends CObject
 	{
 		if (!array_key_exists($module, $this->arModules))
 			$this->InitModule($module);
-		if (array_key_exists($var,$this->arModules[$module]['config']))
-			return $this->arModules[$module]['config'][$var];
-		elseif (array_key_exists($var,$this->arModules[$module]))
-			return $this->arModules[$module][$var];
+		if(is_array($this->arModules[$module]))
+		{
+			if(array_key_exists('config',$this->arModules[$module]))
+			{
+				if (array_key_exists($var,$this->arModules[$module]['config']))
+					return $this->arModules[$module]['config'][$var];
+			}
+			elseif (array_key_exists($var,$this->arModules[$module]))
+				return $this->arModules[$module][$var];
+		}
 		return $default;
 	}
 

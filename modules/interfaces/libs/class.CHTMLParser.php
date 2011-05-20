@@ -37,7 +37,7 @@ class CHTMLParser extends CTextParser
 			case 'i':
 			case 'b':
 			case 'span':
-				$sResult.='<'.$name;
+				$sBegin='<'.$name;
 				$arAvailableAttrs=array('style','title','align');
 				foreach($arAvailableAttrs as $sAttr)
 				{
@@ -45,21 +45,26 @@ class CHTMLParser extends CTextParser
 					{
 						$value=$obElement->getAttribute($sAttr);
 						$value=str_replace('"',"&quot;",$value);
-						$sResult.=' '.$sAttr.'="'.$value.'" ';
+						$sBegin.=' '.$sAttr.'="'.$value.'" ';
 					}
 				}
-				$sResult.='>';
+				$sBegin.='>';
+				$sContent='';
 				if($obElement->hasChildNodes())
 				{
 					foreach($obElement->childNodes as $obChild)
 					{
-						$sResult.=$this->ParseDoc($obChild);
+						$sContent.=$this->ParseDoc($obChild);
 					}
 				}
-				$sResult.='</'.$name.'>';
+				if(strlen($sContent)>0)
+				{
+					$sEnd='</'.$name.'>';
+					$sResult.=$sBegin.$sContent.$sEnd;
+				}
 			break;
 			case 'a':
-				$sResult.='<'.$name;
+				$sBegin='<'.$name;
 				$arAvailableAttrs=array('style','title','align','href','name');
 				foreach($arAvailableAttrs as $sAttr)
 				{
@@ -71,18 +76,23 @@ class CHTMLParser extends CTextParser
 						{
 							if(preg_match('#^java#i',$value)) continue;
 						}
-						$sResult.=' '.$sAttr.'="'.$value.'" ';
+						$sBegin.=' '.$sAttr.'="'.$value.'" ';
 					}
 				}
-				$sResult.='>';
+				$sBegin.='>';
+				$sContent='';
 				if($obElement->hasChildNodes())
 				{
 					foreach($obElement->childNodes as $obChild)
 					{
-						$sResult.=$this->ParseDoc($obChild);
+						$sContent.=$this->ParseDoc($obChild);
 					}
 				}
-				$sResult.='</'.$name.'>';
+				if(strlen($sContent)>0)
+				{
+					$sEnd='</'.$name.'>';
+					$sResult.=$sBegin.$sContent.$sEnd;
+				}
 			break;
 			case 'img':
 				$sResult.='<'.$name;
@@ -125,7 +135,6 @@ class CHTMLParser extends CTextParser
 	private function ParseLevel($obElement)
 	{
 		$name=$obElement->getName();
-		echo $name.'='.(string)$obElement.'<br/>';
 		$sResult='';
 		switch($name)
 		{
@@ -135,7 +144,7 @@ class CHTMLParser extends CTextParser
 			case 'i':
 			case 'b':
 			case 'span':
-				$sResult.='<'.$name;
+				$sBegin='<'.$name;
 				$iAttributes=count($obElement->attributes());
 				if($iAttributes>0)
 				{
@@ -146,24 +155,29 @@ class CHTMLParser extends CTextParser
 							case "style":
 							case "title":
 							case "align":
-								$sResult.=' '.$attr.'="'.$value.'" ';
+								$sBegin.=' '.$attr.'="'.$value.'" ';
 							break;
 						}
 					}
 				}
 				$sResult.='>';
 				$iChildren=count($obElement->Children());
+				$sContent='';
 				if($iChildren>0)
 				{
 					foreach($obElement->Children() as $obChild)
 					{
-						$sResult.=$this->ParseLevel($obChild);
+						$sContent.=$this->ParseLevel($obChild);
 					}
 				}
-				$sResult.='</'.$name.'>';
+				if(strlen($sContent)>0)
+				{
+					$sEnd.='</'.$name.'>';
+					$sResult.=$sBegin.$sContent.$sEnd;
+				}
 			break;
 			case 'a':
-				$sResult.='<'.$name;
+				$sBegin.='<'.$name;
 				$iAttributes=count($obElement->attributes());
 				if($iAttributes>0)
 				{
@@ -174,27 +188,32 @@ class CHTMLParser extends CTextParser
 							case "href":
 								$value=str_replace('"',"&quot;",$value);
 								if(!preg_match('#^java:#i',$attr))
-									$sResult.=' '.$attr.'="'.$value.'" ';
+									$sBegin.=' '.$attr.'="'.$value.'" ';
 							break;
 							case "style":
 							case "title":
 							case "align":
 								$value=str_replace('"',"&quot;",$value);
-								$sResult.=' '.$attr.'="'.$value.'" ';
+								$sBegin.=' '.$attr.'="'.$value.'" ';
 							break;
 						}
 					}
 				}
 				$sResult.='>';
 				$iChildren=count($obElement->Children());
+				$sContent='';
 				if($iChildren>0)
 				{
 					foreach($obElement->Children() as $obChild)
 					{
-						$sResult.=$this->ParseLevel($obChild);
+						$sContent.=$this->ParseLevel($obChild);
 					}
 				}
-				$sResult.='</'.$name.'>';
+				if(strlen($sContent)>0)
+				{
+					$sEnd.='</'.$name.'>';
+					$sResult.=$sBegin.$sContent.$sEnd;
+				}
 			break;
 			case 'img':
 				$sResult.='<'.$name;
@@ -253,8 +272,14 @@ class CHTMLParser extends CTextParser
 		try
 		{
 			$doc = new DOMDocument('1.0','UTF-8');
-			$doc->loadHTML($data);
-			$sNewText=$this->ParseDoc($doc);
+			if(@$doc->loadHTML($data))
+			{
+				$sNewText=$this->ParseDoc($doc);
+			}
+			else
+			{
+				throw new Exception('INTERFACES_HTML_PARSER_ERROR');
+			}
 		}
 		catch(Exception $e)
 		{

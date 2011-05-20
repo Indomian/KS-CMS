@@ -374,6 +374,7 @@ class CModuleHookUp extends CModuleManagment
   			try
   			{
    				$this->IncludeModule($arModule,$output);
+   				$this->obSmarty->assign('SITE',$this->GetConfigArray('main'));
   			}
   			catch (CModuleError $e)
   			{

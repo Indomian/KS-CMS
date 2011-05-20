@@ -91,7 +91,7 @@ if (!defined('KS_MAIN_INIT'))
 	/* класс подключение модулей */
 	require_once MODULES_DIR.'/main/libs/class.CModuleHookUp.php';
 	$KS_MODULES = CModuleHookUp::get_instance();
-
+	$KS_MODULES->SetSmarty($smarty);
 	/*подключение и обработка Url*/
 	require_once MODULES_DIR.'/main/libs/class.CUrlParser.php';
 	$KS_URL = CUrlParser::get_instance();
