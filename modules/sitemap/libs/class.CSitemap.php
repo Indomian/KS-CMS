@@ -3,14 +3,14 @@
  * \file class.CSitemap.php
  * Сюда сделать описание файла
  * Файл проекта kolos-cms.
- * 
+ *
  * Создан 12.12.2009
  *
  * \author blade39
- * \version 
+ * \version
  * \todo
  */
-/*Обязательно вставляем во все файлы для защиты от взлома*/ 
+/*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 /**
@@ -31,7 +31,10 @@ class CSitemap extends CBaseObject
 		foreach($arParams as $item)
 		{
 			$arRos = explode("=", $item);
-			$arRow[$arRos[0]] = $arRos[1];
+			if(count($arRos)==2)
+				$arRow[$arRos[0]] = $arRos[1];
+			else
+				$arRow[$item]='';
 		}
 		$arTree=array();
 		if($arData=$KS_MODULES->IncludeTreeFile($module,$arRow))
@@ -41,7 +44,7 @@ class CSitemap extends CBaseObject
 			{
 				$arItem['level']=$level;
 				$arResult[]=$arItem;
-				if($arItem['type']=='folder' && $arItem['ajax_req']!='')
+				if($arItem['type']=='folder' && isset($arItem['ajax_req']))
 				{
 					if($arSubData=$this->GetModuleMap($module,$level+1,$max_level,$arItem['ajax_req']))
 					{

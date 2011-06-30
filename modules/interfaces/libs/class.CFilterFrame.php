@@ -73,7 +73,7 @@ class CFilterFrame extends CFrame
 		{
 			foreach($arFrom as $key=>$value)
 			{
-				if(preg_match('/^ff([\w\._]+)$/',$key,$arMatches))
+				if(preg_match('/^ff([<>\w\._]+)$/',$key,$arMatches))
 				{
 					$arField=array('FIELD'=>$arMatches[1],'VALUE'=>$value,'TYPE'=>'STRING');
 					$this->AddField($arField);
@@ -177,6 +177,17 @@ class CFilterFrame extends CFrame
 	}
 
 	/**
+	 * Метод проверяет пустое ли значение
+	 */
+	function IsEmpty($value)
+	{
+		if(is_string($value)) return $value=='';
+		elseif(is_array($value)) return count($value)==0;
+		elseif(is_numeric($value)) return false;
+		return empty($value);
+	}
+
+	/**
 	 * Возращает массив для фильтрации списка.
 	 * @return array массив где ключи - ключи фильтра, а значения - значения фильтрации
 	 */
@@ -186,7 +197,7 @@ class CFilterFrame extends CFrame
 		$arResult=array();
 		foreach($this->arFields as $key=>$value)
 		{
-			if(!empty($value['VALUE'])>0)
+			if(!$this->IsEmpty($value['VALUE']))
 			{
 				if($value['TYPE']=='DATE')
 				{
@@ -212,12 +223,12 @@ class CFilterFrame extends CFrame
 				}
 				elseif($value['METHOD']=='<>')
 				{
-					if(strlen($value['VALUE'][0])>0)
+					if(isset($value['VALUE'][0]) && strlen($value['VALUE'][0])>0)
 					{
 						$arResult['>='.$key]=$value['VALUE'][0];
 						$KS_URL->Set('ff'.$key.'[0]',$value['VALUE'][0]);
 					}
-					if(strlen($value['VALUE'][1])>0)
+					if(isset($value['VALUE'][1]) && strlen($value['VALUE'][1])>0)
 					{
 						$arResult['<='.$key]=$value['VALUE'][1];
 						$KS_URL->Set('ff'.$key.'[1]',$value['VALUE'][1]);

@@ -66,7 +66,7 @@ class CUrlParser
 	 * и формирует данные находящиеся в get параметрах
 	 * @param $sUrl - адрес который требуется разобрать. Если не указан - подставляется $_SERVER['REQUEST_URI']
 	 */
-	function ParseUrl($sUrl=false)
+	static function ParseUrl($sUrl=false)
 	{
 		if(!$sUrl) $sUrl=$_SERVER['REQUEST_URI'];
 		if(preg_match('#^(([a-z]{3,4})://([a-z0-9\.\-]+))?/(.*)$#i',$sUrl,$matches))
@@ -94,6 +94,7 @@ class CUrlParser
 				{
 					if($matches[2]=='')
 					{
+						if(!isset($arGetResult[$matches[1]])) $arGetResult[$matches[1]]=array();
 						array_push($arGetResult[$matches[1]],urldecode($arItem[1]));
 					}
 					else
@@ -103,7 +104,10 @@ class CUrlParser
 				}
 				else
 				{
-					$arGetResult[urldecode($arItem[0])]=urldecode($arItem[1]);
+					if(is_array($arItem) && count($arItem)>1)
+					{
+						$arGetResult[urldecode($arItem[0])]=urldecode($arItem[1]);
+					}
 				}
 			}
 		}

@@ -30,15 +30,36 @@ function smarty_function_BannersLine($params,&$subsmarty)
 	$obBanner=CBannersApi::get_instance();
 	if($arType=$obBanner->Type()->GetRecord(array('text_ident'=>$params['btype'],'active'=>1)))
 	{
-		if($arBanners=$obBanner->SelectBanner($arType['text_ident'],$params['count']))
+		if($arBanners=$obBanner->SelectBanners($arType['text_ident'],$params['count']))
 		{
+			usort($arBanners,'BannersLine_sort');
+			$iFirst=0;
+			$iMax=0;
+			foreach($arBanners as $key=>$arBanner)
+			{
+				if($arBanner['show_rate']>$iMax)
+				{
+					$iFirst=$key;
+					$iMax=$arBanner['show_rate'];
+				}
+			}
+			$arBanners[$iFirst]=$obBanner->RecountCoeff($arBanners[$iFirst]);
+			$arResult=array_slice($arBanners,$iFirst+1);
+			$arResult=array_merge($arResult,array_slice($arBanners,0,$iFirst+1));
 			$subsmarty->assign('type',$arType);
-			$subsmarty->assign('list',$arBanners);
-			$subsmarty->assign('count',$params['count']);
+			$subsmarty->assign('big',$arBanners[$iFirst]);
+			$subsmarty->assign('list',$arResult);
+			$subsmarty->assign('count',count($arResult));
 			//Код для генерации пути к шаблону или вывод ошибки об отсутсвтии шаблона
 			$sResult=$KS_MODULES->RenderTemplate($subsmarty,'/banners/BannersLine',$params['global_template'],$params['tpl']);
 			return $sResult;
 		}
 	}
 	return '';
+}
+
+
+function BannersLine_sort($a,$b)
+{
+	return $a['ext_orderation']-$b['ext_orderation'];
 }

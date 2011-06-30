@@ -51,7 +51,10 @@ class CModuleHookUp extends CModuleManagment
 		}
 		else
 		{
-			$sPath=$_SERVER['REQUEST_URI'];
+			$arData=CUrlParser::ParseUrl($_SERVER['REQUEST_URI']);
+			$sPath=$arData['url'];
+			if(is_array($arData['params']))
+				$_GET=array_merge($_GET,$arData['params']);
 		}
 		if($sPath=='/')
 		{
@@ -421,6 +424,42 @@ class CModuleHookUp extends CModuleManagment
 	function GetScheme()
 	{
 		return $this->sScheme;
+	}
+
+	/**
+	 * Метод проверяет доступность вызова виджета через AJAX запрос
+	 */
+	function CanAjaxCall($module,$widget)
+	{
+		if($module=='main')
+		{
+			//Проверка системных виджетов
+			if($widget=='ConfigVar') return false;
+		}
+		$sMode=$this->GetConfigVar('main','ajax_mode','black_list');
+		$arList=$this->GetConfigVar('main','ajax_widgets',array());
+		if($sMode=='white_list')
+		{
+			if(array_key_exists($module,$arList) && is_array($arList[$module]))
+			{
+				if(array_key_exists($widget,$arList[$module]) && $arList[$module][$widget]==1)
+				{
+					return true;
+				}
+			}
+		}
+		elseif($sMode=='black_list')
+		{
+			if(array_key_exists($module,$arList) && is_array($arList[$module]))
+			{
+				if(array_key_exists($widget,$arList[$module]) && $arList[$module][$widget]==1)
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
 	}
 
 	/**

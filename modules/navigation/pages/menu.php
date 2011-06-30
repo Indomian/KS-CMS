@@ -30,7 +30,7 @@ class CnavigationAImenu extends CModuleAdmin
 		$this->oType=new CNavTypes();
 		$this->iCurSection=0;
 		$this->iParentId=0;
-		$tihs->iId=0;
+		$this->iId=0;
 	}
 
 	function EditForm($data=false)
@@ -50,7 +50,7 @@ class CnavigationAImenu extends CModuleAdmin
 			$data['parent_id']=$this->iParentId;
 			$data['type_id']=$this->iCurSection;
 		}
-		$arSectionRes=$this->oType->GetByID($ithis->CurSection);
+		$arSectionRes=$this->oType->GetByID($this->iCurSection);
 		$data['SECTION']=$arSectionRes;
 		// Если есть пользовательские поля, то надобы получить их список
 		if (class_exists('CFields'))
@@ -96,7 +96,7 @@ class CnavigationAImenu extends CModuleAdmin
 					*/
 					foreach($arChildElements as $key => $arElement)
 					{
-						if($arElement['id'] == $iId)
+						if($arElement['id'] == $this->iId)
 						{
 							//если найден элемент id которого равен parent_id для предыдущей итерации...
 							//дописываем этому элементу массив дочерних
@@ -125,7 +125,7 @@ class CnavigationAImenu extends CModuleAdmin
 				continue;
 			}
 			//если предыдущей операцией было НЕ удаление и нет возможности выйти на уровень выше
-			if(($this->oElement->GetById($this->iParentId)===false)&&($iParentId == 0))
+			if(($this->oElement->GetById($this->iParentId)===false)&&($this->iParentId == 0))
 			{
 				//значит дерево элементов построено.
 				break;
@@ -147,14 +147,20 @@ class CnavigationAImenu extends CModuleAdmin
 	{
 		global $KS_URL;
 		if($this->obUser->GetLevel($this->module)>0) throw new CAccessError('NAVIGATION_ACCESS_DENIED');
-		$sAction=$_REQUEST['ACTION'];
+		$sAction='';
+		if(isset($_REQUEST['ACTION']))
+			$sAction=$_REQUEST['ACTION'];
 		$arResult=array();
 		/* Определение типа меню (его id) */
-		$this->iCurSection=intval($_REQUEST['typeid']);
+		if(isset($_REQUEST['typeid']))
+			$this->iCurSection=intval($_REQUEST['typeid']);
 		/* Определение id пункта меню, который разворачиваем */
-		$this->iParentId=intval($_REQUEST['CSC_parid']);
+		if(isset($_REQUEST['CSC_parid']))
+			$this->iParentId=intval($_REQUEST['CSC_parid']);
 		/* Определение номера текущего элемента */
-		$this->iId=intval($_REQUEST['CSC_elmid']);
+		if(isset($_REQUEST['CSC_elmid']))
+			$this->iId=intval($_REQUEST['CSC_elmid']);
+		$data=false;
 		switch($sAction)
 		{
 			case "edit":

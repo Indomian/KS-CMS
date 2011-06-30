@@ -8,9 +8,11 @@
 <form action="{get_url _CLEAR="ACTION"}" method="POST" enctype="multipart/form-data">
     <input type="hidden" name="action" value="save">
 	{ksTabs NAME=catsubcat_options head_class=tabs2 title_class=bold}
-		{ksTab NAME=$smarty.config.tabs_common}
+		{ksTab NAME=$smarty.config.tabs_common selected=1}
 		<div class="form">
 			<table class="layout">
+				<col width="30%"/>
+				<col width="70%"/>
 				<tr>
 					<th colspan="2">{#header_content#}</th>
 				</tr>
@@ -18,12 +20,16 @@
 					<td colspan="2">{ShowEditor field="OS_content" theme="advanced" value=$data.content}</td>
 				</tr>
 				<tr>
-					<th width="30%">{#header_group#}</th>
-					<th width="70%">{#header_level#}</th>
+					<th width="30%">{#header_field#}</th>
+					<th width="70%">{#header_value#}</th>
 				</tr>
 				<tr>
 					<td>{Title field="time"}</td>
 					<td><input type="text" name="OS_time" value="{$data.time|default:"0"}" class="form_input"/></td>
+				</tr>
+				<tr>
+					<td>{Title field="auto"}</td>
+					<td><input type="checkbox" name="OS_auto" value="1" {if $data.auto==1}checked="checked"{/if}/></td>
 				</tr>
 			</table>
 		</div>

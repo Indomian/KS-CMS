@@ -50,7 +50,7 @@ class CFields extends CObject
 
 	static function _showField($params)
 	{
-		if($params['prefix']=='') $params['prefix']='CSC_';
+		if(!array_key_exists('prefix',$params)) $params['prefix']='CSC_';
 		$sParam2 = $params['field']['option_2'];
 		if (file_exists(MODULES_DIR.'/main/fields/'.$params['field']['script'].'/show.php'))
 		{

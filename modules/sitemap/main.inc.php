@@ -55,9 +55,9 @@ try
 		$iBase=1;
 		if(count($this->GetPathDirs())>1) throw new CError('SYSTEM_FILE_NOT_FOUND');
 	}
-	if(!function_exists('smarty_function_sitemap')) include MODULES_DIR.'/'.$module.'/widgets/function.sitemap.php';
 	$smarty->assign('TITLE',$KS_MODULES->GetTitle($module));
-	$res=smarty_function_sitemap($module_parameters,$smarty);
+	$arParams=array();
+	$res=$this->IncludeWidget($module,'sitemap',$arParams);
 }
 catch(CAccessError $e)
 {

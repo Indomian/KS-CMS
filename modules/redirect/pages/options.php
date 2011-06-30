@@ -67,6 +67,10 @@ class CredirectAIoptions extends CModuleAdmin
 					$obConfig->Set('content',$_POST['OS_content']);
 				if(array_key_exists('OS_time',$_POST))
 					$obConfig->Set('time',intval($_POST['OS_time']));
+				if(isset($_POST['OS_auto']))
+					$obConfig->Set('auto',intval($_POST['OS_auto']));
+				else
+					$obConfig->Set('auto',0);
 				$obConfig->WriteConfig();
 				//Выполняем сохранение прав доступа
 				if(is_array($_POST['sc_groupLevel']))

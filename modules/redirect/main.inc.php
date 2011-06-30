@@ -34,6 +34,7 @@ if(isset($_REQUEST['url']))
 		$smarty->assign('content',str_replace('#LINK#','<a href="'.$_REQUEST['url'].'">'.$_REQUEST['url'].'</a>',$this->GetConfigVar($module,'content')));
 		$smarty->assign('url',$_REQUEST['url']);
 		$smarty->assign('pause',$time);
+		$smarty->assign('use_pause',$this->GetConfigVar($module,'auto',0));
 		$output['main_content']=$this->RenderTemplate($smarty,'/redirect/redirect');
 	}
 	else

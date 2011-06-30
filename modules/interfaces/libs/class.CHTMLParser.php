@@ -18,11 +18,14 @@ class CHTMLParser extends CTextParser
 {
 	private $sParseError;
 	private $iParseError;
+	protected $arAvailableTags;
 
 	function __construct()
 	{
 		$sParseError='';
 		$iParseError=0;
+		//Список допустимых тэгов
+		$this->arAvailableTags=array('p','em','strong','i','b','span','img');
 	}
 
 	private function ParseDoc($obElement)
@@ -37,18 +40,27 @@ class CHTMLParser extends CTextParser
 			case 'i':
 			case 'b':
 			case 'span':
-				$sBegin='<'.$name;
-				$arAvailableAttrs=array('style','title','align');
-				foreach($arAvailableAttrs as $sAttr)
+				if(!in_array($name,$this->arAvailableTags))
 				{
-					if($obElement->hasAttribute($sAttr))
-					{
-						$value=$obElement->getAttribute($sAttr);
-						$value=str_replace('"',"&quot;",$value);
-						$sBegin.=' '.$sAttr.'="'.$value.'" ';
-					}
+					$sBegin='';
+					$sEnd='';
 				}
-				$sBegin.='>';
+				else
+				{
+					$sBegin='<'.$name;
+					$arAvailableAttrs=array('style','title','align');
+					foreach($arAvailableAttrs as $sAttr)
+					{
+						if($obElement->hasAttribute($sAttr))
+						{
+							$value=$obElement->getAttribute($sAttr);
+							$value=str_replace('"',"&quot;",$value);
+							$sBegin.=' '.$sAttr.'="'.$value.'" ';
+						}
+					}
+					$sBegin.='>';
+					$sEnd='</'.$name.'>';
+				}
 				$sContent='';
 				if($obElement->hasChildNodes())
 				{
@@ -59,27 +71,35 @@ class CHTMLParser extends CTextParser
 				}
 				if(strlen($sContent)>0)
 				{
-					$sEnd='</'.$name.'>';
 					$sResult.=$sBegin.$sContent.$sEnd;
 				}
 			break;
 			case 'a':
-				$sBegin='<'.$name;
-				$arAvailableAttrs=array('style','title','align','href','name');
-				foreach($arAvailableAttrs as $sAttr)
+				if(!in_array($name,$this->arAvailableTags))
 				{
-					if($obElement->hasAttribute($sAttr))
-					{
-						$value=$obElement->getAttribute($sAttr);
-						$value=str_replace('"',"&quot;",$value);
-						if($sAttr=='href')
-						{
-							if(preg_match('#^java#i',$value)) continue;
-						}
-						$sBegin.=' '.$sAttr.'="'.$value.'" ';
-					}
+					$sBegin='';
+					$sEnd='';
 				}
-				$sBegin.='>';
+				else
+				{
+					$sBegin='<'.$name;
+					$arAvailableAttrs=array('style','title','align','href','name');
+					foreach($arAvailableAttrs as $sAttr)
+					{
+						if($obElement->hasAttribute($sAttr))
+						{
+							$value=$obElement->getAttribute($sAttr);
+							$value=str_replace('"',"&quot;",$value);
+							if($sAttr=='href')
+							{
+								if(preg_match('#^java#i',$value)) continue;
+							}
+							$sBegin.=' '.$sAttr.'="'.$value.'" ';
+						}
+					}
+					$sBegin.='>';
+					$sEnd='</'.$name.'>';
+				}
 				$sContent='';
 				if($obElement->hasChildNodes())
 				{
@@ -90,7 +110,6 @@ class CHTMLParser extends CTextParser
 				}
 				if(strlen($sContent)>0)
 				{
-					$sEnd='</'.$name.'>';
 					$sResult.=$sBegin.$sContent.$sEnd;
 				}
 			break;
@@ -125,135 +144,6 @@ class CHTMLParser extends CTextParser
 					}
 				}
 				//$sResult.=$obElement->nodeValue;
-		}
-		return $sResult;
-	}
-
-	/**
-	 * Метод обрабатывает один уровень вложенности
-	 */
-	private function ParseLevel($obElement)
-	{
-		$name=$obElement->getName();
-		$sResult='';
-		switch($name)
-		{
-			case 'p':
-			case 'em':
-			case 'strong':
-			case 'i':
-			case 'b':
-			case 'span':
-				$sBegin='<'.$name;
-				$iAttributes=count($obElement->attributes());
-				if($iAttributes>0)
-				{
-					foreach($obElement->attributes() as $attr=>$value)
-					{
-						switch($attr)
-						{
-							case "style":
-							case "title":
-							case "align":
-								$sBegin.=' '.$attr.'="'.$value.'" ';
-							break;
-						}
-					}
-				}
-				$sResult.='>';
-				$iChildren=count($obElement->Children());
-				$sContent='';
-				if($iChildren>0)
-				{
-					foreach($obElement->Children() as $obChild)
-					{
-						$sContent.=$this->ParseLevel($obChild);
-					}
-				}
-				if(strlen($sContent)>0)
-				{
-					$sEnd.='</'.$name.'>';
-					$sResult.=$sBegin.$sContent.$sEnd;
-				}
-			break;
-			case 'a':
-				$sBegin.='<'.$name;
-				$iAttributes=count($obElement->attributes());
-				if($iAttributes>0)
-				{
-					foreach($obElement->attributes() as $attr=>$value)
-					{
-						switch($attr)
-						{
-							case "href":
-								$value=str_replace('"',"&quot;",$value);
-								if(!preg_match('#^java:#i',$attr))
-									$sBegin.=' '.$attr.'="'.$value.'" ';
-							break;
-							case "style":
-							case "title":
-							case "align":
-								$value=str_replace('"',"&quot;",$value);
-								$sBegin.=' '.$attr.'="'.$value.'" ';
-							break;
-						}
-					}
-				}
-				$sResult.='>';
-				$iChildren=count($obElement->Children());
-				$sContent='';
-				if($iChildren>0)
-				{
-					foreach($obElement->Children() as $obChild)
-					{
-						$sContent.=$this->ParseLevel($obChild);
-					}
-				}
-				if(strlen($sContent)>0)
-				{
-					$sEnd.='</'.$name.'>';
-					$sResult.=$sBegin.$sContent.$sEnd;
-				}
-			break;
-			case 'img':
-				$sResult.='<'.$name;
-				$iAttributes=count($obElement->attributes());
-				if($iAttributes>0)
-				{
-					foreach($obElement->attributes() as $attr=>$value)
-					{
-						switch($attr)
-						{
-							case "src":
-								$value=str_replace('"',"&quot;",$value);
-								if(!preg_match('#^java:#i',$attr))
-									$sResult.=' '.$attr.'="'.$value.'" ';
-							break;
-							case "style":
-							case "title":
-							case "align":
-							case "alt":
-							case "width":
-							case "height":
-								$value=str_replace('"',"&quot;",$value);
-								$sResult.=' '.$attr.'="'.$value.'" ';
-							break;
-						}
-					}
-				}
-				$sResult.='/>';
-			break;
-			case 'data':
-			default:
-				$iChildren=count($obElement->Children());
-				if($iChildren>0)
-				{
-					foreach($obElement->Children() as $obChild)
-					{
-						$sResult.=$this->ParseLevel($obChild);
-					}
-				}
-				$sResult.=(string)$obElement;
 		}
 		return $sResult;
 	}

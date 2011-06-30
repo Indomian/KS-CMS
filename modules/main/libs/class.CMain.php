@@ -657,7 +657,7 @@ class CObject extends CBaseList
 					/*Проверяем на допустимые операции, если одна из них указана,
 					 * выполняем обработку введенных данных и формируем операцию.*/
 
-					if(preg_match('#^(!~|!->|[><!~=]|>=|<=|->|%)?([\w_\.\-]+)#i',$field,$matches))
+					if(preg_match('#^(!~|\^~|\$~|!->|[><!~=]|>=|<=|->|%)?([\w_\.\-]+)#i',$field,$matches))
 					{
 						$operation=$matches[1];
 						if($operation=='') $operation="=";
@@ -711,6 +711,8 @@ class CObject extends CBaseList
 								$operation=" $myfield!='".$ks_db->safesql($value)."' ";
 						elseif($operation=='~') $operation=" $myfield LIKE '%".$ks_db->safesql($value)."%' ";
 						elseif($operation=='!~') $operation=" $myfield NOT LIKE '%".$ks_db->safesql($value)."%' ";
+						elseif($operation=='^~') $operation=" $myfield LIKE '".$ks_db->safesql($value)."%' ";
+						elseif($operation=='$~') $operation=" $myfield LIKE '%".$ks_db->safesql($value)."' ";
 						elseif($operation=='->')
 						{
 							if(is_numeric($value))
@@ -1336,6 +1338,8 @@ class CObject extends CBaseList
 	 */
 	function Update($id, $values,$bFiltered=false)
 	{
+		$this->arTables=array($this->sTable=>'A');
+		$this->arJoinTables=array();
 		foreach ($values as $field => $value)
 		{
 			if(substr($field,0,1)=='?')
@@ -1361,11 +1365,11 @@ class CObject extends CBaseList
 				{
 					$arWhere[]="`id`='$ItemId'";
 				}
-				if (count($arWhere)>0): $sWhere=join(' OR ',$arWhere);endif;
+				if (count($arWhere)>0): $sWhere="WHERE ".join(' OR ',$arWhere);endif;
 			}
 			elseif (is_numeric($id))
 			{
-				$sWhere=" `id`='$id' ";
+				$sWhere="WHERE `id`='$id' ";
 			}
 		}
 		else
@@ -1374,7 +1378,7 @@ class CObject extends CBaseList
 		}
 		if (strlen($sWhere)>0)
 		{
-			$query="UPDATE ".PREFIX.$this->sTable." SET $sQuery WHERE ".$sWhere;
+			$query="UPDATE ".$this->_GenFrom()." SET $sQuery ".$sWhere;
 			//echo $query;
 			$this->obDB->query($query);
 			unset(CObject::$arCache[$this->sTable]);

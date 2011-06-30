@@ -27,7 +27,7 @@ function smarty_function_ShowEditor($params,&$smarty)
 	$sResult='';
 	if(array_key_exists('field',$params))
 	{
-		$sResult='<textarea name="'.$params['field'].'" class="form_textarea">'.(isset($params['value'])?htmlspecialchars($params['value']):'').'</textarea><br/><a href="#" class="showEditor">'.$KS_MODULES->GetText('show_editor').'</a><a href="#" class="hideEditor">'.$KS_MODULES->GetText('hide_editor').'</a>';
+		$sResult='<textarea name="'.$params['field'].'" class="form_textarea">'.(isset($params['value'])?htmlspecialchars($params['value']):'').'</textarea>';
 		if(!isset($params['object']))
 			$params['object']='textarea[name='.$params['field'].']';
 	}
@@ -35,9 +35,10 @@ function smarty_function_ShowEditor($params,&$smarty)
 	$sResult.='<script type="text/javascript">'.
 	'$(document).bind("InitTiny",function(event)'.
 	'{'.
-		'$(\'.showEditor\').click(function(e){$(this).hide().parent().children(\'.hideEditor\').show().parent().children(\'textarea:tinymce\').tinymce().show();e.preventDefault()});'.
-		'$(\'.hideEditor\').click(function(e){$(this).hide().parent().children(\'.showEditor\').show().parent().children(\'textarea:tinymce\').tinymce().hide();e.preventDefault()});'.
 		'if($(\''.$params['object'].'\').attr("isTiny")!=1){' .
+			'$(\''.$params['object'].'\').each(function(){$(this).after(\'<br/><a href="#" class="showEditor">'.$KS_MODULES->GetText('show_editor').'</a><a href="#" class="hideEditor">'.$KS_MODULES->GetText('hide_editor').'</a>\');});'.
+			'$(\'.showEditor\').unbind("click").click(function(e){$(this).hide().parent().children(\'.hideEditor\').show().parent().children(\'textarea:tinymce\').tinymce().show();e.preventDefault()});'.
+			'$(\'.hideEditor\').unbind("click").click(function(e){$(this).hide().parent().children(\'.showEditor\').show().parent().children(\'textarea:tinymce\').tinymce().hide();e.preventDefault()});'.
 			'$(\'.showEditor\').hide();'.
 		'$(\''.$params['object'].'\').attr("isTiny","1").tinymce({'."\n".
 			'script_url : "/js/tiny_mce/tiny_mce.js",';
@@ -67,7 +68,7 @@ function smarty_function_ShowEditor($params,&$smarty)
 			'paste_remove_styles : false,'.
 			'relative_urls:false,'.
 			'language : "ru",'.
-			'valid_elements : "@[id|class|style|title|dir<ltr?rtl|lang|xml::lang|onclick|ondblclick|'.
+			/*'valid_elements : "@[id|class|style|title|dir<ltr?rtl|lang|xml::lang|onclick|ondblclick|'.
 			'onmousedown|onmouseup|onmouseover|onmousemove|onmouseout|onkeypress|'.
 			'onkeydown|onkeyup],a[rel|rev|charset|hreflang|tabindex|accesskey|type|'.
 			"name|href|target|title|class|onfocus|onblur],strong/b,em/i,strike,u,".
@@ -87,7 +88,7 @@ function smarty_function_ShowEditor($params,&$smarty)
 			"input[accept|alt|checked|disabled|maxlength|name|readonly|size|src|type|value],".
 			"kbd,label[for],legend,noscript,optgroup[label|disabled],option[disabled|label|selected|value],".
 			"q[cite],samp,select[disabled|multiple|name|size],small,".
-			'textarea[cols|rows|disabled|name|readonly],tt,var,big",'.
+			'textarea[cols|rows|disabled|name|readonly],tt,var,big",'.*/
 			'file_browser_callback : "myFileBrowser"'.
 		'});}});'.
 	'$(document).ready(function(){$(document).trigger("InitTiny")});'.

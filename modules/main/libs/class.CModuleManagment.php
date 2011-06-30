@@ -560,7 +560,22 @@ abstract class CModuleManagment extends CObject
 	 */
 	function GetHeader()
 	{
-		return $this->GetJavaScript()."\n".join("\n",$this->arHeads)."\n";
+		global $KS_EVENTS_HANDLER;
+		$sEvents='';
+		if($KS_EVENTS_HANDLER->HasHandler('main','onGetHeader'))
+		{
+			$KS_EVENTS_HANDLER->PushMode();
+			$KS_EVENTS_HANDLER->SetMode('particular');
+			if($arResult=$KS_EVENTS_HANDLER->Execute('main','onGetHeader'))
+			{
+				foreach($arResult as $arItem)
+				{
+					if(is_string($arItem['executed']))
+						$sEvents.="\n".$arItem['executed'];
+				}
+			}
+		}
+		return $this->GetJavaScript()."\n".join("\n",$this->arHeads)."\n".$sEvents."\n";
 	}
 
 	/** Проверяет является ли указанный модуль, модулем.
@@ -772,7 +787,7 @@ abstract class CModuleManagment extends CObject
 	/**
 	 * Метод выполняет подключение файла .tree.php для указанного модуля
 	 */
-	public function IncludeTreeFile($module,$arRow)
+	public function IncludeTreeFile($module,$arRow=array())
 	{
 		global $USER;
 		$KS_MODULES=$this;

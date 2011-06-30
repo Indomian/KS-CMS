@@ -26,6 +26,7 @@ function smarty_function_PageNav($params,&$smarty)
 		{
 			$data['num']=1;
 		}
+		$smarty->assign('params',$params);
 		$smarty->assign('data', $data);
     	//Код для генерации пути к шаблону или вывод ошибки об отсутсвтии шаблона
     	/* Поиск шаблона для виджета и возвращение результата */

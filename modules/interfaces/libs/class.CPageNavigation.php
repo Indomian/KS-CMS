@@ -126,16 +126,16 @@ class CPageNavigation extends CInterface
 		$pages['visible']=$this->iVisible;
 		$pages['TOTAL']=count($arIds);
 		$pages['index']=$this->iPageNavNum;
-		$iCount=0;
+		$iCount=1;
 		foreach($arIds as $arItem)
 		{
 			$iCount++;
+			if($arItem==$id) break;
 			if($iCount>$this->iVisible)
 			{
 				$pages['active']++;
-				$iCount=0;
+				$iCount=1;
 			}
-			if($arItem==$id) break;
 		}
 		for($i=1;$i<=$pages['num'];$i++)
 		{

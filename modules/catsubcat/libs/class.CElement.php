@@ -67,7 +67,7 @@ class CElement extends CCommonElement
 		if($id>0)
 		{
 			$this->obLinks->DeleteItems(array('element_id'=>$id));
-			if(is_array($data[$prefix.'links'])&&count($data[$prefix.'links'])>0)
+			if(isset($data[$prefix.'links']) && is_array($data[$prefix.'links'])&&count($data[$prefix.'links'])>0)
 			{
 				foreach($data[$prefix.'links'] as $cat_id)
 				{

@@ -39,6 +39,7 @@ function smarty_function_WavePosts($params,&$subsmarty)
 		$params['order']=$params['order']=='desc'?'desc':'asc';
 	else
 		$params['order']='asc';
+	$obPages=new CPages($params['count']);
 	$obPostsAPI=CWaveAPI::get_instance();
 	$arPost=array();
 	$subsmarty->assign('edit','N');
@@ -105,7 +106,24 @@ function smarty_function_WavePosts($params,&$subsmarty)
 					{
 						$id=$obPostsAPI->AddAnswer($params['hash'],intval($_REQUEST['WV_parent_id']),$arPost);
 						$KS_MODULES->AddNotify("WAVE_ADD_OK",'',NOTIFY_MESSAGE);
-						$KS_URL->redirect();
+						//Пересчитываем количество комментариев
+						$url='';
+						if(!array_key_exists('noredirect',$params) || $params['noredirect']!='Y')
+						{
+							$arFilter=array(
+								'hash'=>$params['hash']
+							);
+							if($arData['level']>KS_ACCESS_WAVE_MODERATE)
+								$arFilter['active']=1;
+							if(is_array($params['filter']))
+								$arFilter=array_merge($arFilter,$params['filter']);
+							if($arList=$obPostsAPI->Posts()->GetList(array('left_margin'=>'asc'),$arFilter,false,array('id')))
+							{
+								$arPages=$obPages->SearchPage($id,array_keys($arList));
+								$url=$KS_URL->GetPath().'?'.$KS_URL->GetUrl(array('i','p'.$arPages['index'])).'&i='.$arPages['index'].'&p'.$arPages['index'].'='.$arPages['active'].'#com'.$id;
+							}
+						}
+						$KS_URL->redirect($url);
 					}
 					else
 					{
@@ -219,7 +237,6 @@ function smarty_function_WavePosts($params,&$subsmarty)
 	if(array_key_exists('filter',$params) && is_array($params['filter']))
 		$arFilter=array_merge($arFilter,$params['filter']);
 
-	$obPages=new CPages($params['count']);
 	$arSelect=$obPostsAPI->Posts()->GetFields();
 	$arSelect[$USER->sTable.'.title']='author_name';
 	$arSelect[$USER->sTable.'.id']='author_id';
@@ -269,4 +286,3 @@ function widget_params_WavePosts()
 		'fields'=>$arFields,
 	);
 }
-?>

@@ -108,7 +108,10 @@ class ImageResizer extends CBaseObject
 	{
 		$this->inputfile = $inputfile;
 		if(!$bRoot) $inputfile = ROOT_DIR.$inputfile;
-		if(!is_file($inputfile)) { throw new CError('No input file! ['.$inputfile.']');}
+		if(!is_file($inputfile))
+		{
+			throw new CError('No input file! ['.$inputfile.']');
+		}
 
 		$info = pathinfo($inputfile); // Информация о файле
 
@@ -124,7 +127,10 @@ class ImageResizer extends CBaseObject
 		$this->file_dirname = $info['dirname'];
 		$this->file_name = $info['basename'];
 		$this->file_name_body = $info['filename'];
-		$this->file_ext = $info['extension'];
+		if(isset($info['extension']))
+			$this->file_ext = $info['extension'];
+		else
+			$this->file_ext = '';
 		$this->width_orig = $width;
 		$this->height_orig = $height;
 		$this->image_type = $type;

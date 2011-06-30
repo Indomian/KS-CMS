@@ -306,9 +306,9 @@ class CBannersAPI extends CBaseAPI
 		if(is_numeric($ids)) $ids=array($ids);
 		foreach($ids as $id)
 		{
-			$this->obBannerLinks->DeleteItems(array('banner_id'=>$id));
-			$this->obBannerHits->DeleteItems(array('banner_id'=>$id));
-			$this->obBanners->DeleteItems(array('id'=>$id));
+			$this->Link()->DeleteItems(array('banner_id'=>$id));
+			$this->Hit()->DeleteItems(array('banner_id'=>$id));
+			$this->Banner()->DeleteItems(array('id'=>$id));
 		}
 	}
 
@@ -592,6 +592,114 @@ class CBannersAPI extends CBaseAPI
 				if($arBanner['save_stats']==1)
 					$this->AddView($arBanner['id']);
 				return $arBanner;
+			}
+			$this->Banner()->SetKeyMode($bOldMode);
+		}
+		return false;
+	}
+
+	/**
+	 * Метод выполняет пересчёт коэффициента показа баннера
+	 * @param $arBanner array - массив описания баннера
+	 */
+	function RecountCoeff($arBanner)
+	{
+		global $KS_EVENTS_HANDLER;
+		if($KS_EVENTS_HANDLER->HasHandler('banners','onRecountShowCoeff'))
+		{
+			$arCheckArray=array(
+				'banner'=>$arBanner,
+			);
+			$iCoeff=$KS_EVENTS_HANDLER->Execute("banners", "onRecountShowCoeff",$arCheckArray);
+		}
+		else
+		{
+			$iCoeff=$this->RecountBannerCoeff($arBanner);
+		}
+		if($arBanner['show_rate']-$iCoeff>0)
+		{
+			$this->Banner()->Update($arBanner['id'],array('show_rate'=>$arBanner['show_rate']-$iCoeff));
+			$arBanner['show_rate']-=$iCoeff;
+		}
+		else
+		{
+			//Коэффициент самого удачного баннера упал до нуля, по идее надо сбросить коэффициент всех баннеров на данную позицию
+			$this->Banner()->Update(array('type_id'=>$arBanner['type_id']),array('show_rate'=>DEFAULT_SHOW_RATE));
+			$arBanner['show_rate']=DEFAULT_SHOW_RATE;
+		}
+		return $arBanner;
+	}
+
+	/**
+	 * Метод выбирает баннеры используя прогрессивный алгоритм
+	 */
+	function SelectBanners($type,$count)
+	{
+		global $KS_MODULES,$KS_EVENTS_HANDLER;
+		$KS_URL=CUrlParser::get_instance();
+		if(!is_array($this->arBannerTypes))
+		{
+			$arTypes=$this->Type()->GetList(false,array('active'=>1));
+			foreach($arTypes as $arBT)
+				$this->arBannerTypes[$arBT['text_ident']]=$arBT;
+		}
+		$arType=$this->arBannerTypes[$type];
+		if(is_array($arType))
+		{
+			$wDay=date('w');
+			if($wDay==0) $wDay=7;
+			$h=date('G')+1;
+			$arFilter=array(
+				'<?'.$this->Banner()->sTable.'.id'=>$this->Link()->sTable.'.banner_id',
+				'type_id'=>$arType['id'],
+				'active'=>1,
+				'?'.$this->Time()->sTable.'.banner_id'=>$this->Banner()->sTable.'.id',
+				$this->Time()->sTable.'.wday'=>$wDay,
+				$this->Time()->sTable.'.hour'=>$h,
+				'AND'=>array(
+					array('OR'=>array('>=active_to'=>time(),'active_to'=>0)),
+					array('OR'=>array('<=active_from'=>time(),'active_from'=>0)),
+				)
+			);
+			$arSelect=$this->Banner()->GetFields();
+			$arSelect[$this->Link()->sTable.'.path']='path';
+			$arSelect[$this->Link()->sTable.'.type']='path_type';
+			$bOldMode=$this->Banner()->SetKeyMode(true);
+			if($arBanners=$this->Banner()->GetList(array('show_rate'=>'desc'),$arFilter,$count,$arSelect))
+			{
+				$bHasHandler=$KS_EVENTS_HANDLER->HasHandler('banners','onRecountShowCoeff');
+				$sPath=$KS_MODULES->GetSitePath('banners');
+				foreach($arBanners as $key=>$arBanner)
+				{
+					if($bHasHandler)
+					{
+						$arCheckArray=array(
+							'banner'=>$arBanner,
+						);
+						$iCoeff=$KS_EVENTS_HANDLER->Execute("banners", "onRecountShowCoeff",$arCheckArray);
+					}
+					else
+					{
+						$iCoeff=$this->RecountBannerCoeff($arBanner);
+					}
+					if($arBanner['show_rate']-$iCoeff>0)
+					{
+						$this->Banner()->Update($arBanner['id'],array('show_rate'=>$arBanner['show_rate']-$iCoeff));
+						$arBanner['show_rate']-=$iCoeff;
+					}
+					else
+					{
+						//Коэффициент самого удачного баннера упал до нуля, по идее надо сбросить коэффициент всех баннеров на данную позицию
+						$this->Banner()->Update(array('type_id'=>$arBanner['type_id']),array('show_rate'=>DEFAULT_SHOW_RATE));
+						$arBanner['show_rate']=DEFAULT_SHOW_RATE;
+					}
+					$arBanner['path']=$sPath;
+					if($arBanner['save_stats']==1)
+						$this->AddView($arBanner['id']);
+					$arBanners[$key]=$arBanner;
+				}
+				$this->Banner()->SetKeyMode($bOldMode);
+				return $arBanners;
 			}
 			$this->Banner()->SetKeyMode($bOldMode);
 		}

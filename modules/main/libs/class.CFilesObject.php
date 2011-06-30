@@ -147,9 +147,13 @@ class CFilesObject extends CObject
 					$arResult[$field]=$obUploadManager->Upload($this->sUploadPath.'/'.$this->_GenFileName($obUploadManager->GetFileName()),false);
 				}
 			}
-			else
+			elseif(isset($data[$prefix.$field]))
 			{
 				$arResult[$field]=$data[$prefix.$field];
+			}
+			else
+			{
+				$arResult[$field]='';
 			}
 		}
 		return $arResult;
@@ -161,6 +165,11 @@ class CFilesObject extends CObject
 	protected function _GenFileName($filename)
 	{
 		return md5($filename.time()).'.'.substr($filename,strrpos($filename,'.')+1);
+	}
+
+	function GenFileName($filename)
+	{
+		return $this->_GenFileName($filename);
 	}
 
 	/**
@@ -189,7 +198,7 @@ class CFilesObject extends CObject
 					if($input[$prefix.'id']!='')
 					{
 						$arItem=$this->GetRecord(array('id'=>$input[$prefix . 'id']));
-						if(is_array($arItem)&&($arItem['id']==$input[$prefix . 'id']))
+						if(is_array($arItem)&&($arItem['id']==$input[$prefix . 'id']) && $sResult!=$arItem[$key])
 						{
 							if (file_exists(UPLOADS_DIR.$arItem[$key])&&is_file(UPLOADS_DIR.$arItem[$key]))
 								unlink(UPLOADS_DIR.$arItem[$key]);
