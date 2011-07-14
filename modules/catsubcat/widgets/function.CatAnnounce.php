@@ -54,7 +54,7 @@ function smarty_function_CatAnnounce($params, &$subsmarty)
 		if($access_level>8) throw new CAccessError("CATSUBCAT_NOT_VIEW_ANNOUNCE");
 		/* Подключаем необходимые библиотеки */
 		$module_directory = MODULES_DIR . "/catsubcat/";
-		include_once($module_directory . "libs/class.CCategoryEdit.php");
+		include_once($module_directory . "libs/class.CCategory.php");
 		/* Подключаем необходимые библиотеки */
 		$arFilterOperations=array(
 			'eq'=>'=',
@@ -343,11 +343,11 @@ function widget_params_CatAnnounce($params)
 	$arSortFields=$arFilterFields;
 	$arSortFields['random']='Случайно';
 	$filterFields = array
-  	(
-  		"title" => "Поля для фильтрации",
-  		"type" => "checklist",
-  		"value" => $arFilterFields,
-  		"default_value"=>$params['filter'],
+	(
+		"title" => "Поля для фильтрации",
+		"type" => "checklist",
+		"value" => $arFilterFields,
+		"default_value"=>$params['filter'],
 		"onchange" => "" .
 				"var list=$('input:checked');" .
 				"var res='';".
