@@ -13,7 +13,6 @@
 /*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
-global $smarty, $KS_IND_matches, $KS_MODULES, $KS_IND_dir, $global_template,  $CNMenu;
 //Подключаем библиотеки
 include_once MODULES_DIR.'/navigation/libs/class.CNav.php';
 $smarty->plugins_dir[]=MODULES_DIR.'/navigation/widgets/';

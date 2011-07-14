@@ -1,15 +1,14 @@
 <?php
 /*
  * CMS-remote
- * 
+ *
  * Created on 27.10.2008
  *
  * Developed by blade39
- * 
+ *
  * Виджет, выполняет функцию поиска категории по ее коду и пути, если путь и код категории верные,
  * возвращаются данные иначе выбрасывается 404 ошибка.
  * входные данные
- * $KS_IND_matches - разобранный GET запрос, структуру видно в файле /index.php.
  * Параметры функции
  * params:
  * addToNavChain - Y|N добавлять найденный элемент в навигационную цепочку
@@ -17,11 +16,11 @@
  * tpl - шаблон вывода компонента, по умолчанию - стандартный
  * ID - номер элемента для вывода
  */
- 
+
 function smarty_function_CatCategory($params, &$smarty)
 {
-	global $KS_IND_matches,$MODULE_catsubcat_config,$USER,$KS_MODULES,$global_template;
-	
+	global $USER,$KS_MODULES;
+
 	$access_level=$USER->GetLevel('catsubcat');
 	$parent_id = 0;						// корень
 	$obCategory = new CCategory();		// создание экземпляра объекта для работы с категориями текстовых страниц
@@ -32,7 +31,7 @@ function smarty_function_CatCategory($params, &$smarty)
 	{
 		/* Неплохо бы добавить дату добавления в понятном формате, чтобы юзеры в Смарти не мучились :) */
 		$data['main_content']['date'] = date("d.m.Y", $data['main_content']['date_add']);
-		
+
 		//Проверка прав доступа
 		if($access_level>9) throw new CAccessError("SYSTEM_NOT_ACCESS_MODULE");
 		if($access_level>8)

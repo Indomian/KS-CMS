@@ -90,10 +90,11 @@ if (!defined('KS_MAIN_INIT'))
 	$KS_FS=new CSimpleFs();
 	/* класс подключение модулей */
 	require_once MODULES_DIR.'/main/libs/class.CModuleHookUp.php';
-	$KS_MODULES = CModuleHookUp::get_instance();
-
 	/*подключение и обработка Url*/
 	require_once MODULES_DIR.'/main/libs/class.CUrlParser.php';
+	$KS_MODULES = CModuleHookUp::get_instance();
+	$KS_MODULES->SetSmarty($smarty);
+
 	$KS_URL = CUrlParser::get_instance();
 
 	/* Пользовательские поля */

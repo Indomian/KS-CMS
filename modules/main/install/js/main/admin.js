@@ -1,7 +1,7 @@
 /**
  * В этом файле размещаются функции которые наобходимы на всех страницах системы
  */
-
+var adminDate=new Date();
 /**
  * Метод позволяет установить печеньку на указанные параметры
  * взято http://www.codenet.ru/webmast/js/Cookies.php
@@ -818,12 +818,41 @@ function isPositionFixed()
 }
 
 /**
+ * Функция производит опрос сервера наличие новых уведомлений,и выполняет различные операции
+ * в случае необходимости
+ */
+function adminAskServer()
+{
+	params={
+		'module':'main',
+		'modpage':'password',
+		'action':'ping',
+		'ajax':adminDate.getTime(),
+		'ishit':'no'
+	};
+	$.getJSON('/admin.php',params,function(data){
+		if(data.result=='ok')
+		{
+			if(data.action)
+			{
+				if(data.action=='relog')
+				{
+					adminShowLoginWindow();
+					return;
+				}
+			}
+			setTimeout("adminAskServer()",10000);
+		}
+	});
+}
+
+/**
  * Функция производит загрузку окна авторизации.
  * @return
  */
 function adminShowLoginWindow()
 {
-	kstb_show('Авторизация','/admin.php?CU_ACTION=logout&modal=true&width=515&height=250&ajax=1',false,adminOnShowLoginWindow);
+	kstb_show('Авторизация','/admin.php?CU_ACTION=logout&modal=true&width=515&height=250&mode=small',false,adminOnShowLoginWindow);
 }
 
 /**
@@ -834,7 +863,7 @@ function adminOnShowLoginWindow(e,data)
 {
 	$("#TB_ajaxContent").css('padding','0').css('overflow','hidden').css('width','545px').css('background-color','#D13B00');
 	$("#login_form").unbind('submit').submit(function(ev){
-		$.post('/admin.php?ajax=1',$("#login_form").serialize(),function(data){
+		$.post('/admin.php',$("#login_form").serialize(),function(data){
 			try
 			{
 				eval('var arData='+data+';');
@@ -844,10 +873,7 @@ function adminOnShowLoginWindow(e,data)
 			catch(er)
 			{
 				kstb_remove();
-				if(window.ksLogoutTimeout>0)
-				{
-					setTimeout("adminShowLoginWindow()",window.ksLogoutTimeout*1000);
-				}
+				setTimeout("adminAskServer()",10000);
 			}
 		});
 		ev.preventDefault();
@@ -906,9 +932,6 @@ $(document).ready(function()
 			e.preventDefault();
 		}
 	);
-	if(window.ksLogoutTimeout>0)
-	{
-		setTimeout("adminShowLoginWindow()",window.ksLogoutTimeout);
-	}
+	setTimeout("adminAskServer()",10000);
 });
 

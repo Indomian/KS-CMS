@@ -26,16 +26,66 @@ class CModuleHookUp extends CModuleManagment
 	 */
 	private function init()
 	{
-		global $KS_IND_matches;
 		$this->arWidgetStack=array();
 		$this->sTemplate='.default';
 		$this->sScheme='index';
+		$this->ParseCurrentRequest();
+	}
+
+	/**
+	 * Метод обрабатывает текущий запрос от пользователя
+	 */
+	private function ParseCurrentRequest()
+	{
+		/**
+		 * Структура массива $KS_IND_matches
+		 * 0 - полный путь переданный пользователем
+		 * 1 - массив директорий со слешем на конце ОБЯЗТЕЛЬНО (по-другому не отработает)
+		 * 2 - имя файла (может отсутствовать) (с расширением)
+		 * 3 - имя файла (может отсутствовать) (без расширения)
+		 */
+		$sPath='';
+		if(array_key_exists('path',$_GET))
+		{
+			$sPath=$_GET['path'];
+		}
+		else
+		{
+			$arData=CUrlParser::ParseUrl($_SERVER['REQUEST_URI']);
+			$sPath=$arData['url'];
+			if(is_array($arData['params']))
+				$_GET=array_merge($_GET,$arData['params']);
+		}
+		if($sPath=='/')
+		{
+			$sPath='/index.html';
+		}
 		$this->arRequestData=array(
-			'path'=>$KS_IND_matches[0],
-			'dirs'=>$KS_IND_matches[1],
-			'page'=>$KS_IND_matches[2],
-			'text_ident'=>$KS_IND_matches[3]
+			'path'=>$sPath,
+			'dirs'=>explode('/',$sPath)
 		);
+		if(is_array($this->arRequestData['dirs']) && count($this->arRequestData['dirs'])>0)
+		{
+			$this->arRequestData['page']=array_pop($this->arRequestData['dirs']);
+			if(strrpos($this->arRequestData['page'],'.')>0)
+			{
+				$this->arRequestData['text_ident']=substr($this->arRequestData['page'],0,strrpos($this->arRequestData['page'],'.'));
+			}
+			else
+			{
+				$this->arRequestData['text_ident']=$this->arRequestData['page'];
+			}
+		}
+		else
+		{
+			$this->arRequestData['page']='';
+			$this->arRequestData['text_ident']='';
+		}
+	}
+
+	function GetCurrentRequest()
+	{
+		return $this->arRequestData['path'];
 	}
 
 	/**
@@ -43,8 +93,7 @@ class CModuleHookUp extends CModuleManagment
 	 */
 	public function InitTemplates()
 	{
-		global $KS_IND_matches;
-		if($sTemplate=$this->select_global_template($KS_IND_matches[0]))
+		if($sTemplate=$this->select_global_template($this->GetCurrentRequest()))
 		{
 			$arTemplate=explode(':',$sTemplate);
 			if(is_array($arTemplate)&&count($arTemplate)>1)
@@ -90,20 +139,39 @@ class CModuleHookUp extends CModuleManagment
 	function CheckPath($sPath,$bInModule=true)
 	{
 		$arPath=explode('/',$sPath);
-		foreach($arPath as $sElement)
+		$arResult=array();
+		$sPage='';
+		if(is_array($arPath) && count($arPath)>0)
 		{
-			if(trim($sElement)!='')
+			$sPage=array_pop($arPath);
+			if(strrpos($this->arRequestData['page'],'.')>0)
+			{
+				$sPage=substr($sPage,0,strrpos($sPage,'.'));
+			}
+			foreach($arPath as $sElement)
+			{
+				if($bInModule && trim($sElement)=='') continue;
 				$arResult[]=trim($sElement);
+			}
 		}
 		$iRequestCount=count($this->arRequestData['dirs']);
-		foreach($arResult as $i=>$sElement)
+		if(count($arResult)>0)
 		{
-			if($i+2<$iRequestCount)
+			$iShift=2;
+			if(!$bInModule) $iShift=0;
+			foreach($arResult as $i=>$sElement)
 			{
-				if($sElement!=$this->arRequestData['dirs'][$i+2]) return false;
+				if($i+$iShift<$iRequestCount)
+				{
+					if($sElement!=$this->arRequestData['dirs'][$i+$iShift]) return false;
+				}
+				else
+					return false;
 			}
-			else
-				return false;
+			if($sPage!='')
+			{
+				return $sPage==$this->CurrentTextIdent();
+			}
 		}
 		return true;
 	}
@@ -122,23 +190,27 @@ class CModuleHookUp extends CModuleManagment
 	 */
 	function GetPathDirs($from=1)
 	{
-		return array_slice($this->arRequestData['dirs'],$from);
+		if(is_array($this->arRequestData['dirs']) && count($this->arRequestData['dirs'])>=$from)
+		{
+			return array_slice($this->arRequestData['dirs'],$from);
+		}
+		return array();
 	}
 
 	/**
 	 * This implements the 'singleton' design pattern
-   	 *
-     * @return object CModuleHookUp The one and only instance
-     */
-  	static function get_instance()
-  	{
-	    if (!self::$instance)
-	    {
-    		self::$instance = new CModuleHookUp();
-      		self::$instance->init();  // init AFTER object was linked with self::$instance
-    	}
-	    return self::$instance;
-  	}
+	 *
+	 * @return object CModuleHookUp The one and only instance
+	 */
+	static function get_instance()
+	{
+		if (!self::$instance)
+		{
+			self::$instance = new CModuleHookUp();
+			self::$instance->init();  // init AFTER object was linked with self::$instance
+		}
+		return self::$instance;
+	}
 
 	/**
 	 * Метод возвращает массив времени выполнения виджетов
@@ -189,8 +261,8 @@ class CModuleHookUp extends CModuleManagment
 		if($arModule['active']==1)
 		{
 			/* Подключение конфигурационного файла */
-   			$module_config_file = MODULES_DIR . "/" . $arModule['directory'] . "/config.php";
-   			if (file_exists($module_config_file))
+			$module_config_file = MODULES_DIR . "/" . $arModule['directory'] . "/config.php";
+			if (file_exists($module_config_file))
 			{
 				/* Чтение конфигурационных массивов */
 				include($module_config_file);
@@ -207,15 +279,15 @@ class CModuleHookUp extends CModuleManagment
 				$arModule['db_config']=array();
 			}
 			if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/init.inc.php'))
-   			{
-   				include_once MODULES_DIR.'/'.$arModule['directory'].'/init.inc.php';
-   			}
-    		if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/main.init.php'))
-   			{
-   				include_once MODULES_DIR.'/'.$arModule['directory'].'/main.init.php';
-   			}
-   			$smarty->plugins_dir[] = MODULES_DIR.'/'.$module_name.'/widgets/';
-   			$this->arModules[$module_name]=$arModule;
+			{
+				include_once MODULES_DIR.'/'.$arModule['directory'].'/init.inc.php';
+			}
+				if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/main.init.php'))
+			{
+				include_once MODULES_DIR.'/'.$arModule['directory'].'/main.init.php';
+			}
+			$smarty->plugins_dir[] = MODULES_DIR.'/'.$module_name.'/widgets/';
+			$this->arModules[$module_name]=$arModule;
 			return $this->arModules;
 		}
 		return false;
@@ -241,9 +313,9 @@ class CModuleHookUp extends CModuleManagment
 			$this->InitModule($arModule);
 		}
 		if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/main.inc.php') )
-   		{
-   			$module_main_file = MODULES_DIR . "/" . $arModule['directory'] . "/main.inc.php";
-   			if(array_key_exists('fromsearch',$_GET)&&($_GET['fromsearch']!=''))
+		{
+			$module_main_file = MODULES_DIR . "/" . $arModule['directory'] . "/main.inc.php";
+			if(array_key_exists('fromsearch',$_GET)&&($_GET['fromsearch']!=''))
 			{
 				$module_search_file = MODULES_DIR . "/" . $arModule['directory'] . "/search.inc.php";
 				if (file_exists($module_search_file))
@@ -274,14 +346,14 @@ class CModuleHookUp extends CModuleManagment
 				{
 					$module_parameters=array();
 				}
-	   			include ($module_main_file);
+				include ($module_main_file);
 			}
-	   	}
-	   	else
-	   	{
-	   		/* Невозможно инициализировать модуль */
-	   		throw new CError("MAIN_MODULE_NO_USER_PART", 404);
-	   	}
+		}
+		else
+		{
+			/* Невозможно инициализировать модуль */
+			throw new CError("MAIN_MODULE_NO_USER_PART", 404);
+		}
 	}
 
 	/**
@@ -299,30 +371,31 @@ class CModuleHookUp extends CModuleManagment
 			'include_global_template'=>1
 		);
 		if($arModule=$this->GetRecord(array('URL_ident'=>$url_ident,'active'=>1)))
-  		{
-  			if($arModule['include_global_template'] == 0)
-  				$output['include_global_template'] = 0;
-  			try
-  			{
-   				$this->IncludeModule($arModule,$output);
-  			}
-  			catch (CModuleError $e)
-  			{
-   				if( $url_ident != 'default' )
-   				{
-   					/* пробуем обработать дефолтовым */
-	   				$this->hook_up();
-	   			}
-	   			else
-	   			{
-	   				/* это и есть дефолтовый, нужно отдать ошибку, что страница не найдена */
-	   				throw new CError("SYSTEM_PAGE_NOT_FOUND",404);
-	   			}
-   			}
-   			catch (CError $e)
-   			{
-   				throw $e;
-   			}
+		{
+			if($arModule['include_global_template'] == 0)
+				$output['include_global_template'] = 0;
+			try
+			{
+				$this->IncludeModule($arModule,$output);
+				$this->obSmarty->assign('SITE',$this->GetConfigArray('main'));
+			}
+			catch (CModuleError $e)
+			{
+				if( $url_ident != 'default' )
+				{
+					/* пробуем обработать дефолтовым */
+					$this->hook_up();
+				}
+				else
+				{
+					/* это и есть дефолтовый, нужно отдать ошибку, что страница не найдена */
+					throw new CError("SYSTEM_PAGE_NOT_FOUND",404);
+				}
+			}
+			catch (CError $e)
+			{
+				throw $e;
+			}
 		}
 		elseif($url_ident != 'default')
 		{
@@ -332,7 +405,7 @@ class CModuleHookUp extends CModuleManagment
 		else
 		{
 			/* если нет дефолтового модуля, найти подходящий не удалось, отдаем 404 */
-        	throw new CError("SYSTEM_PAGE_NOT_FOUND",404);
+			throw new CError("SYSTEM_PAGE_NOT_FOUND",404);
 		}
 		return $output;
 	}
@@ -351,6 +424,42 @@ class CModuleHookUp extends CModuleManagment
 	function GetScheme()
 	{
 		return $this->sScheme;
+	}
+
+	/**
+	 * Метод проверяет доступность вызова виджета через AJAX запрос
+	 */
+	function CanAjaxCall($module,$widget)
+	{
+		if($module=='main')
+		{
+			//Проверка системных виджетов
+			if($widget=='ConfigVar') return false;
+		}
+		$sMode=$this->GetConfigVar('main','ajax_mode','black_list');
+		$arList=$this->GetConfigVar('main','ajax_widgets',array());
+		if($sMode=='white_list')
+		{
+			if(array_key_exists($module,$arList) && is_array($arList[$module]))
+			{
+				if(array_key_exists($widget,$arList[$module]) && $arList[$module][$widget]==1)
+				{
+					return true;
+				}
+			}
+		}
+		elseif($sMode=='black_list')
+		{
+			if(array_key_exists($module,$arList) && is_array($arList[$module]))
+			{
+				if(array_key_exists($widget,$arList[$module]) && $arList[$module][$widget]==1)
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -398,7 +507,7 @@ class CModuleHookUp extends CModuleManagment
 			if(array_pop($this->arWidgetStack)!=$module.'_'.$action) throw new CError('SYSTEM_WIDGET_RETURN_ERROR',0,$module.'_'.$action);
 			throw $e;
 		}
-   		if(array_pop($this->arWidgetStack)!=$module.'_'.$action) throw new CError('SYSTEM_WIDGET_RETURN_ERROR',0,$module.'_'.$action);
+		if(array_pop($this->arWidgetStack)!=$module.'_'.$action) throw new CError('SYSTEM_WIDGET_RETURN_ERROR',0,$module.'_'.$action);
 		return $sResult;
 	}
 

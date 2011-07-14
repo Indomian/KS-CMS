@@ -102,6 +102,7 @@
 		if (!defined('MODULES_DIR'))
 			throw new CError("Unspecified constant path to modules");
 		$this->return_type = $return_type;			// Указываем тип данных, возвращаемых методом CEventsHandler::Execute()
+		$this->arModeStack=array();
 		try
 		{
 			$this->LoadFromFile($config_file);
@@ -313,7 +314,7 @@
 									{
 										if (!is_array($hParams) && !$hParams)
 											$hResult = call_user_func($handler['hFunc']);
-										elseif(!array_key_exists('arParams',$handler) || !is_array($handler['arParams']))
+										elseif(!isset($handler['arParams']))
 											$hResult = call_user_func($handler['hFunc'], $hParams);
 										else
 											$hResult = call_user_func($handler['hFunc'], $hParams,$handler['arParams']);
@@ -322,12 +323,12 @@
 								elseif (function_exists($handler['hFunc']))
 								{
 									$hFuncExists = true;
-									if (!is_array($hParams) && !$hParams)
-										$hResult = call_user_func($handler['hFunc']);
-									elseif(!array_key_exists('arParams',$handler) || !is_array($handler['arParams']))
-										$hResult = call_user_func($handler['hFunc'], $hParams);
+									if(!array_key_exists('arParams',$handler) || !is_array($handler['arParams']))
+										$hResult = call_user_func($handler['hFunc'], &$hParams);
 									elseif(array_key_exists('arParams',$handler) && is_array($handler['arParams']))
-										$hResult = call_user_func($handler['hFunc'], $hParams,$handler['arParams']);
+										$hResult = call_user_func($handler['hFunc'], &$hParams,$handler['arParams']);
+									else
+										$hResult = call_user_func($handler['hFunc']);
 								}
 							}
 							/* Если обработчик не был задан, то метод должен вернуть корректный результат */
@@ -337,8 +338,7 @@
 								$hResult = true;
 							}
 							/* Проверка правильности результата выполнения файла-обработчика или функции-обработчика */
-							if ($hResult>0)
-								$handlers[$handlerKey]['executed'] = $hResult;
+							$handlers[$handlerKey]['executed'] = $hResult;
 						}
 			}
 		/* В зависимости от установленного типа возвращаемого результата формируем выходные данные */
@@ -434,7 +434,7 @@
 			}
 			$sFilecontent.="\n),\n";
 		}
-		$sFilecontent.=");?>";
+		$sFilecontent.=");";
 		return file_put_contents($filename,$sFilecontent);
 	}
 
@@ -444,5 +444,3 @@
 		$this->events[$module][$event][]=$arParams;
 	}
  }
-
-?>

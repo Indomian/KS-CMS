@@ -6,19 +6,38 @@
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 include_once MODULES_DIR.'/main/libs/class.CFileUploader.php';
+include_once MODULES_DIR.'/main/libs/class.ImageResizer.php';
 
 class CImageUploader extends CFileUploader
 {
 	protected $iMaxSize;
 	protected $iMaxWidth;
 	protected $iMaxHeight;
+	protected $sResizeMode;
 
-	function __construct($sFieldName,$sSaverName='FILE_UPLOADER',$maxW=1000,$maxH=1000,$maxSize=1048578)
+	function __construct($sFieldName,$sSaverName='FILE_UPLOADER',$maxW=5000,$maxH=5000,$maxSize=50485780)
 	{
-		parent::__construct($sFieldName,$sSaverName);
+		if(is_object($sFieldName) && $sFieldName instanceof CFileUploader)
+		{
+			//Конструктор копий
+			parent::__construct($sFieldName->sField,$sFieldName->sSaverName);
+		}
+		else
+		{
+			parent::__construct($sFieldName,$sSaverName);
+		}
 		$this->iMaxSize=$maxSize;
 		$this->iMaxWidth=$maxW;
 		$this->iMaxHeight=$maxH;
+		$this->sResizeMode='none';
+	}
+
+	/**
+	 * Метод устанавливает режим ресайза картинки
+	 */
+	function SetResizeMode($sMode)
+	{
+		$this->sResizeMode=$sMode;
 	}
 
 	/**
@@ -33,6 +52,40 @@ class CImageUploader extends CFileUploader
 	function SetMaxFileSize($iSize)
 	{
 		$this->iMaxSize=$iSize;
+	}
+
+	/**
+	 * Метод изменит размер загруженной картинки (если это картинка)
+	 */
+	function Resize($width,$height)
+	{
+		if(!$this->IsReady()) return false;
+		$sFilepath=$this->GetRealFilePath();
+		$obImage=new ImageResizer($sFilepath,true);
+		$obImage->isCreateDir=false;
+		$obImage->isSave=false;
+		$bKeepRatio=false;
+		$bKeepRatioWb=true;
+		if($this->sResizeMode=='stretch')
+		{
+			$bKeepRatio=false;
+			$bKeepRatioWb=false;
+		}
+		elseif($this->sResizeMode=='crop')
+		{
+			$bKeepRatio=true;
+			$bKeepRatioWb=true;
+		}
+		elseif($this->sResizeMode=='resize')
+		{
+			$bKeepRatio=true;
+			$bKeepRatioWb=false;
+		}
+		$obImage->Resize(intval($width),intval($height),$bKeepRatio,$bKeepRatioWb,false);
+		if(!$obImage->Save($sFilepath))
+			throw new CError('SYSTEM_FILE_NOT_FOUND_OR_NOT_WRITABLE',$sFilepath);
+		chmod($sFilepath,0655);
+		return true;
 	}
 
 	/**
@@ -53,8 +106,8 @@ class CImageUploader extends CFileUploader
 			{
 				$width=$arParams[0];
 				$height=$arParams[1];
-				if($width>$this->iMaxWidth) throw new CError('SYSTEM_IMAGE_TOO_WIDE',2);
-				if($height>$this->iMaxHeight) throw new CError('SYSTEM_IMAGE_TOO_HIGH',3);
+				if($width>$this->iMaxWidth) throw new CError('SYSTEM_IMAGE_TOO_WIDE',2,$this->iMaxWidth);
+				if($height>$this->iMaxHeight) throw new CError('SYSTEM_IMAGE_TOO_HIGH',3,$this->iMaxHeight);
 			}
 			else
 			{

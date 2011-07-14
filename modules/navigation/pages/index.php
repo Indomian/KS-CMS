@@ -30,7 +30,7 @@ class CnavigationAIindex extends CModuleAdmin
 		$this->oType=new CNavTypes();
 		$this->iCurSection=0;
 		$this->iParentId=0;
-		$tihs->iId=0;
+		$this->iId=0;
 	}
 
 	function EditForm($data=false)
@@ -57,7 +57,7 @@ class CnavigationAIindex extends CModuleAdmin
 		if($arResult['ITEMS']=$this->oType->GetList($arOrder))
 		{
 			/* Добавляем описание скриптов генерации меню из файла menu_scripts/.description.php */
-			include (MODULES_DIR . "/" . $module_name . "/menu_scripts/.description.php");
+			include (MODULES_DIR . "/" . $this->module . "/menu_scripts/.description.php");
 			if(is_array($arResult['ITEMS']))
 			{
 				foreach ($arResult['ITEMS'] as $item_key => $item)
@@ -145,10 +145,14 @@ class CnavigationAIindex extends CModuleAdmin
 	{
 		global $KS_URL;
 		if($this->obUser->GetLevel($this->module)>0) throw new CAccessError('NAVIGATION_ACCESS_DENIED');
-		$sAction=$_REQUEST['ACTION'];
+		$sAction='';
+		if(isset($_REQUEST['ACTION']))
+			$sAction=$_REQUEST['ACTION'];
 		$arResult=array();
 		/* Определение номера текущего элемента */
-		$this->iId=intval($_REQUEST['CSC_catid']);
+		$this->iId='';
+		if(isset($_REQUEST['CSC_catid']))
+			$this->iId=intval($_REQUEST['CSC_catid']);
 		if(array_key_exists('ACTION',$_POST)&&($_POST['ACTION']=='common'))
 		{
 			$this->CommonActions();

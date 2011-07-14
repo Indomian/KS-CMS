@@ -91,6 +91,14 @@ class CError extends Exception
 	}
 
 	/**
+	 * Метод возвращает значение дополнительного поля ошибки
+	 */
+	function GetAdditionalText()
+	{
+		return $this->error_text;
+	}
+
+	/**
 	 * Метод оформляет вывод ошибки в рамку, используется в административном разделе.
 	 */
 	function _error_form($message,$code)

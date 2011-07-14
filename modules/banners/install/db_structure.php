@@ -211,6 +211,22 @@ $arStructure=array(
 			'Default'=>'',
 			'Extra'=>'',
 		),
+		'save_stats'=>array(
+			'Field'=>'save_stats',
+			'Type'=>'tinyint(1) unsigned',
+			'Null'=>'NO',
+			'Key'=>'',
+			'Default'=>'0',
+			'Extra'=>'',
+		),
+		'show_rate'=>array(
+			'Field'=>'show_rate',
+			'Type'=>'int(11)',
+			'Null'=>'NO',
+			'Key'=>'',
+			'Default'=>'1000',
+			'Extra'=>'',
+		),
 	),
 	'banners_links'=>array(
 		'id' => array(

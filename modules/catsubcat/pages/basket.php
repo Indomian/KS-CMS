@@ -70,9 +70,16 @@ class CcatsubcatAIbasket extends CModuleAdmin
 		}
 		$arFilter=array_merge(array('>deleted'=>'0'),$arFilter);
 		//Определяем количество элементов на странице
-		$iElCount=intval($_REQUEST['n']);
+		$iElCount=0;
+		if(isset($_REQUEST['n']))
+		{
+			$iElCount=intval($_REQUEST['n']);
+		}
 		$iElCount=($iElCount<10)?10:$iElCount;
-		$iPage=(intval($_REQUEST['p1'])<1)?1:intval($_REQUEST['p1']);
+		$iPage=1;
+		if(isset($_REQUEST['p1']))
+			$iPage=intval($_REQUEST['p1']);
+		if($iPage<1) $iPage=1;
 		$arSortFields=Array('id','title','text_ident','date_add','date_edit','orderation','active','views_count');
 		//Определяем порядок сортировки записей
 		list($sOrderField,$sOrderDir)=$this->InitSort($arSortFields,$_REQUEST['order'],$_REQUEST['dir']);
@@ -105,7 +112,7 @@ class CcatsubcatAIbasket extends CModuleAdmin
 		/* Перебрасываем главную страницу к файлам и формируем полную ссылку */
 		$mainItem = false;
 
-		if($arResult['ITEMS']&&count($arResult['ITEMS'])>0)
+		if(isset($arResult['ITEMS']) && $arResult['ITEMS']&&count($arResult['ITEMS'])>0)
 		{
 			$arResult['sections']=array();
 			foreach ($arResult['ITEMS'] as $arKey => $arValue)
@@ -130,7 +137,7 @@ class CcatsubcatAIbasket extends CModuleAdmin
 					$full_url = $arValue['path'].$arValue['text_ident'].'.html';
 				}
 				$arValue['full_url'] = $full_url;
-				$arValue['short_url'] = ShorterUrl($short_url);
+				$arValue['short_url'] = ShorterUrl($full_url);
 				$arResult['ITEMS'][$arKey] = $arValue;
 			}
 			// Передаем данные смарти
@@ -138,7 +145,6 @@ class CcatsubcatAIbasket extends CModuleAdmin
 			$this->smarty->assign('dataList',$arResult);
 			$this->smarty->assign('pages',$pages);
 			$this->smarty->assign('order',Array('newdir'=>$sNewDir,'curdir'=>$sOrderDir,'field'=>$sOrderField));
-			$this->smarty->assign('tree_to_move_to', $tree_to_move_to);
 		}
 		return '_basket';
 	}
@@ -148,8 +154,15 @@ class CcatsubcatAIbasket extends CModuleAdmin
 	 */
 	function CommonActions()
 	{
-		$arElements=$_POST['sel']['elm'];
-		$arCats=$_POST['sel']['cat'];
+		$arElements=false;
+		$arCats=false;
+		if(isset($_POST['sel']))
+		{
+			if(isset($_POST['sel']['elm']))
+				$arElements=$_POST['sel']['elm'];
+			if(isset($_POST['sel']['cat']))
+				$arCats=$_POST['sel']['cat'];
+		}
 		if (array_key_exists('comres',$_POST))
 		{
 			//Снятие общей активности для элементов
@@ -192,22 +205,35 @@ class CcatsubcatAIbasket extends CModuleAdmin
 		$this->access_level = $this->obUser->GetLevel($this->module);
 		if($this->access_level>3)
 			throw new CAccessError("CATSUBCAT_NOT_MANAGE");
-		$this->iCurSection=(intval($_REQUEST['CSC_catid'])<0)?0:intval($_REQUEST['CSC_catid']);
-		$action=$_REQUEST['ACTION'];
+		$this->iCurSection=0;
+		if(isset($_REQUEST['CSC_catid']))
+			$this->iCurSection=(intval($_REQUEST['CSC_catid'])<0)?0:intval($_REQUEST['CSC_catid']);
+		$action='';
+		if(isset($_REQUEST['ACTION']))
+			$action=$_REQUEST['ACTION'];
 
 		/* Получение типа данных (категория или элемент) */
-		$sType = $_REQUEST['type'];
+		$sType='';
+		if(isset($_REQUEST['type']))
+			$sType = $_REQUEST['type'];
 
+		$id=0;
+		$iId=0;
 		/* Определение идентификатора записи */
-		$iId = ($sType=='cat') ? intval($_REQUEST['CSC_catid']) : intval($_REQUEST['CSC_id']);
+		if($sType=='cat' && isset($_REQUEST['CSC_catid']))
+			$iId = intval($_REQUEST['CSC_catid']);
+		elseif(isset($_REQUEST['CSC_id']))
+			$iId = intval($_REQUEST['CSC_id']);
+		if(isset($_REQUEST['id']))
+			$id=intval($_REQUEST['id']);
 		// Обработка действий множественного выбора
-		if(array_key_exists('ACTION',$_POST)&&($_POST['ACTION']=='common'))
+		if($action=='common')
 		{
 			$this->CommonActions();
+			$page=$this->Table();
 		}
 		else
 		{
-			$id=intval($_REQUEST['id']);
 			if ($sType == "cat")
 				$this->obEditable = $this->obCategory;
 			elseif ($sType == "elm")
@@ -216,7 +242,7 @@ class CcatsubcatAIbasket extends CModuleAdmin
 			switch($action)
 			{
 				case "restore":
-					$this->obEditable->RestoreItems(array('id'=>$_GET['CSC_id']));
+					$this->obEditable->RestoreItems(array('id'=>$iId));
 					CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl(Array('ACTION','CSC_id')));
 				break;
 				case "delete":
@@ -238,12 +264,6 @@ class CcatsubcatAIbasket extends CModuleAdmin
 			}
 		}
 		$this->smarty->assign('userLevel',$this->access_level);
-		if($_GET['mode']=='small')
-		{
-			echo $smarty->get_template_vars('last_error');
-			$smarty->display('admin/catsubcat'.$page.'.tpl');
-			die();
-		}
 		return $page;
 	}
 }

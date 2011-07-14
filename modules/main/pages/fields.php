@@ -1,171 +1,219 @@
 <?php
+/**
+ * @file main/pages/fields.php
+ * Административный интерфейс управления дополнительными полями
+ * Файл проекта kolos-cms.
+ *
+ * Создан 2008
+ *
+ * @author blade39 <blade39@kolosstudio.ru>
+ * @version 2.6
+ */
+/*Обязательно вставляем во все файлы для защиты от взлома*/
+if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
-/*KS Engine ADMIN SYSTEM
+require_once MODULES_DIR.'/main/libs/class.CModuleAdmin.php';
 
-File: modules.php
-Original Code by BlaDe39 (c) 2008
-Назначение: управление модулями*/
-
-if( !defined('KS_ENGINE') )
+class CmainAIfields extends CModuleAdmin
 {
-  die("Hacking attempt!");
-}
+	private $obFields;
+	private $arRights;
 
-include_once MODULES_DIR.'/main/libs/class.CUrlParser.php';
-global $KS_URL,$ks_db;
-
-if ($USER->GetLevel('main')<=8)
-{
-	$obFields=new CFields();
-	//Проверка на структуру таблицы и обновление в случае необходимости
-	$arFields=$obFields->GetTableFields();
-	if(!array_key_exists('option_1',$arFields)) $ks_db->AddColumn($obFields->sTable,'option_1');
-	if(!array_key_exists('option_2',$arFields)) $ks_db->AddColumn($obFields->sTable,array('title'=>'option_2','type'=>'text'));
-	switch($_REQUEST['ACTION'])
+	function __construct($module='main',&$smarty,&$parent)
 	{
-		case "new":
-		    $data=Array('id'=>-1,'script'=>'text');
-		    $smarty->assign('data',$data);
-		    //Получаем список модулей и ищем доступные
-		    $slist=$KS_MODULES->GetInstalledList();
-			$list=array();
-			foreach($slist as $i=>$arItem)
-			{
-				$arModuleList=false;
-				if(file_exists(MODULES_DIR.'/'.$slist[$i]['directory'].'/config.php'))
-				{
-					include MODULES_DIR.'/'.$slist[$i]['directory'].'/config.php';
-					$varName='MODULE_'.$slist[$i]['directory'].'_db_config';
-					$arModuleList=$$varName;
-					if(is_array($arModuleList)) $list[]=$slist[$i];
-		    	}
-		    }
-		    $smarty->assign('type','');
-		    $smarty->assign('modules',$list);
-		    $smarty->assign('types',$obFields->GetTypes());
-		    $page='_fields_edit';
-		break;
-		case "edit":
-		    $data=$obFields->GetRecord(Array('id'=>$_REQUEST['id']));
-		       //Получаем список модулей и ищем доступные
-		    $slist=$KS_MODULES->GetInstalledList();
-		    $list=array();
-		    $smarty->assign('data',$data);
-			foreach($slist as $i=>$arItem)
-		    {
-		    	$arModuleList=false;
-		    	if(file_exists(MODULES_DIR.'/'.$slist[$i]['directory'].'/config.php'))
-		    	{
-		    		include MODULES_DIR.'/'.$slist[$i]['directory'].'/config.php';
-					$varName='MODULE_'.$slist[$i]['directory'].'_db_config';
-					$arModuleList=$$varName;
-					if(is_array($arModuleList)) $list[]=$slist[$i];
-		    	}
-		    }
-		    if($KS_MODULES->IsActive($data['module']))
+		parent::__construct($module,$smarty,$parent);
+		$this->obFields=new CFields();
+	}
+
+	/**
+	 * Метод выводит форму редактирования поля
+	 */
+	function EditForm($data=false)
+	{
+		if($data)
+		{
+			if($this->obModules->IsActive($data['module']))
 			{
 				$mod=$data['module'];
 				if(file_exists(MODULES_DIR.'/'.$mod.'/config.php'))
 				{
 					include MODULES_DIR.'/'.$mod.'/config.php';
 					$varName='MODULE_'.$mod.'_db_config';
-					$arModuleList=$$varName;
-					$smarty->assign('tables',$arModuleList);
-					$result=$smarty->fetch('admin/main_fields_onmodulechange.tpl');
-					$smarty->assign('type',$result);
+					if(isset($$varName))
+					{
+						$arModuleList=$$varName;
+						$this->smarty->assign('tables',$arModuleList);
+						$this->smarty->assign('data',$data);
+						$result=$this->smarty->fetch('admin/main_fields_onmodulechange.tpl');
+						$this->smarty->assign('type',$result);
+					}
 				}
 			}
-			$smarty->assign('modules',$list);
-		    $smarty->assign('types',$obFields->GetTypes());
-		    $page='_fields_edit';
-		break;
-		case "delete":
-			$obFields->Delete($_REQUEST['id']);
-			$KS_URL->Redirect("admin.php?".$KS_URL->GetUrl(Array('ACTION','id')));
-		break;
-		case "onmodulechange":
-			if($KS_MODULES->IsActive($_GET['mod']))
+		}
+		else
+		{
+			$data=Array('id'=>-1,'script'=>'text');
+			$this->smarty->assign('type','');
+		}
+		//Получаем список модулей и ищем доступные
+		$slist=$this->obModules->GetInstalledList();
+		$list=array();
+		foreach($slist as $i=>$arItem)
+		{
+			$arModuleList=false;
+			if(file_exists(MODULES_DIR.'/'.$slist[$i]['directory'].'/config.php'))
 			{
-				$mod=$_GET['mod'];
-				if(file_exists(MODULES_DIR.'/'.$mod.'/config.php'))
+				include MODULES_DIR.'/'.$slist[$i]['directory'].'/config.php';
+				$varName='MODULE_'.$slist[$i]['directory'].'_db_config';
+				if(isset($$varName))
 				{
-					include MODULES_DIR.'/'.$mod.'/config.php';
-					$varName='MODULE_'.$mod.'_db_config';
 					$arModuleList=$$varName;
-					$smarty->assign('tables',$arModuleList);
-					$result=$smarty->fetch('admin/main_fields_onmodulechange.tpl');
-					echo $result;
-					die();
+					if(is_array($arModuleList)) $list[]=$slist[$i];
 				}
 			}
-			echo $_GET['mod'];
-			die();
-		break;
-		case "onfieldchange":
-			$data=array('script'=>$_GET['field']);
-			$smarty->assign('data',$data);
-			$result=$smarty->fetch('admin/main_fields_onfieldchange.tpl');
-			echo $result;
-			die();
-		break;
-		case "save":
-			if ($USER->is_admin())
+		}
+		$this->smarty->assign('modules',$list);
+		$this->smarty->assign('types',$this->obFields->GetTypes());
+		$this->smarty->assign('data',$data);
+		return '_edit';
+	}
+
+	/**
+	 * Метод выполняет сохранение записи
+	 */
+	function Save()
+	{
+		if(!$this->obUser->IsAdmin()) throw new CAccessError('MAIN_FIELD_EDIT_DENIED');
+		$this->obFields->AddCheckField('title');
+		$this->obFields->AddCheckField('module');
+		$this->obFields->AddCheckField('type');
+		$this->obFields->AddAutoField('id');
+		try
+		{
+			$id=$this->obFields->Save('CM_',$_POST);
+			$this->obModules->AddNotify('MAIN_FIELDS_SAVE_OK','',NOTIFY_MESSAGE);
+			if(!array_key_exists('update',$_REQUEST))
 			{
- 				$obFields->AddCheckField('title');
- 				$obFields->AddCheckField('module');
- 				$obFields->AddCheckField('type');
-				$obFields->AddAutoField('id');
+				$this->obUrl->Redirect("/admin.php?".$this->obUrl->GetUrl(Array('ACTION','id')));
+			}
+			else
+			{
+				$this->obUrl->Redirect("/admin.php?".$this->obUrl->GetUrl('ACTION','id').'&ACTION=edit&id='.$id);
+			}
+		}
+		catch (CError $e)
+		{
+			$this->smarty->assign('last_error',$e->__toString());
+			$data=$this->obFields->GetRecordFromPost('CM_',$_POST);
+			return $this->EditForm($data);
+		}
+	}
+
+	/**
+	 * Метод выполняет вывод таблицы со списком дополнительных полей
+	 */
+	function Table()
+	{
+		$obPages=new CPages(20);
+		$totalUsers=$this->obFields->count();
+		if($list=$this->obFields->GetList(array('id'=>'asc'),false,$obPages->GetLimits($totalUsers)))
+		{
+			foreach($list as $key=>$arRow)
+			{
+				$list[$key]['module_title']=$this->obModules->GetTitle($arRow['module']);
+				$list[$key]['type_title']=$this->obModules->GetText($arRow['type']);
+			}
+		}
+		$this->smarty->assign('list',$list);
+		$this->smarty->assign('pages',$obPages->GetPages($totalUsers));
+		return '';
+	}
+
+	function Run()
+	{
+		if ($this->obUser->GetLevel('main')>8) throw new CAccessError('MAIN_ACCESS_USER_FIELDS_CLOSED');
+		$action='';
+		if(array_key_exists('ACTION',$_REQUEST))
+			$action=$_REQUEST['ACTION'];
+		switch($action)
+		{
+			case "new":
+				$page=$this->EditForm();
+			break;
+			case "edit":
+				if(!isset($_REQUEST['id'])) throw new CDataError('MAIN_FIELDS_ID_REQUIRED');
+				if($data=$this->obFields->GetById(intval($_REQUEST['id'])))
+				{
+					$page=$this->EditForm($data);
+				}
+				else
+				{
+					throw new CError('MAIN_FIELDS_NOT_FOUND');
+				}
+			break;
+			case "delete":
+				if(!isset($_REQUEST['id'])) throw new CDataError('MAIN_FIELDS_ID_REQUIRED');
+				if($arField=$this->obFields->GetById(intval($_REQUEST['id'])))
+				{
+					$this->obFields->Delete($arField['id']);
+					$this->obModules->AddNotify('MAIN_FIELDS_DELETE_OK','',NOTIFY_MESSAGE);
+					$this->obUrl->Redirect("admin.php?".$this->obUrl->GetUrl(Array('ACTION','id')));
+				}
+				else
+				{
+					throw new CError('MAIN_FIELDS_NOT_FOUND');
+				}
+			break;
+			case "onmodulechange":
 				try
 				{
-					$id=$obFields->Save('CM_',$_POST);
-					$arField=$obFields->GetRecord(array('id'=>$id));
-					if(!array_key_exists('update',$_REQUEST))
-				    {
-		    			CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','id')));
-		    		}
-		    		else
-		    		{
-		    			CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl('ACTION','id').'&ACTION=edit&id='.$id);
-		    		}
-				}
-				catch (CError $e)
-				{
-					$smarty->assign('last_error',$e);
-					//$data=$obFields->GetRecord(Array('id'=>$_REQUEST['id']));
-					$data=$obFields->GetRecordFromPost('CM_',$_POST);
-					$smarty->assign('data',$data);
-					if($KS_MODULES->IsActive($data['module']))
+					if(!isset($_GET['mod'])) throw new CDataError('MAIN_MODULE_CODE_REQUIRED');
+					if($this->obModules->IsActive($_GET['mod']))
 					{
-						$mod=$data['module'];
+						$mod=$_GET['mod'];
 						if(file_exists(MODULES_DIR.'/'.$mod.'/config.php'))
 						{
 							include MODULES_DIR.'/'.$mod.'/config.php';
 							$varName='MODULE_'.$mod.'_db_config';
-							$arModuleList=$$varName;
-							$smarty->assign('tables',$arModuleList);
-							$result=$smarty->fetch('admin/main_fields_onmodulechange.tpl');
-							$smarty->assign('type',$result);
+							if(isset($$varName))
+							{
+								$arModuleList=$$varName;
+								$this->smarty->assign('tables',$arModuleList);
+								$result=$this->smarty->fetch('admin/main_fields_onmodulechange.tpl');
+								echo $result;
+								die();
+							}
+							throw new CDataError('MAIN_FIELD_MODULE_NO_TABLES');
 						}
+						throw new CDataError('MAIN_FIELD_MODULE_NO_TABLES');
 					}
-			    	$list=$KS_MODULES->GetInstalledList();
-		    		$smarty->assign('modules',$list);
-		    		$smarty->assign('types',$obFields->GetTypes());
-		    		$page='_fields_edit';
-		    		break;
+					throw new CDataError('MAIN_FIELD_MODULE_INACTIVE');
 				}
-			}
-		default:
-			$obPages=new CPageNavigation($obFields);
-			$totalUsers=$obFields->count();
-			$list=$obFields->GetList(array('id'=>'asc'),false,$obPages->GetLimits($totalUsers));
-			$smarty->assign('list',$list);
-			$smarty->assign('pages',$obPages->GetPages($totalUsers));
-			$page='_fields';
+				catch(CError $e)
+				{
+					echo $e->__toString();
+					die();
+				}
+				die();
+			break;
+			case "onfieldchange":
+				if(isset($_GET['field']))
+				{
+					$data=array('script'=>$_GET['field']);
+					$this->smarty->assign('data',$data);
+					$result=$this->smarty->fetch('admin/main_fields_onfieldchange.tpl');
+					echo $result;
+					die();
+				}
+				die();
+			break;
+			case "save":
+				$page=$this->Save();
+			break;
+			default:
+				$page=$this->Table();
+		}
+		return '_fields'.$page;
 	}
-}
-else
-{
-	$page='';
-	throw new CAccessError("MAIN_ACCESS_USER_FIELDS_CLOSED",403);
 }
 

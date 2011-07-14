@@ -80,7 +80,10 @@ class CmainAIusers extends CModuleAdmin
 		$obPages = new CPageNavigation($this->obUser);
 		$iCount=$this->obUser->count($arFilter);
 		$arOrder=array($sOrderField=>$sOrderDir);
-		if($arList=$this->obUser->GetList($arOrder,$arFilter,$obPages->GetLimits($iCount)))
+		$arSelect=array(
+			'id','title','email','last_visit','date_register','active'
+		);
+		if($arList=$this->obUser->GetList($arOrder,$arFilter,$obPages->GetLimits($iCount),$arSelect))
 		{
 			/**
 			 * @todo Узнать зачем нужен именно такой формат ответа
@@ -257,7 +260,7 @@ class CmainAIusers extends CModuleAdmin
 				if($id = $this->obUser->Save("CU_",$_POST))
 				{
 					$usergroups=$this->obUser->GetAllGroups($id);
-					if(is_array($_POST["CU_groups"]))
+					if(isset($_POST['CU_groups']) && is_array($_POST["CU_groups"]))
 					{
 						foreach($_POST["CU_groups"] as $group_id)
 						{
@@ -281,7 +284,7 @@ class CmainAIusers extends CModuleAdmin
 							unset($usergroups[$group_id]);
 						}
 					}
-					if(count($usergroups)>0)
+					if(is_array($usergroups) && count($usergroups)>0)
 					{
 						foreach($usergroups as $group_id=>$something)
 						{

@@ -112,5 +112,36 @@ class CPageNavigation extends CInterface
 		}
 		return $pages;
 	}
+
+	/**
+	 * Метод производит поиск номера страницы на которой будет выведен элемент id
+	 * из списка элементов $arIds
+	 */
+	function SearchPage($id,$arIds)
+	{
+		$iPages=ceil(count($arIds)/$this->iVisible);
+		$pages=array();
+		$pages['num']=$iPages;
+		$pages['active']=1;
+		$pages['visible']=$this->iVisible;
+		$pages['TOTAL']=count($arIds);
+		$pages['index']=$this->iPageNavNum;
+		$iCount=1;
+		foreach($arIds as $arItem)
+		{
+			$iCount++;
+			if($arItem==$id) break;
+			if($iCount>$this->iVisible)
+			{
+				$pages['active']++;
+				$iCount=1;
+			}
+		}
+		for($i=1;$i<=$pages['num'];$i++)
+		{
+			$pages['pages'][$i]=$i;
+		}
+		return $pages;
+	}
 }
 

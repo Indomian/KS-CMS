@@ -104,6 +104,39 @@ class CFileUploader
 		}
 		return false;
 	}
+
+	/**
+	 * Метод возращает путь к реальному файлу (загруженному или на диске)
+	 */
+	function GetRealFilePath()
+	{
+		if(!$this->HasUploadData() && array_key_exists($this->sSaverName,$_SESSION) && array_key_exists($this->sField,$_SESSION[$this->sSaverName]))
+		{
+			$arFile=GenFileArray($this->sRootDir.$_SESSION[$this->sSaverName][$this->sField]);
+		}
+		else
+		{
+			$arFile=$_FILES[$this->sField];
+		}
+		return $arFile['tmp_name'];
+	}
+
+	/**
+	 * Метод возращает тип загруженного файла
+	 */
+	function GetFileType()
+	{
+		if(!$this->HasUploadData() && array_key_exists($this->sSaverName,$_SESSION) && array_key_exists($this->sField,$_SESSION[$this->sSaverName]))
+		{
+			$arFile=GenFileArray($_SESSION[$this->sSaverName][$this->sField]);
+		}
+		else
+		{
+			$arFile=$_FILES[$this->sField];
+		}
+		return GetFileType($arFile['tmp_name']);
+	}
+
 	/**
 	 * Метод выполняет загрузку нового файла
 	 */
@@ -179,5 +212,4 @@ class CFileUploader
 	{
 		unset($_SESSION[$this->sSaverName][$this->sField]);
 	}
-
 }

@@ -112,7 +112,8 @@ class CObject extends CBaseList
 	static protected $arCache;
 	static protected $dbStructure;
 
-	protected $bDistinctMode;
+	protected $bDistinctMode; /*!<Ключ режима выборки из базы данных*/
+	protected $bJustAdd; /*!<Индекс массива - ключ записи, если ложь, индекс массива по порядку если истина*/
 
 	/*!Конструктор класса. Заполняет атрибуты класса значениями по умолчанию.
 	 \param $sTable -- имя таблицы для работы (без префикса).*/
@@ -139,6 +140,7 @@ class CObject extends CBaseList
 		$this->checkMethod='AND';
 		$this->arTables=array();
 		$this->bDistinctMode=false;
+		$this->bJustAdd=false;
 		if(array_key_exists($sTable,self::$dbStructure))
 		{
 			$this->arFields=array_keys(self::$dbStructure[$sTable]);
@@ -167,8 +169,20 @@ class CObject extends CBaseList
 	}
 
 	/**
+	 * Метод устанавливает значение режима добавления записей в результат
+	 * @param $bMode - режим, ложь - по ключам, истина - просто добавлять
+	 * @return boolean - предыдущее значение режима.
+	 */
+	function SetKeyMode($bMode)
+	{
+		$old=$this->bJustAdd;
+		$this->bJustAdd=$bMode;
+		return $old;
+	}
+
+	/**
 	 * Метод добавляет поле для проверки перед сохранением элемента в базу.
-	 * Если добавить несколько методов, проверка будет идти по принципу "�?"
+	 * Если добавить несколько методов, проверка будет идти по принципу "ИЛИ"
 	 */
 	function AddCheckField($field)
 	{
@@ -449,7 +463,10 @@ class CObject extends CBaseList
 		if($data=='') $data=$_POST;
 		foreach ($this->arFields as $field)
 		{
-			$arResult[$field]=$data[$prefix.$field];
+			if(array_key_exists($prefix.$field,$data))
+				$arResult[$field]=$data[$prefix.$field];
+			else
+				$arResult[$field]='';
 		}
 		return $arResult;
 	}
@@ -640,7 +657,7 @@ class CObject extends CBaseList
 					/*Проверяем на допустимые операции, если одна из них указана,
 					 * выполняем обработку введенных данных и формируем операцию.*/
 
-					if(preg_match('#^(!~|!->|[><!~=]|>=|<=|->|%)?([\w_\.\-]+)#i',$field,$matches))
+					if(preg_match('#^(!~|\^~|\$~|!->|[><!~=]|>=|<=|->|%)?([\w_\.\-]+)#i',$field,$matches))
 					{
 						$operation=$matches[1];
 						if($operation=='') $operation="=";
@@ -694,6 +711,8 @@ class CObject extends CBaseList
 								$operation=" $myfield!='".$ks_db->safesql($value)."' ";
 						elseif($operation=='~') $operation=" $myfield LIKE '%".$ks_db->safesql($value)."%' ";
 						elseif($operation=='!~') $operation=" $myfield NOT LIKE '%".$ks_db->safesql($value)."%' ";
+						elseif($operation=='^~') $operation=" $myfield LIKE '".$ks_db->safesql($value)."%' ";
+						elseif($operation=='$~') $operation=" $myfield LIKE '%".$ks_db->safesql($value)."' ";
 						elseif($operation=='->')
 						{
 							if(is_numeric($value))
@@ -1005,6 +1024,7 @@ class CObject extends CBaseList
 							$prefix=' AS '.$sNewName;
 						}
 						$field[]=$myfield.$prefix;
+						if($bAddCount) $field[]='COUNT('.$myfield.')';
 					}
 					elseif(strpos($myfield,'.')>0)
 					{
@@ -1027,6 +1047,7 @@ class CObject extends CBaseList
 							}
 						} else continue;
 						$field[]=$myfield.$prefix;
+						if($bAddCount) $field[]='COUNT('.$newfield.')';
 					}
 					else
 					{
@@ -1049,6 +1070,7 @@ class CObject extends CBaseList
 								$prefix=' AS '.$sNewName;
 							}
 							$field[]=$newfield.$prefix;
+							if($bAddCount) $field[]='COUNT('.$newfield.')';
 						}
 					}
 				}
@@ -1159,7 +1181,6 @@ class CObject extends CBaseList
 			}
 			$limits="LIMIT ".join(',',$arLimits);
 		}
-		//$query="SELECT $fields FROM ".PREFIX.$this->sTable." $sWhere $sOrder $limits";
 		if($this->bDistinctMode)
 		{
 			$query="SELECT DISTINCT $fields FROM $sFrom $sWhere $sGroupBy $sOrder $limits";
@@ -1180,7 +1201,7 @@ class CObject extends CBaseList
 		{
 			if($this->_ParseItem($item))
 			{
-				if(array_key_exists('id',$item))
+				if(array_key_exists('id',$item)&&$this->bJustAdd==false)
 					$res[$item['id']]=$item;
 				else
 					$res[]=$item;
@@ -1225,6 +1246,7 @@ class CObject extends CBaseList
 			{
 				$query = "SELECT COUNT(*) FROM " . $this->_GenFrom(). $sWhere;
 			}
+			if(KS_DEBUG_QUERIES==1) echo $query.'<br/>';
 			$ks_db->query($query);
 			if ($ks_db->num_rows() > 0)
 			{
@@ -1243,6 +1265,7 @@ class CObject extends CBaseList
 			$sSelect=$this->_GenSelect($fGroup,true);
 			$fGroup=$this->_GenGroup($fGroup);
 			$query = "SELECT $sSelect FROM " . $this->_GenFrom() . $sWhere . $fGroup;
+			if(KS_DEBUG_QUERIES==1) echo $query.'<br/>';
 			$ks_db->query($query);
 			while ($row = $ks_db->get_array())
 			{
@@ -1315,6 +1338,8 @@ class CObject extends CBaseList
 	 */
 	function Update($id, $values,$bFiltered=false)
 	{
+		$this->arTables=array($this->sTable=>'A');
+		$this->arJoinTables=array();
 		foreach ($values as $field => $value)
 		{
 			if(substr($field,0,1)=='?')
@@ -1340,11 +1365,11 @@ class CObject extends CBaseList
 				{
 					$arWhere[]="`id`='$ItemId'";
 				}
-				if (count($arWhere)>0): $sWhere=join(' OR ',$arWhere);endif;
+				if (count($arWhere)>0): $sWhere="WHERE ".join(' OR ',$arWhere);endif;
 			}
 			elseif (is_numeric($id))
 			{
-				$sWhere=" `id`='$id' ";
+				$sWhere="WHERE `id`='$id' ";
 			}
 		}
 		else
@@ -1353,16 +1378,13 @@ class CObject extends CBaseList
 		}
 		if (strlen($sWhere)>0)
 		{
-			$query="UPDATE ".PREFIX.$this->sTable." SET $sQuery WHERE ".$sWhere;
+			$query="UPDATE ".$this->_GenFrom()." SET $sQuery ".$sWhere;
 			//echo $query;
 			$this->obDB->query($query);
 			unset(CObject::$arCache[$this->sTable]);
-			return mysql_affected_rows();
+			return $this->obDB->AffectedRows();
 		}
-		else
-		{
-			return -1;
-		}
+		return -1;
 	}
 
 	/**

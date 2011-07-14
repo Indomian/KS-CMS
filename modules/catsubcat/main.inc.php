@@ -13,13 +13,13 @@ if (!defined("KS_ENGINE"))
 	die("Hacking attempt!");
 
 /* Глобальные переменные */
-global $USER, $KS_MODULES, $KS_IND_matches, $KS_IND_dir,  $CCatsubcat, $global_template, $smarty;
+global $USER, $KS_MODULES, $CCatsubcat, $global_template, $smarty;
 
 /* Идентификатор модуля */
 $module = "catsubcat";
-
+$access_level=$USER->GetLevel($module);
 /* Проверка прав доступа пользователя */
-if ($USER->GetLevel($module) == 10)
+if ($access_level >= 10)
 	throw new CAccessError("SYSTEM_NOT_ACCESS_MODULE");
 
 /* Установка директории с плагинами модуля для Смарти */
@@ -28,14 +28,7 @@ $smarty->plugins_dir[] = MODULES_DIR . "/" . $module . "/widgets/";
 /* Чтение конфигурации модуля */
 $module_config = $KS_MODULES->GetConfigArray($module);
 
-/* Если модуль подключается из шаблона, то не обращаем внимание на УРЛ */
-if ($KS_IND_matches[3] == "index")
-	$KS_IND_matches[2] = "";
-
-/* Работаем как модуль, значит надо провести полную проверку переданного пути
-	* на правильность и на права доступа, если что-то не так, лучше отдать ошибку */
-
-	/* Путь к корню модуля */
+/* Путь к корню модуля */
 $root_path = $this->GetSitePath($module);
 
 if ($root_path != "/")
@@ -61,15 +54,16 @@ $module_parameters['setPageTitle'] = $this->GetConfigVar($module, "set_title",1)
 $module_parameters['parent_id'] = 0;
 
 /* Формирование навигационной цепочки */
-if (count($KS_IND_dir) > $iBase)
+$arDirs=$this->GetPathDirs(0);
+if (count($arDirs) > $iBase)
 {
 	/* Объект для работы с категориями */
 	$obCategory = new CCategory();
 	$arFilter = array('parent_id' => 0);
 
-	for ($i = $iBase; $i < count($KS_IND_dir); $i++)
+	for ($i = $iBase; $i < count($arDirs); $i++)
 	{
-		$arFilter['text_ident'] = $KS_IND_dir[$i];
+		$arFilter['text_ident'] = $arDirs[$i];
 		$arCategory = $obCategory->GetRecord($arFilter);
 		if($arCategory)
 		{
@@ -94,10 +88,10 @@ if (count($KS_IND_dir) > $iBase)
 	}
 }
 /* Определение виджета для подключения в качестве контента страницы */
-if (strlen($KS_IND_matches[2]) > 0)
+if($this->IsPage() && $this->CurrentTextIdent()!='index')
 {
 	/* Элемент каталога */
-	$module_parameters['text_ident'] = $KS_IND_matches[3];
+	$module_parameters['text_ident'] = $this->CurrentTextIdent();
 	$module_parameters['setPageTitle']=$KS_MODULES->GetConfigVar('catsubcat','set_title',1)==1?'Y':'N';
 	$res=$this->IncludeWidget($module,'CatElement',$module_parameters);
 }

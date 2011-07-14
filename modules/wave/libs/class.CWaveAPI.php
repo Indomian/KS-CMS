@@ -133,6 +133,7 @@ class CWaveAPI extends CBaseAPI
 			if($USER->GetLevel('wave')>KS_ACCESS_WAVE_MODERATE)
 			{
 				$arAccess['canEdit']=$arPost['user_id']==$USER->ID();
+				$arAccess['canDelete']=$arPost['user_id']==$USER->ID();
 			}
 			else
 			{
@@ -407,9 +408,10 @@ class CWaveAPI extends CBaseAPI
 	function Delete($id)
 	{
 		global $USER,$KS_MODULES;
-		if($USER->GetLevel('wave')<=KS_ACCESS_WAVE_MODERATE)
+		if($arPost=$this->obPosts->GetRecord(array('id'=>$id)))
 		{
-			if($arPost=$this->obPosts->GetRecord(array('id'=>$id)))
+			$arRights=$this->GetPostRights($arPost);
+			if($arRights['canDelete'])
 			{
 				$arFilter=array(
 					'hash'=>$arPost['hash'],
@@ -420,20 +422,24 @@ class CWaveAPI extends CBaseAPI
 				{
 					if($KS_MODULES->GetConfigVar('wave','use_ratings','no')=='usefullness')
 					{
-						$this->obVoteLocks->DeleteItems(array('->comment_id'=>array_keys($arPosts)));
+						$this->Locks()->DeleteItems(array('->comment_id'=>array_keys($arPosts)));
 					}
 					$this->obPosts->DeleteItems(array('->id'=>array_keys($arPosts)));
 				}
 				if($KS_MODULES->GetConfigVar('wave','use_ratings','no')=='usefullness')
 				{
-					$this->obVoteLocks->DeleteItems(array('comment_id'=>$arPost['id']));
+					$this->Locks()->DeleteItems(array('comment_id'=>$arPost['id']));
 				}
 				return $this->obPosts->DeleteItems(array('id'=>$arPost['id']));
 			}
 			else
 			{
-				throw new CError('WAVE_POST_NOT_FOUND');
+				return false;
 			}
+		}
+		else
+		{
+			throw new CError('WAVE_POST_NOT_FOUND');
 		}
 		return false;
 	}

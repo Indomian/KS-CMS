@@ -72,6 +72,7 @@ function GetAllList($arOrder,$arFilter,$arLimit,$arTables,$arFilds=false)
 	if($bElm) $arResult['ELEMENTS']=$obElement->Count($arFilter);
 	$arResult['TOTAL']=$arResult['CATEGORIES']+$arResult['ELEMENTS'];
 	$arResult['IN_PAGE']=$count;
+	$arResult['SELECTED']=0;
 	if ($from<$arResult['CATEGORIES']&&$bCat)
 	{
 		$arLimit=array($from,$count);
@@ -93,7 +94,7 @@ function GetAllList($arOrder,$arFilter,$arLimit,$arTables,$arFilds=false)
 	$arResult['CURRENT_PAGE']=ceil($from/$count)+1;
 	if (($arResult['CATEGORIES']-$from)<$count&&$bElm)
 	{
-		if ($arResult['SELECTED']>0)
+		if (isset($arResult['SELECTED']) && $arResult['SELECTED']>0)
 		{
 			$from=0;
 			$count=$count-$arResult['SELECTED'];

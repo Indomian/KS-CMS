@@ -21,11 +21,18 @@ function smarty_function_banner($params,&$subsmarty)
 	global $global_template,$KS_MODULES,$KS_URL,$ks_db;
 	$ks_db->add2log('<b>banner begin</b>');
 	$obBanner=CBannersApi::get_instance();
-	$arBanner=array_shift($obBanner->SelectBanner($params['type']));
-	$subsmarty->assign('data',$arBanner);
-	//Код для генерации пути к шаблону или вывод ошибки об отсутсвтии шаблона
-	$sResult=$KS_MODULES->RenderTemplate($subsmarty,'/banners/banner',$params['global_template'],$params['tpl']);
-	$ks_db->add2log('<b>banner end</b>');
+	if($arBanner=$obBanner->SelectBanner2($params['type']))
+	{
+		$subsmarty->assign('data',$arBanner);
+		//Код для генерации пути к шаблону или вывод ошибки об отсутсвтии шаблона
+		$sResult=$KS_MODULES->RenderTemplate($subsmarty,'/banners/banner',$params['global_template'],$params['tpl']);
+		$ks_db->add2log('<b>banner end</b>');
+	}
+	else
+	{
+		$subsmarty->assign('data',false);
+		$sResult=$KS_MODULES->RenderTemplate($subsmarty,'/banners/banner',$params['global_template'],$params['tpl']);
+	}
 	return $sResult;
 }
 

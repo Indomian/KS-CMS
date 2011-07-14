@@ -23,6 +23,7 @@ abstract class CModuleManagment extends CObject
 	protected $obSmarty;
 	protected $obLanguage;
 	protected $obLanguageError;
+	protected $arVersion;
 
 	function __construct()
 	{
@@ -36,11 +37,13 @@ abstract class CModuleManagment extends CObject
 		{
 			error_reporting(E_ALL | E_STRICT);
 		}
-
 		if($ks_config['go_install']==1)
 		{
 			//Если самоустановка, то надо скопировать структуру БД
-			$KS_FS->CopyFile(MODULES_DIR.'/main/install/db_structure.php',CONFIG_DIR.'/db_structure.php','');
+			if(!$KS_FS->CopyFile(MODULES_DIR.'/main/install/db_structure.php',CONFIG_DIR.'/db_structure.php',''))
+			{
+				throw new CError('SYSTEM_COPY_DB_STRUCTURE_FAIL');
+			}
 		}
 		parent::__construct('main_modules');
 		if(!array_key_exists('notifies',$_SESSION) || !is_array($_SESSION['notifies'])) $_SESSION['notifies']=array();
@@ -53,6 +56,10 @@ abstract class CModuleManagment extends CObject
 				'mess'=>'',
 				'ALEVELS'=>array('0'=>'full_access','10'=>'access_denied')),
 		);
+		//Подгрузка версии системы
+		$arVersion=array();
+		include MODULES_DIR.'/main/install/version.php';
+		$this->arVersion=$arVersion;
 		if($ks_config['go_install']==1)
 		{
 			//Надо провести самодиагностику и самоустановку
@@ -62,16 +69,42 @@ abstract class CModuleManagment extends CObject
 		$this->arHeadScripts=array();
 	}
 
+	/**
+	 * Метод возвращает версию системы
+	 */
+	function Version()
+	{
+		return isset($this->arVersion['ID'])?$this->arVersion['ID']:'Uknown';
+	}
+
+	/**
+	 * Метод возвращает полную информацию по версии системы
+	 */
+	function GetVersionData()
+	{
+		return $this->arVersion;
+	}
+
+	/**
+	 * Метод "устанавливает" объект пользователя в систему, т.е. связывает
+	 * созданный объект пользователя и объект системы модуля
+	 */
 	function SetUser($obUser)
 	{
 		$this->obUser=$obUser;
 	}
 
+	/**
+	 * Метод привязывает к объекту класса объект шаблонизатора smarty
+	 */
 	function SetSmarty($obSmarty)
 	{
 		$this->obSmarty=$obSmarty;
 	}
 
+	/**
+	 * Метод привязывает объект языковых констант к объекту управления модулями.
+	 */
 	function SetLanguage($obLanguage)
 	{
 		$this->obLanguage=$obLanguage;
@@ -83,6 +116,9 @@ abstract class CModuleManagment extends CObject
 		}
 	}
 
+	/**
+	 * Метод возвращает значение текстовой константы
+	 */
 	function GetText($code)
 	{
 		if(!is_object($this->obLanguage)) return $code;
@@ -90,12 +126,18 @@ abstract class CModuleManagment extends CObject
 		return $this->obLanguage->Text($code);
 	}
 
+	/**
+	 * Метод устанавливает объект языковых констант ошибок
+	 */
 	function SetLanguageError($obLanguage)
 	{
 		$this->obLanguageError=$obLanguage;
 		$this->obLanguageError->LoadSection(null);
 	}
 
+	/**
+	 * Метод возвращает значение текстовой константы ошибки
+	 */
 	function GetErrorText($code)
 	{
 		if(!is_object($this->obLanguageError)) return $code;
@@ -485,6 +527,18 @@ abstract class CModuleManagment extends CObject
 	}
 
 	/**
+	 * Метод проверяет наличие загруженного яваскрипта
+	 */
+	function HasJavaScript($script,$position=10)
+	{
+		if(isset($this->arHeadScripts[$position]) && is_array($this->arHeadScripts[$position]))
+		{
+			return in_array($script,$this->arHeadScripts[$position]);
+		}
+		return false;
+	}
+
+	/**
 	 * Метод возвращает строки подключения яваскрипта
 	 */
 	function GetJavaScript()
@@ -506,7 +560,22 @@ abstract class CModuleManagment extends CObject
 	 */
 	function GetHeader()
 	{
-		return $this->GetJavaScript()."\n".join("\n",$this->arHeads)."\n";
+		global $KS_EVENTS_HANDLER;
+		$sEvents='';
+		if($KS_EVENTS_HANDLER->HasHandler('main','onGetHeader'))
+		{
+			$KS_EVENTS_HANDLER->PushMode();
+			$KS_EVENTS_HANDLER->SetMode('particular');
+			if($arResult=$KS_EVENTS_HANDLER->Execute('main','onGetHeader'))
+			{
+				foreach($arResult as $arItem)
+				{
+					if(is_string($arItem['executed']))
+						$sEvents.="\n".$arItem['executed'];
+				}
+			}
+		}
+		return $this->GetJavaScript()."\n".join("\n",$this->arHeads)."\n".$sEvents."\n";
 	}
 
 	/** Проверяет является ли указанный модуль, модулем.
@@ -633,10 +702,16 @@ abstract class CModuleManagment extends CObject
 	{
 		if (!array_key_exists($module, $this->arModules))
 			$this->InitModule($module);
-		if (array_key_exists($var,$this->arModules[$module]['config']))
-			return $this->arModules[$module]['config'][$var];
-		elseif (array_key_exists($var,$this->arModules[$module]))
-			return $this->arModules[$module][$var];
+		if(is_array($this->arModules[$module]))
+		{
+			if(array_key_exists('config',$this->arModules[$module]))
+			{
+				if (array_key_exists($var,$this->arModules[$module]['config']))
+					return $this->arModules[$module]['config'][$var];
+			}
+			elseif (array_key_exists($var,$this->arModules[$module]))
+				return $this->arModules[$module][$var];
+		}
 		return $default;
 	}
 
@@ -712,7 +787,7 @@ abstract class CModuleManagment extends CObject
 	/**
 	 * Метод выполняет подключение файла .tree.php для указанного модуля
 	 */
-	public function IncludeTreeFile($module,$arRow)
+	public function IncludeTreeFile($module,$arRow=array())
 	{
 		global $USER;
 		$KS_MODULES=$this;

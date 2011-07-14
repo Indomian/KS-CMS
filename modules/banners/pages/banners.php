@@ -18,38 +18,113 @@ require_once MODULES_DIR.'/banners/libs/class.CBannersApi.php';
 class CbannersAIbanners extends CModuleAdmin
 {
 	private $obBanners;
+	private $arRights;
 
 	function __construct($module='banners',&$smarty,&$parent)
 	{
 		parent::__construct($module,$smarty,$parent);
 		$this->obBanners=CBannersAPI::get_instance();
+		$this->arRights=array(
+			'canView'=>false,
+			'canEdit'=>false,
+		);
 	}
 
 	function EditForm($data=false)
 	{
-		$arData=$this->obBanners->obBannerTypes->GetList();
-		$arBannerTypes=array();
-		if(is_array($arData))
+		$arBannerTypes=$this->obBanners->Type()->GetList();
+		$arClients=$this->obBanners->Client()->GetList();
+		if(!$data)
 		{
-			foreach($arData as $arRow)
+			if(!$this->arRights['canEdit'])
 			{
-				$arBannerTypes[$arRow['id']]=$arRow;
+				$this->obModules->AddNotify('BANNERS_ACCESS_REPLY');
+				$this->obUrl->Redirect("admin.php?".$this->obUrl->GetUrl(Array('action','id')));
+			}
+			$data=array();
+			$data['times']=array();
+			for($i=0;$i<7;$i++)
+				for($j=0;$j<24;$j++)
+					$data['times'][$i][$j]=1;
+		}
+		else
+		{
+			$arStatistics=array();
+			if($arStat=$this->obBanners->GetStatistics($data['id']))
+			{
+				$arTmp=$arStat['list'];
+				if(is_array($arTmp))
+				{
+					foreach($arTmp as $arDay)
+					{
+						$sDay=date('d.m.Y',$arDay['date']);
+						$sHour=date('H',$arDay['date']);
+						$arStatistics[$sDay][intval($sHour)]=$arDay;
+					}
+				}
+				$data['statisticsFrom']=$arStat['date_from'];
+				$data['statisticsTo']=$arStat['date_to'];
+			}
+			//$data['statistics']=$this->obBanners->GetStatistics($data['id']);
+			$data['statistics']=$arStatistics;
+		}
+		if (class_exists('CFields'))
+		{
+			$obFields=new CFields();
+			if($arFields=$obFields->GetList(Array('id'=>'asc'),Array('module'=>$this->module,'type'=>$this->obBanners->Banner()->sTable)))
+			{
+				foreach($arFields as $item)
+				{
+					$arDefaults['ext_'.$item['title']]=$item['default'];
+				}
+				$this->smarty->assign('addFields',$arFields);
 			}
 		}
-		if($data) $this->smarty->assign('data',$data);
+		$this->smarty->assign('data',$data);
 		$this->smarty->assign('TYPES',$arBannerTypes);
+		$this->smarty->assign('CLIENTS',$arClients);
+		$this->obModules->UseJavaScript('/banners/admin.js');
 		return '_edit';
 	}
 
-	function GetDataFromPost($prefix,$data)
+	function GetDataFromPost()
 	{
 		$arResult=array();
-		//$arFields=$this->obBanners->GetBannersFields();
-		//$arFields=$this->obBanners->GetFields();
 		$arFields=$this->obBanners->GetBannerFields();
 		foreach($arFields as $sField)
 		{
-			$arResult[$sField]=$data[$prefix.$sField];
+			if(array_key_exists('OS_'.$sField,$_POST))
+			{
+				$arResult[$sField]=$_POST['OS_'.$sField];
+			}
+		}
+		if(array_key_exists('times',$_POST) && is_array($_POST['times']))
+		{
+			$arResult['times']=array();
+			for($i=1;$i<8;$i++)
+			{
+				$arResult['times'][$i-1]=array();
+				if(array_key_exists($i,$_POST['times']) && is_array($_POST['times'][$i]))
+				{
+					for($j=1;$j<25;$j++)
+						if(array_key_exists($j,$_POST['times'][$i]))
+							$arResult['times'][$i-1][$j-1]=1;
+						else
+							$arResult['times'][$i-1][$j-1]=0;
+				}
+				else
+				{
+					for($j=1;$j<25;$j++)
+						$arResult['times'][$i-1][$j-1]=0;
+				}
+			}
+		}
+		else
+		{
+			$arResult['times']=array();
+			for($i=1;$i<8;$i++)
+				for($j=1;$j<25;$j++)
+					$arResult['times'][$i-1][$j-1]=1;
 		}
 		return $arResult;
 	}
@@ -58,32 +133,100 @@ class CbannersAIbanners extends CModuleAdmin
 	 */
 	function Save($id)
 	{
-		global $KS_URL,$USER;
+		if(!$this->arRights['canEdit'])
+			throw new CAccessError('BANNERS_ACCESS_REPLY');
 		try
 		{
-			if(strlen($_POST['OS_title'])==0) throw new CDataError('BANNERS_TITLE_TOO_SHORT');
-			if(strlen($_POST['OS_text_ident'])==0) throw new CDataError('BANNERS_TEXT_IDENT_TOO_SHORT');
-			if(!preg_match('#^[a-z0-9]+$#i',$_POST['OS_text_ident'])) throw new CDataError('BANNERS_TEXT_IDENT_WRONG');
-			$_POST['OS_active_from']=strtotime($_POST['OS_active_from']);
-			$_POST['OS_active_to']=strtotime($_POST['OS_active_to']);
-			$_POST['OS_active']=intval($_POST['OS_active']);
-			$this->obBanners->SaveBanner('OS_',$_POST);
-			if(!array_key_exists('update',$_REQUEST))
+			$bErrors=0;
+			if(strlen($_POST['OS_title'])==0)
+				$bErrors=$this->obModules->AddNotify('BANNERS_TITLE_TOO_SHORT');
+			else
+				$_POST['OS_title']=EscapeHTML($_POST['OS_title']);
+			if(strlen($_POST['OS_text_ident'])==0)
+				$bErrors=$this->obModules->AddNotify('BANNERS_TEXT_IDENT_TOO_SHORT');
+			elseif(!IsTextIdent($_POST['OS_text_ident']))
+				$bErrors=$this->obModules->AddNotify('BANNERS_TEXT_IDENT_WRONG');
+			if(isset($_POST['OS_active_from'])&&strlen($_POST['OS_active_from'])>0)
+				$_POST['OS_active_from']=String2Time($_POST['OS_active_from']);
+			else
+				$_POST['OS_active_from']=0;
+			if(isset($_POST['OS_active_to'])&&strlen($_POST['OS_active_to'])>0)
+				$_POST['OS_active_to']=String2Time($_POST['OS_active_to']);
+			else
+				$_POST['OS_active_to']=0;
+			//Активность баннера
+			if(isset($_POST['OS_active']))
+				$_POST['OS_active']=intval($_POST['OS_active']);
+			else
+				$_POST['OS_active']=0;
+			//Ведение статистики
+			if(isset($_POST['OS_save_stats']))
+				$_POST['OS_save_stats']=intval($_POST['OS_save_stats']);
+			else
+				$_POST['OS_save_stats']=0;
+			if($_POST['OS_type_id']>0)
+				if(!$this->obBanners->Type()->GetById(intval($_POST['OS_type_id'])))
+					$bErrors=$this->obModules->AddNotify('BANNERS_TYPE_DONT_EXISTS');
+			if($_POST['OS_client_id']>0)
+				if(!$this->obBanners->Client()->GetById(intval($_POST['OS_client_id'])))
+					$bErrors=$this->obModules->AddNotify('BANNERS_CLIENT_DONT_EXISTS');
+			if($bErrors==0)
 			{
-				CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl(array('action','id')));
+				$id=$this->obBanners->SaveBanner('OS_');
+				$this->obModules->AddNotify('BANNERS_SAVE_OK','',NOTIFY_MESSAGE);
+				if(!array_key_exists('update',$_REQUEST))
+					$this->obUrl->Redirect("admin.php?".$this->obUrl->GetUrl(array('action','id')));
+				else
+					$this->obUrl->Redirect("admin.php?".$this->obUrl->GetUrl(array('action','id')).'&action=edit&id='.$id);
 			}
 			else
 			{
-				CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl(array('action','id')).'&action=edit&id='.$id);
+				throw new CDataError('BANNERS_FIELDS_ERROR');
 			}
 		}
 		catch(CError $e)
 		{
-			$arOrder=$this->GetDataFromPost('OS_',$_POST);
-			$this->smarty->assign('last_error',$e);
-			$page=$this->EditForm($arOrder);
+			$arBanner=$this->GetDataFromPost();
+			$this->smarty->assign('last_error',$e->__toString());
+			$page=$this->EditForm($arBanner);
 		}
 		return $page;
+	}
+
+	/**
+	 * Метод возвращает статистику по баннеру
+	 */
+	function GetStatistics($id)
+	{
+		if($arBanner=$this->obBanners->GetBanner($id))
+		{
+			if(isset($_GET['dateFrom'])) $dateFrom=$_GET['dateFrom']; else $dateFrom=time()-2592000;
+			if(isset($_GET['dateTo'])) $dateTo=$_GET['dateTo']; else $dateTo=time();
+			if($arStat=$this->obBanners->GetStatistics($id,$dateFrom,$dateTo))
+			{
+				$arTmp=$arStat['list'];
+				if(is_array($arTmp))
+				{
+					$arStatistics=array();
+					foreach($arTmp as $arDay)
+					{
+						$sDay=date('d.m.Y',$arDay['date']);
+						$sHour=date('H',$arDay['date']);
+						$arStatistics[$sDay][intval($sHour)]=$arDay;
+					}
+				}
+				$data['statisticsFrom']=$arStat['date_from'];
+				$data['statisticsTo']=$arStat['date_to'];
+			}
+			//$data['statistics']=$this->obBanners->GetStatistics($data['id']);
+			$data['list']=$arStatistics;
+		}
+		else
+		{
+			$data['error']=$this->obModules->GetText('banner_not_found');
+		}
+		echo json_encode($data);
+		die();
 	}
 
 	function Table()
@@ -131,7 +274,7 @@ class CbannersAIbanners extends CModuleAdmin
 			$this->smarty->assign('ftitles',$arTitles);
 		}
 		if(!is_array($arFilter)) $arFilter=array();
-		$this->obBanners->Banner()->Count($arFilter);
+		$iCount=$this->obBanners->Banner()->Count($arFilter);
 		$obPages = new CPages();
 		$arSelect=array(
 			'id',
@@ -140,23 +283,43 @@ class CbannersAIbanners extends CModuleAdmin
 			'date_add',
 			'type_id',
 			'client_id',
+			'save_stats',
 			$this->obBanners->Client()->sTable.'.title'=>'client_title',
 			$this->obBanners->Type()->sTable.'.title'=>'type_title',
 		);
 		$arFilter['<?'.$this->obBanners->Banner()->sTable.'.client_id']=$this->obBanners->Client()->sTable.'.id';
 		$arFilter['<?'.$this->obBanners->Banner()->sTable.'.type_id']=$this->obBanners->Type()->sTable.'.id';
-		$arBanners=$this->obBanners->Banner()->GetList(array($sOrderField=>$sOrderDir),$arFilter,$obPages->GetLimits(),$arSelect);
+		$arBanners=$this->obBanners->Banner()->GetList(array($sOrderField=>$sOrderDir),$arFilter,$obPages->GetLimits($iCount),$arSelect);
 		$this->smarty->assign('ITEMS',$arBanners);
-		$this->smarty->assign('pages',$obPages->GetPages());
+		$this->smarty->assign('pages',$obPages->GetPages($iCount));
 		$this->smarty->assign('order',Array('newdir'=>$sNewDir,'curdir'=>$sOrderDir,'field'=>$sOrderField));
 		return '';
 	}
 
+	/**
+	 * Метод проверяет права доступа и устанавливает соответсвующие флаги
+	 */
+	private function CheckRights()
+	{
+		$iLevel=$this->obUser->GetLevel($this->module);
+		if($iLevel>KS_ACCESS_BANNERS_VIEW)
+			throw new CAccessError('BANNERS_ACCESS_REPLY');
+		elseif($iLevel==KS_ACCESS_BANNERS_VIEW)
+		{
+			$this->arRights['canView']=true;
+		}
+		elseif($iLevel<KS_ACCESS_BANNERS_VIEW)
+		{
+			$this->arRights['canView']=true;
+			$this->arRights['canEdit']=true;
+		}
+		$this->smarty->assign('rights',$this->arRights);
+	}
+
 	function Run()
 	{
-		$KS_URL=CUrlParser::get_instance();
 		//Проверка прав доступа
-		if($this->obUser->GetLevel($this->module)>KS_ACCESS_BANNERS_VIEW) throw new CAccessError('BANNERS_ACCESS_REPLY');
+		$this->CheckRights();
 		$action='';
 		if(array_key_exists('action',$_REQUEST))
 			$action=$_REQUEST['action'];
@@ -164,11 +327,14 @@ class CbannersAIbanners extends CModuleAdmin
 		if(array_key_exists('id',$_REQUEST))
 			$id=intval($_REQUEST['id']);
 		$this->page='';
-		if (array_key_exists('comdel',$_POST))
+		if(array_key_exists('comdel',$_POST)&&$this->arRights['canEdit'])
 		{
 			$arElements=$_POST['sel']['elm'];
 			$this->obBanners->DeleteBanners($arElements);
+			$this->obModules->AddNotify('BANNERS_DELETE_OK','',NOTIFY_MESSAGE);
+			$this->obUrl->Redirect("admin.php?".$this->obUrl->GetUrl(Array('action','id')));
 		}
+		$data=false;
 		switch($action)
 		{
 			case "edit":
@@ -179,9 +345,13 @@ class CbannersAIbanners extends CModuleAdmin
 			case "save":
 				$page=$this->Save($id);
 			break;
+			case "getStatistics":
+				$this->GetStatistics($id);
+			break;
 			case "delete":
 				$this->obBanners->DeleteBanners($id);
-				CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl(Array('action','id')));
+				$this->obModules->AddNotify('BANNERS_DELETE_OK','',NOTIFY_MESSAGE);
+				$this->obUrl->Redirect("admin.php?".$this->obUrl->GetUrl(Array('action','id')));
 			default:
 				$page=$this->Table();
 		}

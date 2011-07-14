@@ -25,7 +25,7 @@ if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 //Задаем название модуля
 $module='sitemap';
 //Определяем глобальные переменные которые могут понадобиться внутри модуля
-global $USER,$KS_IND_matches,$KS_MODULES,$smarty,$KS_IND_dir,$KS_MODULES;
+global $USER,$KS_MODULES,$smarty;
 
 //Получаем переменные прав на доступ к модулю и разделам модуля
 $access_level=$USER->GetLevel($module);
@@ -47,17 +47,17 @@ try
 			CNNavChain::get_instance()->Add($KS_MODULES->GetTitle($module),'/'.$root_path.'/');
 		$sUrl='/'.$root_path.'';
 		$iBase=2;
-		if(count($KS_IND_matches[1])>2) throw new CError('SYSTEM_FILE_NOT_FOUND');
+		if(count($this->GetPathDirs())>2) throw new CError('SYSTEM_FILE_NOT_FOUND');
 	}
 	else
 	{
 		$sUrl='';
 		$iBase=1;
-		if(count($KS_IND_matches[1])>1) throw new CError('SYSTEM_FILE_NOT_FOUND');
+		if(count($this->GetPathDirs())>1) throw new CError('SYSTEM_FILE_NOT_FOUND');
 	}
-	if(!function_exists('smarty_function_sitemap')) include MODULES_DIR.'/'.$module.'/widgets/function.sitemap.php';
 	$smarty->assign('TITLE',$KS_MODULES->GetTitle($module));
-	$res=smarty_function_sitemap($module_parameters,$smarty);
+	$arParams=array();
+	$res=$this->IncludeWidget($module,'sitemap',$arParams);
 }
 catch(CAccessError $e)
 {

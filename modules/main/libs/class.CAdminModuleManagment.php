@@ -26,6 +26,7 @@ final class CAdminModuleManagment extends CModuleManagment
 	private $localTemplate;		//!<В переменой передается имя текущего шаблона. Обычно используется после подключения определенного модуля.
 	private $page;				/**<В переменной хранится текущая страница системы администрирования*/
 	private $sMode;			/** Режим отрисовки административного шаблона */
+	private $arRunModules;
 	static private $instance;
 
 	/*!Конструктор класса (оформление в стиле ПХП 4). Производить инициализацию внутренних переменных,
@@ -44,6 +45,7 @@ final class CAdminModuleManagment extends CModuleManagment
 		$this->current='main';
 		$this->currentMenu=$this->current;
 		$this->sMode='full';
+		$this->arRunModules=array();
 		if(array_key_exists('mode',$_GET) && $_GET['mode']=='small')
 		{
 			$this->sMode='small';
@@ -81,33 +83,56 @@ final class CAdminModuleManagment extends CModuleManagment
 		$this->sMode=$mode;
 	}
 
+	function GetMode()
+	{
+		return $this->sMode;
+	}
+
 	/**
 	 * Метод выполняет автоматическую загрузку указанной страницы модуля.
-	 * В качестве результата возвращает имя шаблона для рендеринга
+	 * В качестве результата возвращает имя шаблона для рендеринга. Метод учитывает все запущенные
+	 * копии, и не позволяет выполнить код вторично.
 	 */
 	function LoadModulePage($module,$sClassPage)
 	{
 		global $smarty;
-		if(file_exists(MODULES_DIR.'/'.$module.'/pages/'.$sClassPage.'.php'))
+		if(!array_key_exists($module.'_'.$sClassPage,$this->arRunModules))
 		{
-			include  MODULES_DIR.'/'.$module.'/pages/'.$sClassPage.'.php';
-			$sObjectName='C'.$module.'AI'.$sClassPage;
-			if(class_exists($sObjectName))
+			if(file_exists(MODULES_DIR.'/'.$module.'/pages/'.$sClassPage.'.php'))
 			{
-				$this->obLanguage->LoadSection($module);
-				$obModule=new $sObjectName($module,$smarty,$this);
-				$this->page=$obModule->Run();
-				$this->obLanguage->LoadSection($module.$this->page);
-				return $this->page;
+				include  MODULES_DIR.'/'.$module.'/pages/'.$sClassPage.'.php';
+				$sObjectName='C'.$module.'AI'.$sClassPage;
+				if(class_exists($sObjectName))
+				{
+					$this->obLanguage->LoadSection($module);
+					$obModule=new $sObjectName($module,$smarty,$this);
+					if(array_key_exists('ajax',$_REQUEST))
+					{
+						$this->page=$obModule->RunAjax();
+						$this->sMode='ajax';
+					}
+					else
+					{
+						$this->page=$obModule->Run();
+						$this->obLanguage->LoadSection($module.$this->page);
+					}
+					$this->arRunModules[$module.'_'.$sClassPage]=$this->page;
+					return $this->page;
+				}
+				else
+				{
+					throw new CError('MAIN_MODULE_NO_USER_PART',1116,__LINE__);
+				}
 			}
 			else
 			{
-				throw new CError('MAIN_MODULE_NO_USER_PART',1116,__LINE__);
+				throw new CError('MAIN_MODULE_NO_USER_PART',1121,__LINE__);
 			}
 		}
 		else
 		{
-			throw new CError('MAIN_MODULE_NO_USER_PART',1121,__LINE__);
+			$this->page=$this->arRunModules[$module.'_'.$sClassPage];
+			return $this->page;
 		}
 	}
 
@@ -148,8 +173,8 @@ final class CAdminModuleManagment extends CModuleManagment
 					{
 						$sPage='index';
 					}
-					$access_level=$USER->GetLevel($module);
-					if($access_level>0) throw new CAccessError('SYSTEM_NOT_ACCESS_MODULE');
+					//$access_level=$USER->GetLevel($module);
+					//if($access_level>0) throw new CAccessError('SYSTEM_NOT_ACCESS_MODULE');
 					if(file_exists(MODULES_DIR.'/'.$module.'/pages/'.$sPage.'.php'))
 					{
 						$sClassPage=$sPage;
@@ -199,35 +224,27 @@ final class CAdminModuleManagment extends CModuleManagment
 		{
 			try
 			{
-				$smarty->display('admin/header_ajax.tpl');
+				$content='';
 				$template_to_display = 'admin/' . $this->current . $this->page . '.tpl';
 				if($smarty->template_exists($template_to_display))
-					$smarty->display($template_to_display);
+					$content=$smarty->fetch($template_to_display);
 				elseif($smarty->template_exists('admin/common/'.$this->page.'.tpl'))
-					$smarty->display('admin/common/'.$this->page.'.tpl');
+					$content=$smarty->fetch('admin/common/'.$this->page.'.tpl');
 				else
 					throw new CError('SYSTEM_PAGE_NOT_FOUND',0,$this->page);
+				$smarty->display('admin/header_ajax.tpl');
+				echo $content;
 				$smarty->display('admin/footer_ajax.tpl');
-			}
-			catch(CError $e)
-			{
-				echo $e;
-			}
-		}
-		elseif($this->sMode=='ajax')
-		{
-			try
-			{
-				$template_to_display = 'admin/' . $this->current . $this->page . '.tpl';
-				if($smarty->template_exists($template_to_display))
-					$smarty->display($template_to_display);
-				elseif($smarty->template_exists('admin/common/ajax.tpl'))
-					$smarty->display('admin/common/ajax.tpl');
 			}
 			catch(CError $e)
 			{
 				echo $e->__toString();
 			}
+		}
+		elseif($this->sMode=='ajax')
+		{
+			if($smarty->template_exists('admin/common/ajax.tpl'))
+				$smarty->display('admin/common/ajax.tpl');
 		}
 		else
 		{
@@ -242,36 +259,24 @@ final class CAdminModuleManagment extends CModuleManagment
 				$smarty->assign('helpEmail',$this->GetConfigVar('main','helpEmail','dev@kolosstudio.ru'));
 			}
 			$smarty->assign('bShowTreeView',$this->GetConfigVar('main','showTreeView','Y'));
-			/* Определяем header для отображения */
-			// Стандартный
-			if(!array_key_exists('disp_design',$_REQUEST))
-			{
-				$smarty->display('admin/header.tpl');
-			}
-			//  - Для всплывающего фрейма
-			elseif($_REQUEST['disp_design'] > 0)
-			{
-				$smarty->display('admin/header_ajax.tpl');
-			}
 			try
 			{
+				$content='';
 				$template_to_display = 'admin/' . $this->current . $this->page . '.tpl';
 				if($smarty->template_exists($template_to_display))
-					$smarty->display($template_to_display);
+					$content=$smarty->fetch($template_to_display);
 				elseif($smarty->template_exists('admin/common/'.$this->page.'.tpl'))
-					$smarty->display('admin/common/'.$this->page.'.tpl');
+					$content=$smarty->fetch('admin/common/'.$this->page.'.tpl');
 				else
 					throw new CError('SYSTEM_PAGE_NOT_FOUND',0,$this->page);
 			}
 			catch(CError $e)
 			{
-				echo $e;
+				$content=$e->__toString();
 			}
-			// Проверка какой footer подключать.
-			//  - Стандартный
-			if(!array_key_exists('disp_design',$_REQUEST)) { $smarty->display('admin/footer.tpl'); }
-			//  - Для всплывающего фрейма
-			elseif($_REQUEST['disp_design'] >0) { $smarty->display('admin/footer_ajax.tpl'); }
+			$smarty->display('admin/header.tpl');
+			echo $content;
+			$smarty->display('admin/footer.tpl');
 		}
 	}
 
@@ -434,7 +439,7 @@ final class CAdminModuleManagment extends CModuleManagment
 	function Save($prefix='',$data='',$table='')
 	{
 		if($data=='') $data=$_POST;
-		if($data[$prefix.'URL_ident']=='default') $data[$prefix.'active']=1;
+		if(isset($data[$prefix.'URL_ident']) && $data[$prefix.'URL_ident']=='default') $data[$prefix.'active']=1;
 		return parent::Save($prefix,$data,$table);
 	}
 

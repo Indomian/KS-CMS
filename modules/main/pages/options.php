@@ -140,7 +140,7 @@ class CmainAIoptions extends CModuleAdmin
 				$this->obModules->AddNotify('MAIN_OPTIONS_SYSTEM_CACHE_CLEAR_ERROR');
 			}
 		}
-		elseif($_SERVER['REQUEST_METHOD']=='POST' && $_POST['action']=='save')
+		elseif($_SERVER['REQUEST_METHOD']=='POST' && isset($_POST['action']) && $_POST['action']=='save')
 		{
 			try
 			{
@@ -162,6 +162,16 @@ class CmainAIoptions extends CModuleAdmin
 				$obConfig->Set('lifetime',(intval($_POST['sc_lifetime'])>0?intval($_POST['sc_lifetime']):864000));
 				$obConfig->Set('highlight_color','fff74b');
 				$obConfig->Set('highlight_odd_row_color','70808D');
+				//Auth
+				$obConfig->Set('user_inactive_time',(intval($_POST['sc_user_inactive_time'])>150?intval($_POST['sc_user_inactive_time']):150));
+				if(isset($_POST['sc_user_inactive_check']))
+					$obConfig->Set('user_inactive_check',intval($_POST['sc_user_inactive_check']));
+				else
+					$obConfig->Set('user_inactive_check',0);
+				if(isset($_POST['sc_enable_auth_save']))
+					$obConfig->Set('enable_auth_save',intval($_POST['sc_enable_auth_save']));
+				else
+					$obConfig->Set('enable_auth_save',0);
 				//Проверка валидности ключа обновлений
 				if(strlen($_POST['sc_pkey'])==0)
 				{
@@ -190,7 +200,6 @@ class CmainAIoptions extends CModuleAdmin
 				else
 					$error+=$this->obModules->AddNotify('MAIN_ERROR_FROM_EMAIL');
 				$obConfig->Set('time_format',htmlentities($_POST['sc_time_format'],ENT_QUOTES,'UTF-8'));
-				$obConfig->Set('user_inactive_time',(intval($_POST['sc_user_inactive_time'])>150?intval($_POST['sc_user_inactive_time']):150));
 				if(preg_match('#[a-z]{2,2}#',$_POST['admin_lang']))
 				{
 					$obConfig->Set('admin_lang',$_POST['admin_lang']);

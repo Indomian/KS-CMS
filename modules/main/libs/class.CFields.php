@@ -50,7 +50,7 @@ class CFields extends CObject
 
 	static function _showField($params)
 	{
-		if($params['prefix']=='') $params['prefix']='CSC_';
+		if(!array_key_exists('prefix',$params)) $params['prefix']='CSC_';
 		$sParam2 = $params['field']['option_2'];
 		if (file_exists(MODULES_DIR.'/main/fields/'.$params['field']['script'].'/show.php'))
 		{
@@ -64,7 +64,7 @@ class CFields extends CObject
 		}
 	}
 
-	function _configField($params)
+	static function _configField($params)
 	{
 		if($params['prefix']=='') $params['prefix']='CSC_';
 		if (file_exists(MODULES_DIR.'/main/fields/'.$params['field']['script'].'/config.php'))
@@ -218,10 +218,15 @@ class CFields extends CObject
 			if(!array_key_exists($script,$arTypes)) throw new CError("MAIN_NO_FIELD_NAME");
 			if(!preg_match('#^[a-z0-9_]+$#i',$data[$prefix.'title'])|| $data[$prefix.'title']=='') throw new CError("MAIN_ENTER_FIELD_NAME");
 			if($data[$prefix.'module']=='') throw new CError("MAIN_SELECT_MODULE");
-			if($data[$prefix.'type'=='']) throw new CError("MAIN_SELECT_FIELD_ASSIGNMENT");
-			$value=$data['CM_ext_'.$data[$prefix.'title']];
+			if(!isset($data[$prefix.'type']) || ($data[$prefix.'type']=='')) throw new CError("MAIN_SELECT_FIELD_ASSIGNMENT");
+			if(isset($data['CM_ext_'.$data[$prefix.'title']]))
+				$value=$data['CM_ext_'.$data[$prefix.'title']];
+			else
+				$value='';
 			$sType='varchar(255)';
-			$sParam2 = $data['CM_option_2'];
+			$sParam2='';
+			if(isset($data['CM_option_2']))
+				$sParam2 = $data['CM_option_2'];
 			$arField=$this->GetRecordFromPost($prefix,$data);
 			if($data[$prefix.'id']<1) $arField['title']='';
 			if (file_exists(MODULES_DIR.'/main/fields/'.$script.'/savedef.php'))
@@ -246,7 +251,7 @@ class CFields extends CObject
 			if($id)
 			{
 				//Если было старое значение, то надо проверить на переименование поля
-				if(is_array($arOldData)&&(
+				if(isset($arOldData) && is_array($arOldData)&&(
 					($arOldData['title']!=$data[$prefix.'title'])||
 					($arOldData['module']!=$data[$prefix.'module'])||
 					($arOldData['type']!=$data[$prefix.'type'])||
@@ -471,7 +476,7 @@ class CFieldsValues extends CObject
 	/**
 	 * Метод выполняет обработку данных в соответсвие с указанным типом данных
 	 */
-	function ParseValue($arField,$value,$prefix='CSC_')
+	static function ParseValue($arField,$value,$prefix='CSC_')
 	{
 		global $ks_db;
 		if($arField)

@@ -114,6 +114,7 @@ if (!defined("KS_MAIN_INIT"))
 
 	/* Устанавливаем смарти */
 	$KS_MODULES->SetSmarty($smarty);
+	$smarty->assign('VERSION',$KS_MODULES->GetVersionData());
 
 	/* Инициализируем поддержку языков */
 	$obLang=new CLanguageSmarty($smarty,$KS_MODULES->GetConfigVar('main','admin_lang','ru').'/admin.conf');
@@ -173,7 +174,7 @@ else
 	}
 	if (file_exists(MODULES_DIR . "/main/pages/" . $start_adminpage . ".php"))
 	{
-		if($start_adminpage=='options' || $start_adminpage=='eventtemplates' || $start_adminpage=='modules' || $start_adminpage=='geography' || $start_adminpage=='contribution' || $start_adminpage=='users' || $start_adminpage=='usergroups')
+		if($start_adminpage=='options' || $start_adminpage=='eventtemplates' || $start_adminpage=='modules' || $start_adminpage=='geography' || $start_adminpage=='contribution' || $start_adminpage=='users' || $start_adminpage=='usergroups' || $start_adminpage=='password' || $start_adminpage=='fields')
 		{
 			$page=$this->LoadModulePage('main',$start_adminpage);
 		}

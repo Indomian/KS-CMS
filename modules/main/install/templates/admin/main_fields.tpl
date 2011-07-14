@@ -1,6 +1,6 @@
 <ul class="nav">
 	<li><a href="/admin.php"><img src="{#images_path#}/icons_menu/home.gif" alt="icon_home" height="13" width="13" />&nbsp;<span>{#home#}</span></a></li>
-    <li><a href="{get_url}"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;<span>{#title#}</span></a></li>
+	<li><a href="{get_url}"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;<span>{#title#}</span></a></li>
 </ul>
 
 <h1>{#titles#}</h1>
@@ -22,40 +22,40 @@
 {strip}
 <div class="users">
 	<table class="layout">
-    	<tr>
-    		<th width="0%">{#field_id#}</th>
-    		<th width="30%">{#field_title#}</th>
-    		<th width="30%">{#field_description#}</th>
-    		<th width="20%">{#field_module#}</th>
-    		<th width="20%">{#field_script#}</th>
-    		<th></th>
+		<tr>
+			<th width="0%">{#field_id#}</th>
+			<th width="30%">{#field_title#}</th>
+			<th width="30%">{#field_description#}</th>
+			<th width="20%">{#field_module#}</th>
+			<th width="20%">{#field_script#}</th>
+			<th></th>
 		</tr>
 		{if $list}
 		{foreach from=$list item=oItem key=oKey name=fList}
-    	<tr {if $smarty.foreach.fList.iteration is even}class="odd"{/if}>
-    		<td>{$oItem.id}</td>
-    		<td><a href="{get_url ACTION=edit id=$oItem.id}">{$oItem.title}</a></td>
-    		<td>{$oItem.description}</td>
-    		<td>{$oItem.module}</td>
-    		<td>{$oItem.script}</td>
-    		<td>
-    			<div style="width:50px;">
-    				<a href="{get_url ACTION=edit id=$oItem.id}" title="{#edit#}">
-    					<img src="{#images_path#}/icons2/edit.gif" alt="{#edit#}" title="{#edit#}" />
-    				</a>
-    				<a href="{get_url ACTION=delete id=$oItem.id}" onclick="return confirm('{#delete_confirm#}');" title="{#delete#}">
-    					<img src="{#images_path#}/icons2/delete.gif" alt="{#delete#}" title="{#delete#}" />
-    				</a>
-    			</div>
-    		</td>
-    	</tr>
+		<tr {if $smarty.foreach.fList.iteration is even}class="odd"{/if}>
+			<td>{$oItem.id}</td>
+			<td><a href="{get_url ACTION=edit id=$oItem.id}">{$oItem.title}</a></td>
+			<td>{$oItem.description}</td>
+			<td>{$oItem.module_title}::{$oItem.type_title}</td>
+			<td>{$oItem.script}</td>
+			<td>
+				<div style="width:50px;">
+					<a href="{get_url ACTION=edit id=$oItem.id}" title="{#edit#}">
+						<img src="{#images_path#}/icons2/edit.gif" alt="{#edit#}" title="{#edit#}" />
+					</a>
+					<a href="{get_url ACTION=delete id=$oItem.id}" onclick="return confirm('{#delete_confirm#}');" title="{#delete#}">
+						<img src="{#images_path#}/icons2/delete.gif" alt="{#delete#}" title="{#delete#}" />
+					</a>
+				</div>
+			</td>
+		</tr>
 		{/foreach}
 		{else}
 		<tr>
 			<td colspan="6">{#nothing_selected#}</td>
 		</tr>
 		{/if}
-    </table>
+	</table>
 </div>
 {/strip}
 {include file='admin/navigation_pagecounter.tpl' pages=$pages}
