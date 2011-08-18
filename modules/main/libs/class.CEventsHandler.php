@@ -324,9 +324,9 @@
 								{
 									$hFuncExists = true;
 									if(!array_key_exists('arParams',$handler) || !is_array($handler['arParams']))
-										$hResult = call_user_func($handler['hFunc'], &$hParams);
+										$hResult = call_user_func($handler['hFunc'], $hParams);
 									elseif(array_key_exists('arParams',$handler) && is_array($handler['arParams']))
-										$hResult = call_user_func($handler['hFunc'], &$hParams,$handler['arParams']);
+										$hResult = call_user_func($handler['hFunc'], $hParams, $handler['arParams']);
 									else
 										$hResult = call_user_func($handler['hFunc']);
 								}

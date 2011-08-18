@@ -181,4 +181,4 @@ if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/main/install/js/'))
 		$KS_FS->CopyFile(MODULES_DIR.'/main/install/js/'.$sFile,ROOT_DIR.JS_DIR.'/'.$sFile,'');
 	}
 }
-$this->AddNotify(SYSTEM_MODULE_INSTALL_OK,'main',NOTIFY_MESSAGE);
+$this->AddNotify('SYSTEM_MODULE_INSTALL_OK','main',NOTIFY_MESSAGE);
