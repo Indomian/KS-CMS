@@ -195,7 +195,7 @@ function smarty_function_CatAnnounce($params, &$subsmarty)
 			if ($params["use_page_navigation"] == "Y")
 			{
 				/* Подключаем библиотеку для работы с постраничной навигацией */
-				include_once MODULES_DIR . '/interfaces/libs/CInterface.php';
+				include_once MODULES_DIR . '/interfaces/libs/class.CInterface.php';
 
 				/* Определяем общее количество выбираемых элементов */
 				$elements_count = $obElement->Count($arElFilter);

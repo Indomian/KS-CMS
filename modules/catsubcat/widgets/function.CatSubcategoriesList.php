@@ -34,7 +34,7 @@ function smarty_function_CatSubcategoriesList($params, &$subsmarty)
 
 		/* Подключаем необходимые библиотеки */
 		$module_directory = MODULES_DIR . "/catsubcat/";
-		include_once($module_directory . "libs/class.CCategoryEdit.php");
+		//include_once($module_directory . "libs/class.CCategoryEdit.php");
 
 		/* Создаём объект для работы с разделами */
 		$obCategory = new CCategory();
