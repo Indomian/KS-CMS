@@ -108,4 +108,3 @@ else
 		'title'=>$arDescription['description']
 		);
 }
-

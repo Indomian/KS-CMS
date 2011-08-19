@@ -2,8 +2,8 @@
 {strip}
 <ul class="nav" id="navChain">
 	<li><a href="/admin.php"><img src="{#images_path#}/icons_menu/home.gif" alt="icon_home" height="13" width="13" />&nbsp;<span>{#home#}</span></a></li>
-    <li><a href="{get_url _CLEAR="action id"}"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;<span>{#title#}</span></a></li>
-    {if $data.id>0}
+	<li><a href="{get_url _CLEAR="action id"}"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;<span>{#title#}</span></a></li>
+	{if $data.id>0}
 		<li><a href="{get_url}"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;
 			<span>{#title_edit#} {$data.text_ident}</span>
 		</a></li>
@@ -41,16 +41,16 @@
 		{/strip}{/ksTab}
 	{/ksTabs}
 	<div class="form_buttons">
-    	<div>
-    		<input type="submit" value="{#save#}" class="save" name="save"/>
-    	</div>
-    	<div>
-    		<input type="submit" value="{#apply#}" name="update"/>
-    	</div>
-    	<div>
-    		<a href="{get_url _CLEAR="action id"}" class="cancel_button">{#cancel#}</a>
-    	</div>
-   	</div>
+		<div>
+			<input type="submit" value="{#save#}" class="save" name="save"/>
+		</div>
+		<div>
+			<input type="submit" value="{#apply#}" name="update"/>
+		</div>
+		<div>
+			<a href="{get_url _CLEAR="action id"}" class="cancel_button">{#cancel#}</a>
+		</div>
+	</div>
 </form>
 
 {strip}

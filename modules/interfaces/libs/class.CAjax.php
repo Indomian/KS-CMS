@@ -57,7 +57,7 @@ class CAjax extends CAjaxCommon
 	{
 		parent::__construct();
 		$this->Load();
-		if(array_key_exists($widget,CAjax::$arHashes))
+		if(isset(CAjax::$arHashes) && array_key_exists($widget,CAjax::$arHashes))
 		{
 			CAjax::$arHashes[$widget]++;
 			$index=CAjax::$arHashes[$widget];

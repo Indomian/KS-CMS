@@ -52,9 +52,9 @@ if(array_key_exists('go',$_POST))
 	$arAccess['groups']=$USERGROUP->GetList(array('title'=>'asc'));
 	$obAccess=new CModulesAccess();
 	//Выполняем сохранение прав доступа
-   	if(is_array($arAccess['groups']))
-   	{
-	   	foreach($arAccess['groups'] as $key=>$value)
+	if(is_array($arAccess['groups']))
+	{
+		foreach($arAccess['groups'] as $key=>$value)
 		{
 			if($value['id']=='1')
 			{
@@ -65,7 +65,7 @@ if(array_key_exists('go',$_POST))
 				$obAccess->Set($value['id'],$module_name,9);
 			}
 		}
-   	}
+	}
 
 	$arModule=array(
 		'name'=>$arDescription['title'],
@@ -94,5 +94,3 @@ else
 		'title'=>$arDescription['description']
 		);
 }
-
-

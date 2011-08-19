@@ -195,6 +195,3 @@ class ChintsAIindex extends CModuleAdmin
 		return $page;
 	}
 }
-
-
-

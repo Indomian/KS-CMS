@@ -12,4 +12,3 @@ $arLevels=array(
 	9=>$this->GetText('access_follow_redirect'),
 	10=>$this->GetText('access_denied'),
 );
-

@@ -199,18 +199,18 @@ class CModuleHookUp extends CModuleManagment
 
 	/**
 	 * This implements the 'singleton' design pattern
-   	 *
-     * @return object CModuleHookUp The one and only instance
-     */
-  	static function get_instance()
-  	{
-	    if (!self::$instance)
-	    {
-    		self::$instance = new CModuleHookUp();
-      		self::$instance->init();  // init AFTER object was linked with self::$instance
-    	}
-	    return self::$instance;
-  	}
+	 *
+	 * @return object CModuleHookUp The one and only instance
+	 */
+	static function get_instance()
+	{
+		if (!self::$instance)
+		{
+			self::$instance = new CModuleHookUp();
+			self::$instance->init();  // init AFTER object was linked with self::$instance
+		}
+		return self::$instance;
+	}
 
 	/**
 	 * Метод возвращает массив времени выполнения виджетов
@@ -261,8 +261,8 @@ class CModuleHookUp extends CModuleManagment
 		if($arModule['active']==1)
 		{
 			/* Подключение конфигурационного файла */
-   			$module_config_file = MODULES_DIR . "/" . $arModule['directory'] . "/config.php";
-   			if (file_exists($module_config_file))
+			$module_config_file = MODULES_DIR . "/" . $arModule['directory'] . "/config.php";
+			if (file_exists($module_config_file))
 			{
 				/* Чтение конфигурационных массивов */
 				include($module_config_file);
@@ -279,15 +279,15 @@ class CModuleHookUp extends CModuleManagment
 				$arModule['db_config']=array();
 			}
 			if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/init.inc.php'))
-   			{
-   				include_once MODULES_DIR.'/'.$arModule['directory'].'/init.inc.php';
-   			}
-    			if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/main.init.php'))
-   			{
-   				include_once MODULES_DIR.'/'.$arModule['directory'].'/main.init.php';
-   			}
-   			$smarty->plugins_dir[] = MODULES_DIR.'/'.$module_name.'/widgets/';
-   			$this->arModules[$module_name]=$arModule;
+			{
+				include_once MODULES_DIR.'/'.$arModule['directory'].'/init.inc.php';
+			}
+				if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/main.init.php'))
+			{
+				include_once MODULES_DIR.'/'.$arModule['directory'].'/main.init.php';
+			}
+			$smarty->plugins_dir[] = MODULES_DIR.'/'.$module_name.'/widgets/';
+			$this->arModules[$module_name]=$arModule;
 			return $this->arModules;
 		}
 		return false;
@@ -313,9 +313,9 @@ class CModuleHookUp extends CModuleManagment
 			$this->InitModule($arModule);
 		}
 		if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/main.inc.php') )
-   		{
-   			$module_main_file = MODULES_DIR . "/" . $arModule['directory'] . "/main.inc.php";
-   			if(array_key_exists('fromsearch',$_GET)&&($_GET['fromsearch']!=''))
+		{
+			$module_main_file = MODULES_DIR . "/" . $arModule['directory'] . "/main.inc.php";
+			if(array_key_exists('fromsearch',$_GET)&&($_GET['fromsearch']!=''))
 			{
 				$module_search_file = MODULES_DIR . "/" . $arModule['directory'] . "/search.inc.php";
 				if (file_exists($module_search_file))
@@ -346,14 +346,14 @@ class CModuleHookUp extends CModuleManagment
 				{
 					$module_parameters=array();
 				}
-	   			include ($module_main_file);
+				include ($module_main_file);
 			}
-	   	}
-	   	else
-	   	{
-	   		/* Невозможно инициализировать модуль */
-	   		throw new CError("MAIN_MODULE_NO_USER_PART", 404);
-	   	}
+		}
+		else
+		{
+			/* Невозможно инициализировать модуль */
+			throw new CError("MAIN_MODULE_NO_USER_PART", 404);
+		}
 	}
 
 	/**
@@ -371,31 +371,31 @@ class CModuleHookUp extends CModuleManagment
 			'include_global_template'=>1
 		);
 		if($arModule=$this->GetRecord(array('URL_ident'=>$url_ident,'active'=>1)))
-  		{
-  			if($arModule['include_global_template'] == 0)
-  				$output['include_global_template'] = 0;
-  			try
-  			{
-   				$this->IncludeModule($arModule,$output);
-   				$this->obSmarty->assign('SITE',$this->GetConfigArray('main'));
-  			}
-  			catch (CModuleError $e)
-  			{
-   				if( $url_ident != 'default' )
-   				{
-   					/* пробуем обработать дефолтовым */
-	   				$this->hook_up();
-	   			}
-	   			else
-	   			{
-	   				/* это и есть дефолтовый, нужно отдать ошибку, что страница не найдена */
-	   				throw new CError("SYSTEM_PAGE_NOT_FOUND",404);
-	   			}
-   			}
-   			catch (CError $e)
-   			{
-   				throw $e;
-   			}
+		{
+			if($arModule['include_global_template'] == 0)
+				$output['include_global_template'] = 0;
+			try
+			{
+				$this->IncludeModule($arModule,$output);
+				$this->obSmarty->assign('SITE',$this->GetConfigArray('main'));
+			}
+			catch (CModuleError $e)
+			{
+				if( $url_ident != 'default' )
+				{
+					/* пробуем обработать дефолтовым */
+					$this->hook_up();
+				}
+				else
+				{
+					/* это и есть дефолтовый, нужно отдать ошибку, что страница не найдена */
+					throw new CError("SYSTEM_PAGE_NOT_FOUND",404);
+				}
+			}
+			catch (CError $e)
+			{
+				throw $e;
+			}
 		}
 		elseif($url_ident != 'default')
 		{
@@ -405,7 +405,7 @@ class CModuleHookUp extends CModuleManagment
 		else
 		{
 			/* если нет дефолтового модуля, найти подходящий не удалось, отдаем 404 */
-        	throw new CError("SYSTEM_PAGE_NOT_FOUND",404);
+			throw new CError("SYSTEM_PAGE_NOT_FOUND",404);
 		}
 		return $output;
 	}
@@ -507,7 +507,7 @@ class CModuleHookUp extends CModuleManagment
 			if(array_pop($this->arWidgetStack)!=$module.'_'.$action) throw new CError('SYSTEM_WIDGET_RETURN_ERROR',0,$module.'_'.$action);
 			throw $e;
 		}
-   		if(array_pop($this->arWidgetStack)!=$module.'_'.$action) throw new CError('SYSTEM_WIDGET_RETURN_ERROR',0,$module.'_'.$action);
+		if(array_pop($this->arWidgetStack)!=$module.'_'.$action) throw new CError('SYSTEM_WIDGET_RETURN_ERROR',0,$module.'_'.$action);
 		return $sResult;
 	}
 

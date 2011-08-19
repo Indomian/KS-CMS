@@ -185,4 +185,3 @@ class CHTMLParser extends CTextParser
 
 	}
 }
-
