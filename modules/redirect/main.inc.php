@@ -46,4 +46,3 @@ else
 {
 	throw new CHttpError('SYSTEM_FILE_NOT_FOUND',404);
 }
-

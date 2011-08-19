@@ -93,6 +93,3 @@ class CredirectAIoptions extends CModuleAdmin
 		return '_options';
 	}
 }
-
-
-

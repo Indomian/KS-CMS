@@ -1,12 +1,12 @@
 <ul class="nav">
 	<li><a href="/admin.php"><img src="{#images_path#}/icons_menu/home.gif" alt="icon_home" height="13" width="13" />&nbsp;<span>{#home#}</span></a></li>
 	<li><a href="/admin.php?module=banners"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;<span>{#title#}</span></a></li>
-    <li><a href="{get_url}"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;<span>{#title_options#}</span></a></li>
+	<li><a href="{get_url}"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;<span>{#title_options#}</span></a></li>
 </ul>
 
 <h1>{#title_options#}</h1>
 <form action="{get_url _CLEAR="ACTION"}" method="POST" enctype="multipart/form-data">
-    <input type="hidden" name="action" value="save">
+	<input type="hidden" name="action" value="save">
 	{ksTabs NAME=catsubcat_options head_class=tabs2 title_class=bold}
 		{ksTab NAME=$smarty.config.tabs_common selected=1}
 		<div class="form">
@@ -34,10 +34,10 @@
 			</table>
 		</div>
 		{/ksTab}
-    	{ksTab NAME=$smarty.config.tabs_access}{strip}
-    	<div class="form">
+		{ksTab NAME=$smarty.config.tabs_access}{strip}
+		<div class="form">
 			<table class="layout">
-    			<tr>
+				<tr>
 					<th width="30%">{#header_group#}</th>
 					<th width="70%">{#header_level#}</th>
 				</tr>
@@ -67,13 +67,13 @@
 				{/foreach}
 			</table>
 		</div>
-    	{/strip}{/ksTab}
+		{/strip}{/ksTab}
 	{/ksTabs}
 	<div class="form_buttons">
-    	<div>
-    		<input type="submit" value="{#save#}" class="save"/>
-    	</div>
-   	</div>
+		<div>
+			<input type="submit" value="{#save#}" class="save"/>
+		</div>
+	</div>
 </form>
 {strip}
 <dl class="def" style="background:#FFF6C4 url('{#images_path#}/big_icons/settings.gif') left 50% no-repeat;{if $smarty.cookies.showHelpBar==1}display:none;{/if}">

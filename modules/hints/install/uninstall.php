@@ -41,4 +41,3 @@ else
 	);
 	$showButtons=1;
 }
-

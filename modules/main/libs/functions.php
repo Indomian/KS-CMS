@@ -18,24 +18,24 @@ if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
  */
 function win2utf($s)    {
    for($i=0, $m=strlen($s); $i<$m; $i++)    {
-       $c=ord($s[$i]);
-       if ($c<=127) {$t.=chr($c); continue; }
-       if ($c>=192 && $c<=207)    {$t.=chr(208).chr($c-48); continue; }
-       if ($c>=208 && $c<=239) {$t.=chr(208).chr($c-48); continue; }
-       if ($c>=240 && $c<=255) {$t.=chr(209).chr($c-112); continue; }
-       if ($c==184) { $t.=chr(209).chr(209); continue; };
-            if ($c==168) { $t.=chr(208).chr(129);  continue; };
-            if ($c==184) { $t.=chr(209).chr(145); continue; }; #ё
-            if ($c==168) { $t.=chr(208).chr(129); continue; }; #Ё
-            if ($c==179) { $t.=chr(209).chr(150); continue; }; #і
-            if ($c==178) { $t.=chr(208).chr(134); continue; }; #І
-            if ($c==191) { $t.=chr(209).chr(151); continue; }; #ї
-            if ($c==175) { $t.=chr(208).chr(135); continue; }; #ї
-            if ($c==186) { $t.=chr(209).chr(148); continue; }; #є
-            if ($c==170) { $t.=chr(208).chr(132); continue; }; #Є
-            if ($c==180) { $t.=chr(210).chr(145); continue; }; #ґ
-            if ($c==165) { $t.=chr(210).chr(144); continue; }; #Ґ
-            if ($c==184) { $t.=chr(209).chr(145); continue; }; #Ґ
+	   $c=ord($s[$i]);
+	   if ($c<=127) {$t.=chr($c); continue; }
+	   if ($c>=192 && $c<=207)    {$t.=chr(208).chr($c-48); continue; }
+	   if ($c>=208 && $c<=239) {$t.=chr(208).chr($c-48); continue; }
+	   if ($c>=240 && $c<=255) {$t.=chr(209).chr($c-112); continue; }
+	   if ($c==184) { $t.=chr(209).chr(209); continue; };
+			if ($c==168) { $t.=chr(208).chr(129);  continue; };
+			if ($c==184) { $t.=chr(209).chr(145); continue; }; #ё
+			if ($c==168) { $t.=chr(208).chr(129); continue; }; #Ё
+			if ($c==179) { $t.=chr(209).chr(150); continue; }; #і
+			if ($c==178) { $t.=chr(208).chr(134); continue; }; #І
+			if ($c==191) { $t.=chr(209).chr(151); continue; }; #ї
+			if ($c==175) { $t.=chr(208).chr(135); continue; }; #ї
+			if ($c==186) { $t.=chr(209).chr(148); continue; }; #є
+			if ($c==170) { $t.=chr(208).chr(132); continue; }; #Є
+			if ($c==180) { $t.=chr(210).chr(145); continue; }; #ґ
+			if ($c==165) { $t.=chr(210).chr(144); continue; }; #Ґ
+			if ($c==184) { $t.=chr(209).chr(145); continue; }; #Ґ
    }
    return $t;
 }
@@ -45,18 +45,18 @@ function win2utf($s)    {
  * http://ru2.php.net/manual/en/function.base-convert.php#52450
  */
 function dec2any( $num, $base=62, $index=false ) {
-    if (! $base ) {
-        $base = strlen( $index );
-    } else if (! $index ) {
-        $index = substr( "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" ,0 ,$base );
-    }
-    $out = "";
-    for ( $t = floor( log10( $num ) / log10( $base ) ); $t >= 0; $t-- ) {
-        $a = floor( $num / pow( $base, $t ) );
-        $out = $out . substr( $index, $a, 1 );
-        $num = $num - ( $a * pow( $base, $t ) );
-    }
-    return $out;
+	if (! $base ) {
+		$base = strlen( $index );
+	} else if (! $index ) {
+		$index = substr( "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" ,0 ,$base );
+	}
+	$out = "";
+	for ( $t = floor( log10( $num ) / log10( $base ) ); $t >= 0; $t-- ) {
+		$a = floor( $num / pow( $base, $t ) );
+		$out = $out . substr( $index, $a, 1 );
+		$num = $num - ( $a * pow( $base, $t ) );
+	}
+	return $out;
 }
 
 function String2Time($str)
@@ -87,23 +87,23 @@ function hex2bin($num)
 		'f'=>'1111',
 	);
 	$len = strlen( $num ) - 1;
-    for ( $t = 0; $t <= $len; $t++ )
-        $out = $out.$arBins[substr($num,$t,1 )];
-   	return $out;
+	for ( $t = 0; $t <= $len; $t++ )
+		$out = $out.$arBins[substr($num,$t,1 )];
+	return $out;
 }
 
 function any2dec( $num, $base=62, $index=false ) {
-    if (! $base ) {
-        $base = strlen( $index );
-    } else if (! $index ) {
-        $index = substr( "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 0, $base );
-    }
-    $out = 0;
-    $len = strlen( $num ) - 1;
-    for ( $t = 0; $t <= $len; $t++ ) {
-        $out = $out + strpos( $index, substr( $num, $t, 1 ) ) * pow( $base, $len - $t );
-    }
-    return $out;
+	if (! $base ) {
+		$base = strlen( $index );
+	} else if (! $index ) {
+		$index = substr( "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 0, $base );
+	}
+	$out = 0;
+	$len = strlen( $num ) - 1;
+	for ( $t = 0; $t <= $len; $t++ ) {
+		$out = $out + strpos( $index, substr( $num, $t, 1 ) ) * pow( $base, $len - $t );
+	}
+	return $out;
 }
 
 function pre_print($variable)
@@ -140,19 +140,19 @@ function hsv2rgb($h,$s=false,$v=false)
 		$h=$h[0];
 	}
 	$hi = floor($h/60)%6;
-    $f = ($h/60) - floor($h/60);
-    $p = $v * (1 - $s);
-    $q = $v * (1 - ($f*$s));
-    $t = $v * (1 - ((1 - $f) * $s));
-    $arResult=array(
-    	array('r'=>$v, 'g'=>$t, 'b'=>$p),
-    	array('r'=>$q, 'g'=>$v, 'b'=>$p),
-    	array('r'=>$p, 'g'=>$v, 'b'=>$t),
-    	array('r'=>$p, 'g'=>$q, 'b'=>$v),
-    	array('r'=>$t, 'g'=>$p, 'b'=>$v),
-    	array('r'=>$v, 'g'=>$p, 'b'=>$q)
-    );
-    return $arResult[$hi];
+	$f = ($h/60) - floor($h/60);
+	$p = $v * (1 - $s);
+	$q = $v * (1 - ($f*$s));
+	$t = $v * (1 - ((1 - $f) * $s));
+	$arResult=array(
+		array('r'=>$v, 'g'=>$t, 'b'=>$p),
+		array('r'=>$q, 'g'=>$v, 'b'=>$p),
+		array('r'=>$p, 'g'=>$v, 'b'=>$t),
+		array('r'=>$p, 'g'=>$q, 'b'=>$v),
+		array('r'=>$t, 'g'=>$p, 'b'=>$v),
+		array('r'=>$v, 'g'=>$p, 'b'=>$q)
+	);
+	return $arResult[$hi];
 }
 
 /**
@@ -204,29 +204,29 @@ function rgb2hsv($r,$g=false,$b=false)
 		$r=$r[0];
 	}
 	$maxc = max($r, $g, $b);
-    $minc = min($r, $g, $b);
-    $colorMap =array(
-    	$r=>'r',
-    	$g=>'g',
-    	$b=>'b',
-    );
+	$minc = min($r, $g, $b);
+	$colorMap =array(
+		$r=>'r',
+		$g=>'g',
+		$b=>'b',
+	);
 
-    if((($maxc==$minc)&&$maxc==$r)||
-    	(($maxc==$minc)&&$maxc==$g)||
-    	(($maxc==$minc)&&$maxc==$b))
-        $h = 0;
-    elseif($maxc == $r)
-        $h = 60 * (($g - $b) / ($maxc - $minc)) % 360;
-    elseif($maxc == $g)
-        $h = 60 * (($b - $r) / ($maxc - $minc)) + 120;
-    elseif($maxc == $b)
-        $h = 60 * (($r - $g) / ($maxc - $minc)) + 240;
-    $v = $maxc;
-    if ($maxc == 0)
-        $s = 0;
-    else
-        $s = 1 - ($minc / $maxc);
-    return array($h, $s, $v);
+	if((($maxc==$minc)&&$maxc==$r)||
+		(($maxc==$minc)&&$maxc==$g)||
+		(($maxc==$minc)&&$maxc==$b))
+		$h = 0;
+	elseif($maxc == $r)
+		$h = 60 * (($g - $b) / ($maxc - $minc)) % 360;
+	elseif($maxc == $g)
+		$h = 60 * (($b - $r) / ($maxc - $minc)) + 120;
+	elseif($maxc == $b)
+		$h = 60 * (($r - $g) / ($maxc - $minc)) + 240;
+	$v = $maxc;
+	if ($maxc == 0)
+		$s = 0;
+	else
+		$s = 1 - ($minc / $maxc);
+	return array($h, $s, $v);
 }
 
 /**
@@ -326,12 +326,12 @@ function SaveToFile($filename,$varname,$data)
 	foreach ($data as $key => $value)
 	{
 		$var_number++;
-  		$result .= OutputVar($key, $value, 1);
-  		if ($var_number < count($data))
+		$result .= OutputVar($key, $value, 1);
+		if ($var_number < count($data))
 			$result .= ",";
 		$result .= "\n";
-  	}
-  	$result .= ");\n";
+	}
+	$result .= ");\n";
 	$result .= "\n?>";
 	$path=dirname($filename);
 	if(!file_exists($path))
@@ -352,19 +352,19 @@ function SaveToFile($filename,$varname,$data)
 function GetMaxMemory()
 {
 	$val=ini_get('memory_limit');
-    $val = trim($val);
-    $last = strtolower($val[strlen($val)-1]);
-    switch($last) {
-        // The 'G' modifier is available since PHP 5.1.0
-        case 'g':
-            $val *= 1024;
-        case 'm':
-            $val *= 1024;
-        case 'k':
-            $val *= 1024;
-    }
+	$val = trim($val);
+	$last = strtolower($val[strlen($val)-1]);
+	switch($last) {
+		// The 'G' modifier is available since PHP 5.1.0
+		case 'g':
+			$val *= 1024;
+		case 'm':
+			$val *= 1024;
+		case 'k':
+			$val *= 1024;
+	}
 
-    return $val;
+	return $val;
 }
 
 /**
