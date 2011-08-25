@@ -1,7 +1,7 @@
 {strip}
 <ul class="nav" id="navChain">
 	<li><a href="/admin.php"><img src="{#images_path#}/icons_menu/home.gif" alt="icon_home" height="13" width="13" />&nbsp;<span>{#home#}</span></a></li>
-	<li><a href="{get_url _CLEAR="action id mode"}"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;<span>{#title#}</span></a></li>
+    <li><a href="{get_url _CLEAR="action id mode"}"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;<span>{#title#}</span></a></li>
 </ul>
 <h1>{#title#}</h1>
 
@@ -75,3 +75,5 @@
 </dl>
 <div class="content_arrow_{if $smarty.cookies.showHelpBar==1}down{else}up{/if}" onclick="ToggleHelpBar(this)" style="cursor:pointer;">&nbsp;</div>
 {/strip}
+
+

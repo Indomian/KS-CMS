@@ -41,7 +41,7 @@ class CMessage extends CObject
 		global $USER,$smarty;
 		try
 		{
-			
+
 			$ob=new CEventTemplates();
 			if($res=$ob->GetTemplate($tpl))
 			{
@@ -52,7 +52,7 @@ class CMessage extends CObject
 				{
 					$message=strip_tags($message);
 				}
-				
+
 				$data=array(
 					'address'=>$res['address'],
 					'title'=>($title!='')?strip_tags($title):strip_tags($res['title']),
@@ -65,7 +65,7 @@ class CMessage extends CObject
 					'email_from'=>$email_from,
 					'name_to'=>$name_to
 				);
-				
+
 				if(!IsEmail($res['address']))
 				{
 					$data['address']=trim($to);
@@ -79,7 +79,7 @@ class CMessage extends CObject
 				{
 					$data['author']=$USER->ID();
 				}
-				
+
 				return parent::Save('',$data);
 			}
 		}
@@ -126,7 +126,7 @@ class CEmailMessage extends CMessage
 	 */
 	function Run($data)
 	{
-		
+
 		global $KS_MODULES;
 		$data_charset='utf-8';
 		$format=$data['format'];
@@ -135,7 +135,7 @@ class CEmailMessage extends CMessage
 		$name_to=$data['name_to'];
 		$email_from=$data['email_from'];
 		$to=$this->mime_header_encode($name_to, $data_charset, $encoding).' <'.$data['address'].'>';
-		if($data_charset != $encoding) 
+		if($data_charset != $encoding)
 		{
     		$message = iconv($data_charset, $encoding, $data['content']);
   		}
@@ -194,18 +194,18 @@ class CEmailMessage extends CMessage
 		return true;
 	}
 	/**
-	 * 
+	 *
 	 * @param  $str - исходные данные
 	 * @param  $data_charset - кодировка исходных данных
 	 * @param  $send_charset - кодировка на выходе
 	 * @return перекодированные данные
 	 */
 	function mime_header_encode($str, $data_charset, $send_charset) {
-	  if($data_charset != $send_charset) 
+	  if($data_charset != $send_charset)
 	  {
 	    $str = iconv($data_charset, $send_charset, $str);
 	  }
 	  return '=?'.$send_charset.'?B?'.base64_encode($str).'?=';
 	}
 }
-?>
+

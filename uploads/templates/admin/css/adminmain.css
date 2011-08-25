@@ -367,6 +367,18 @@ a:hover {
 		left -54px no-repeat;
 }
 
+.manage_users
+{
+	background: url('/uploads/templates/admin/images/menu/14.gif') left 0
+		no-repeat;
+}
+
+.manage_users:hover
+{
+	background: #FF9205 url('/uploads/templates/admin/images/menu/14.gif')
+		left -54px no-repeat;
+}
+
 /*?=top_menu
 ------------------- */
 .top_menu {
@@ -2147,4 +2159,43 @@ td.icons_list label {
 	text-align: center;
 	padding: 5px 10px;
 	float: left;
+}
+
+table.calendar
+{
+	border:1px solid #d2d2d2;
+	border-collapse:collapse;
+}
+
+table.calendar td
+{
+	width:40px;
+	height:40px;
+	padding:0;
+	border:1px solid white;
+	vertical-align:middle;
+	text-align:center;
+}
+
+table.calendar th
+{
+	font-weight:bolder;
+	border:1px solid white;
+	border-spacing:0;
+	text-align:center;
+}
+
+table.calendar td.all
+{
+	background-color:#F1F2A8;
+}
+
+table.calendar td.checked
+{
+	background-color:#A8F2B6;
+}
+
+table.calendar td.unchecked
+{
+	background-color:#F2A8A8;
 }

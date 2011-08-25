@@ -82,7 +82,7 @@ class CImageUploader extends CFileUploader
 			$bKeepRatioWb=false;
 		}
 		$obImage->Resize(intval($width),intval($height),$bKeepRatio,$bKeepRatioWb,false);
-		if(!$obImage->Save($sFilepath))
+		if(!$obImage->SavePNG($sFilepath))
 			throw new CError('SYSTEM_FILE_NOT_FOUND_OR_NOT_WRITABLE',$sFilepath);
 		chmod($sFilepath,0655);
 		return true;

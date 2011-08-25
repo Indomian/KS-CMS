@@ -172,7 +172,7 @@ class CUrlParser
 		$arParams=$this->ParseParams($params);
 		if(count($arParams)>0)
 		{
-			$path="?".join("&",$arParams);
+			$path="?".join("&amp;",$arParams);
 		}
         return $this->path.$path;
 	}
@@ -243,7 +243,7 @@ class CUrlParser
 			{
 				$arParams=$this->ParseParams(array('_CLEAR'=>'CU_ACTION'),$arUrl['params']);
 			}
-			$path=$arUrl['url'].(count($arParams)>0?'?'.join('&',$arParams):'');
+			$path=$arUrl['url'].(count($arParams)>0?'?'.join('&amp;',$arParams):'');
 			unset($_SESSION['backurl']);
 			if($path!='')
 			{
@@ -284,7 +284,7 @@ class CUrlParser
 		$newpath=$this->_smarty_get_url($params);
 		$newpath=explode('?',$newpath);
 		if($_GET['path']!='') $newpath[0]=$_GET['path'];
-		$path='/index.php?path='.$newpath[0].'&'.$newpath[1];
+		$path='/index.php?path='.$newpath[0].'&amp;'.$newpath[1];
 		return $path;
 	}
 
@@ -370,4 +370,3 @@ class CUrlParser
 	}
 }
 
-?>

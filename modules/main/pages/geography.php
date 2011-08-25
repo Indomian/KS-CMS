@@ -40,21 +40,11 @@ class CmainAIgeography extends CModuleAdmin
 	 */
 	function DoImportCountriesForm()
 	{
+		global $ks_db;
 		$bError=0;
 		if($_POST['mode']=='self')
 		{
-			$sFilePath=MODULES_DIR.'/main/install/countries.txt';
-		}
-		elseif($_POST['mode']=='file')
-		{
-			if($_FILES['values']['size']>0 && file_exists($_FILES['values']['tmp_name']))
-			{
-				$sFilePath=$_FILES['values']['tmp_name'];
-			}
-			else
-			{
-				$bError=$this->obModules->AddNotify('MAIN_GEOGRAPHY_IMPORT_FILE_REQUIRED');
-			}
+			$sFilePath=MODULES_DIR.'/main/install/countries2.sql';
 		}
 		else
 		{
@@ -66,22 +56,14 @@ class CmainAIgeography extends CModuleAdmin
 		}
 		if($bError==0)
 		{
-			if($_POST['clear']==1)
-			{
-				$this->obAPI->Country()->DeleteItems();
-				$this->obAPI->City()->DeleteItems();
-			}
 			$sFile=file_get_contents($sFilePath);
-			$arCountries=explode("\n",$sFile);
-			if(is_array($arCountries) && count($arCountries)>0)
+			$arQueries=explode("\n",$sFile);
+			if(is_array($arQueries) && count($arQueries)>0)
 			{
-				$obCountry=$this->obAPI->Country();
-				foreach($arCountries as $sCountry)
+				foreach($arQueries as $sQuery)
 				{
-					$arFields=array(
-						'title'=>trim($sCountry)
-					);
-					$obCountry->Save('',$arFields);
+					if($sQuery!='')
+						$ks_db->query($sQuery);
 				}
 				$this->obModules->AddNotify('MAIN_GEOGRAPHY_IMPORT_OK','',NOTIFY_MESSAGE);
 				CUrlParser::get_instance()->Redirect('/admin.php?module=main&modpage=geography');

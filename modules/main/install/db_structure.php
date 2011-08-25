@@ -135,6 +135,72 @@ $arStructure=array(
 			'Default'=>'',
 			'Extra'=>''
 		),
+		'token'=>array(
+			'Field'=>'token',
+			'Type'=>'char(32)',
+			'Null'=>'NO',
+			'Key'=>'',
+			'Default'=>'',
+			'Extra'=>'',
+		),
+		'last_ip'=>array(
+			'Field'=>'last_ip',
+			'Type'=>'char(15)',
+			'Null'=>'NO',
+			'Key'=>'',
+			'Default'=>'',
+			'Extra'=>'',
+		),
+	),
+	'users_log'=>array(
+		'id'=>array(
+			'Field'	=>	'id',
+			'Type'	=> 	'int(11) unsigned',
+			'Null'	=>	'NO',
+			'Key'	=>	'PRI',
+			'Default'=>	'0',
+			'Extra'	=>	'auto_increment',
+		),
+		'user_id'=>array(
+			'Field'	=>	'user_id',
+			'Type'	=> 	'int(11) unsigned',
+			'Null'	=>	'NO',
+			'Key'	=>	'',
+			'Default'=>	'0',
+			'Extra'	=>	'',
+		),
+		'content'=>array(
+			'Field'=>'content',
+			'Type'=>'text',
+			'Null'=>'NO',
+			'Key'=>'',
+			'Default'=>'',
+			'Extra'=>''
+		),
+		'ip'=>array(
+			'Field'=>'ip',
+			'Type'=>'char(255)',
+			'Null'=>'NO',
+			'Key'=>'',
+			'Default'=>'',
+			'Extra'=>'',
+		),
+		'date'=>array(
+			'Field'	=>	'date',
+			'Type'	=> 	'int(11) unsigned',
+			'Null'	=>	'NO',
+			'Key'	=>	'',
+			'Default'=>	'0',
+			'Extra'	=>	'',
+		),
+		'request'=>array(
+			'Field'=>'request',
+			'Type'=>'text',
+			'Null'=>'NO',
+			'Key'=>'',
+			'Default'=>'',
+			'Extra'=>''
+		),
 	),
 	'main_modules'=>array(
 		'id' => array(

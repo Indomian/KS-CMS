@@ -13,3 +13,4 @@ $(document).bind("InitCalendar",function(){
 	});
 });
 $(document).ready(function(){$(document).trigger("InitCalendar");});
+

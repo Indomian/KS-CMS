@@ -22,13 +22,13 @@
 					<td>{Title field="mode"}</td>
 					<td>
 						<label><input type="radio" name="mode" value="self"> {#import_self#}</label><br/>
-						<label><input type="radio" name="mode" value="file"> {#import_file#}</label>
+						{*<label><input type="radio" name="mode" value="file"> {#import_file#}</label>*}
 					</td>
 				</tr>
-				<tr>
+				{*<tr>
 					<td>{Title field="file"}</td>
 					<td><input type="file" name="values"></td>
-				</tr>
+				</tr>*}
 			</table>
 		</div>
 		{/strip}{/ksTab}

@@ -1,5 +1,4 @@
 {$content}
-{$content}
 {if $pause>0 && $use_pause>0}
 <div class="timer">{$pause}</div>
 {literal}<script type="text/javascript">

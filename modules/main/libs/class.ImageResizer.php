@@ -139,7 +139,7 @@ class ImageResizer extends CBaseObject
 		{
 			throw new CError(SYSTEM_NO_MEMORY,1,($this->width_orig*$this->height_orig*4).'/'.(GetMaxMemory()-1024*1024));
 		}
-		$this->quality = 93;
+		$this->quality = 98;
 	}
 
 	/**
@@ -328,157 +328,171 @@ class ImageResizer extends CBaseObject
 		{
 			throw new CError(SYSTEM_NO_MEMORY,1,(($this->width_orig*$this->height_orig*4)+$image_h*$image_w*4).'/'.(GetMaxMemory()-1024*1024));
 		}
-		switch ($this->image_type)
-	    {
-	        case 2: $im = imagecreatefromjpeg($this->myfile);  break;
-	        case 3: $im = imagecreatefrompng($this->myfile); break;
-	        default:  throw new CError('PHOTOGALLERY_WRONG_FILE', E_USER_WARNING);  break;
-	    }
-
-	    if($image_ratio == true)
-	    {
-			if($image_ratio_wb==false)
+		$im=false;
+		if($image_w==$this->width_orig && $image_h==$this->height_orig)
+		{
+			//Если размеры совпадают просто сделаем копию, не хорошо, но будет работать.
+			switch ($this->image_type)
 			{
-				$newImg = imagecreatetruecolor($image_w, $image_h);
-				imagecopyresampled($newImg, $im, 0, 0, 0, 0, $image_w, $image_h, $this->width_orig, $this->height_orig);
+				case 2: $newImg = imagecreatefromjpeg($this->myfile);  break;
+				case 3: $newImg = imagecreatefrompng($this->myfile); break;
+				default:  throw new CError('PHOTOGALLERY_WRONG_FILE', E_USER_WARNING);  break;
 			}
-			else
+		}
+		else
+		{
+			switch ($this->image_type)
 			{
-				//Усечение изображения по центру
-				$newImg = imagecreatetruecolor($image_w, $image_h);
-				$x=0;
-				$y=0;
-				$w=$this->width_orig;
-				$h=$this->height_orig;
-				if($this->width_orig >= $this->height_orig)
+				case 2: $im = imagecreatefromjpeg($this->myfile);  break;
+				case 3: $im = imagecreatefrompng($this->myfile); break;
+				default:  throw new CError('PHOTOGALLERY_WRONG_FILE', E_USER_WARNING);  break;
+			}
+
+			if($image_ratio == true)
+			{
+				if($image_ratio_wb==false)
 				{
-					$scale=$image_h/$this->height_orig;
-					$image_w_r = round($this->width_orig*$scale);
-					if($image_w_r>$image_w)
-					{
-						$x=round(($image_w_r-$image_w)/2/$scale);
-						$w=round($w-$x*2);
-					}
+					$newImg = imagecreatetruecolor($image_w, $image_h);
+					imagecopyresampled($newImg, $im, 0, 0, 0, 0, $image_w, $image_h, $this->width_orig, $this->height_orig);
 				}
 				else
 				{
-					$scale=$image_w/$this->width_orig;
-					$image_h_r = round($this->height_orig*$scale);
-					if($image_h_r>$image_h)
+					//Усечение изображения по центру
+					$newImg = imagecreatetruecolor($image_w, $image_h);
+					$x=0;
+					$y=0;
+					$w=$this->width_orig;
+					$h=$this->height_orig;
+					if($this->width_orig >= $this->height_orig)
 					{
-						$y=round(($image_h_r-$image_h)/2/$scale);
-						$h=round($h-$y*2);
+						$scale=$image_h/$this->height_orig;
+						$image_w_r = round($this->width_orig*$scale);
+						if($image_w_r>$image_w)
+						{
+							$x=round(($image_w_r-$image_w)/2/$scale);
+							$w=round($w-$x*2);
+						}
 					}
+					else
+					{
+						$scale=$image_w/$this->width_orig;
+						$image_h_r = round($this->height_orig*$scale);
+						if($image_h_r>$image_h)
+						{
+							$y=round(($image_h_r-$image_h)/2/$scale);
+							$h=round($h-$y*2);
+						}
+					}
+					imagecopyresampled($newImg, $im, 0, 0, $x, $y, $image_w, $image_h, $w, $h);
 				}
-				imagecopyresampled($newImg, $im, 0, 0, $x, $y, $image_w, $image_h, $w, $h);
 			}
-	    }
-	    else
-	    {
-	    	if($image_ratio_wb == true)
-	    	{
-	    		$wb_type = 0;
+			else
+			{
+				if($image_ratio_wb == true)
+				{
+					$wb_type = 0;
 
-	    		if($this->width_orig > $this->height_orig || $this->width_orig == $this->height_orig)
-				{
-					$aspect_ratio = (float) $this->height_orig / $this->width_orig;
-					$image_h_r = round($image_w * $aspect_ratio);
-					$image_w_r = $image_w;
-					$wb_type = 1;
-					if($image_h < $image_h_r)
-					{
-						$aspect_ratio = (float) $this->width_orig / $this->height_orig;
-						$image_w_r = round($image_h * $aspect_ratio);
-						$image_h_r = $image_h;
-						$wb_type = 2;
-					}
-				}
-				elseif($this->width_orig < $this->height_orig)
-				{
-					$aspect_ratio = (float) $this->width_orig / $this->height_orig;
-					$image_w_r = round($image_h * $aspect_ratio);
-					$image_h_r = $image_h;
-					$wb_type = 2;
-					if($image_w < $image_w_r)
+					if($this->width_orig > $this->height_orig || $this->width_orig == $this->height_orig)
 					{
 						$aspect_ratio = (float) $this->height_orig / $this->width_orig;
 						$image_h_r = round($image_w * $aspect_ratio);
 						$image_w_r = $image_w;
 						$wb_type = 1;
+						if($image_h < $image_h_r)
+						{
+							$aspect_ratio = (float) $this->width_orig / $this->height_orig;
+							$image_w_r = round($image_h * $aspect_ratio);
+							$image_h_r = $image_h;
+							$wb_type = 2;
+						}
+					}
+					elseif($this->width_orig < $this->height_orig)
+					{
+						$aspect_ratio = (float) $this->width_orig / $this->height_orig;
+						$image_w_r = round($image_h * $aspect_ratio);
+						$image_h_r = $image_h;
+						$wb_type = 2;
+						if($image_w < $image_w_r)
+						{
+							$aspect_ratio = (float) $this->height_orig / $this->width_orig;
+							$image_h_r = round($image_w * $aspect_ratio);
+							$image_w_r = $image_w;
+							$wb_type = 1;
+						}
+					}
+					$newImg_first = imagecreatetruecolor($image_w_r, $image_h_r);
+					imagecopyresampled($newImg_first, $im, 0, 0, 0, 0, $image_w_r, $image_h_r, $this->width_orig, $this->height_orig);
+
+
+					$newImg = imagecreatetruecolor($image_w, $image_h);
+					if($this->border_color != "")
+					{
+						$colors = explode(" ",$this->border_color);
+						$r = $colors[0];
+						$g = $colors[1];
+						$b = $colors[2];
+					} else { $r = 255; $g = 255; $b = 255; }
+
+					$background_color = imagecolorallocate($newImg, $r, $g, $b);
+					imagefill($newImg, 0, 0, $background_color);
+
+					if($wb_type == 1)
+					{
+						$one = round(($image_h - $image_h_r)/2);
+
+						imagecopyresampled($newImg, $newImg_first, 0, round(($image_h - $image_h_r)/2), 0, 0, $image_w_r, $image_h_r, $image_w_r, $image_h_r);
+					}
+
+					if($wb_type == 2)
+					{
+						imagecopyresampled($newImg, $newImg_first,  round(($image_w - $image_w_r)/2), 0, 0, 0, $image_w_r, $image_h_r, $image_w_r, $image_h_r);
+					}
+
+				}
+				else
+				{
+					//Только в квадратный вид
+					if($this->width_orig > $image_w && $this->height_orig > $image_h)
+					{
+						$WH = max($image_h,$image_w);
+						$image_h = $WH;
+						$image_w = $WH;
+
+						$newImg = imagecreatetruecolor($image_w, $image_h);
+
+
+						if($this->width_orig > $this->height_orig || $this->width_orig == $this->height_orig)
+						{
+							imagecopyresampled($newImg, $im, 0, 0,
+							round((max($this->width_orig,$this->height_orig)-min($this->width_orig,$this->height_orig))/2),
+							0, $image_w, $image_h,
+							min($this->width_orig,$this->height_orig), min($this->width_orig,$this->height_orig));
+						}
+
+						if($this->width_orig < $this->height_orig)
+						{
+							switch($this->square_align)
+							{
+								case 'top': $start = 0;
+								case 'center': $start = round((max($this->width_orig,$this->height_orig)-min($this->width_orig,$this->height_orig))/2);
+							}
+							imagecopyresampled($newImg, $im, 0, 0, 0, $start, $image_w, $image_h,
+									min($this->width_orig,$this->height_orig), min($this->width_orig,$this->height_orig));
+						}
+
+					}
+					else
+					{
+						// Если новые размеры больше старых, то изображение остается неизменным
+						$image_w = $this->width_orig;
+						$image_h = $this->height_orig;
+						$newImg = imagecreatetruecolor($image_w, $image_h);
+						imagecopyresampled($newImg, $im, 0, 0, 0, 0, $image_w, $image_h, $this->width_orig, $this->height_orig);
 					}
 				}
-			   	$newImg_first = imagecreatetruecolor($image_w_r, $image_h_r);
-				imagecopyresampled($newImg_first, $im, 0, 0, 0, 0, $image_w_r, $image_h_r, $this->width_orig, $this->height_orig);
 
-
-	    		$newImg = imagecreatetruecolor($image_w, $image_h);
-	    		if($this->border_color != "")
-	    		{
-	    			$colors = explode(" ",$this->border_color);
-	    			$r = $colors[0];
-	    			$g = $colors[1];
-	    			$b = $colors[2];
-	    		} else { $r = 255; $g = 255; $b = 255; }
-
-    			$background_color = imagecolorallocate($newImg, $r, $g, $b);
-			 	imagefill($newImg, 0, 0, $background_color);
-
-			 	if($wb_type == 1)
-			 	{
-			 		$one = round(($image_h - $image_h_r)/2);
-
-			 		imagecopyresampled($newImg, $newImg_first, 0, round(($image_h - $image_h_r)/2), 0, 0, $image_w_r, $image_h_r, $image_w_r, $image_h_r);
-			 	}
-
-			 	if($wb_type == 2)
-			 	{
-			 		imagecopyresampled($newImg, $newImg_first,  round(($image_w - $image_w_r)/2), 0, 0, 0, $image_w_r, $image_h_r, $image_w_r, $image_h_r);
-			 	}
-
-	    	}
-			else
-	    	{
-	    		//Только в квадратный вид
-	    		if($this->width_orig > $image_w && $this->height_orig > $image_h)
-	    		{
-	    			$WH = max($image_h,$image_w);
-	    			$image_h = $WH;
-	    			$image_w = $WH;
-
-	    			$newImg = imagecreatetruecolor($image_w, $image_h);
-
-
-					if($this->width_orig > $this->height_orig || $this->width_orig == $this->height_orig)
-					 {
-					 	imagecopyresampled($newImg, $im, 0, 0,
-					 	round((max($this->width_orig,$this->height_orig)-min($this->width_orig,$this->height_orig))/2),
-					 	0, $image_w, $image_h,
-					 	min($this->width_orig,$this->height_orig), min($this->width_orig,$this->height_orig));
-					 }
-
-					 if($this->width_orig < $this->height_orig)
-					 {
-					 	switch($this->square_align)
-					 	{
-					 		case 'top': $start = 0;
-					 		case 'center': $start = round((max($this->width_orig,$this->height_orig)-min($this->width_orig,$this->height_orig))/2);
-					 	}
-					 	imagecopyresampled($newImg, $im, 0, 0, 0, $start, $image_w, $image_h,
-					              min($this->width_orig,$this->height_orig), min($this->width_orig,$this->height_orig));
-					 }
-
-	    		}
-	    		else
-	    		{
-	    			// Если новые размеры больше старых, то изображение остается неизменным
-	    			$image_w = $this->width_orig;
-	    			$image_h = $this->height_orig;
-	    			$newImg = imagecreatetruecolor($image_w, $image_h);
-	    			imagecopyresampled($newImg, $im, 0, 0, 0, 0, $image_w, $image_h, $this->width_orig, $this->height_orig);
-	    		}
-	    	}
-
-	    }
+			}
+		}
 
 
 	    if($this->isSave == true)
@@ -494,7 +508,8 @@ class ImageResizer extends CBaseObject
 		    }
 	    }
 	    $this->newImage=$newImg;
-	 	imagedestroy($im);
+		if($im)
+			imagedestroy($im);
 	}
 
 	/**
@@ -505,6 +520,20 @@ class ImageResizer extends CBaseObject
 		if($this->newImage)
 		{
 			$res=@imagejpeg($this->newImage,$path,$this->quality);
+			if(!imagedestroy($this->newImage)) throw new CError('SYSTEM_STRANGE_ERROR');
+			$this->newImage=0;
+			return $res;
+		}
+	}
+
+	/**
+	 * Метод сохраняет результат в ПНГ
+	 */
+	function SavePNG($path)
+	{
+		if($this->newImage)
+		{
+			$res=@imagepng($this->newImage,$path,9,PNG_ALL_FILTERS);
 			if(!imagedestroy($this->newImage)) throw new CError('SYSTEM_STRANGE_ERROR');
 			$this->newImage=0;
 			return $res;

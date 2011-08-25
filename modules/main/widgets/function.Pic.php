@@ -22,7 +22,7 @@ function smarty_function_Pic($params, &$subsmarty)
 	$sSizeFile.='x';
 	if($params['height']!='') $sSizeFile.=intval($params['height']);
 	$cacheDir=ROOT_DIR.'/uploads/PicCache'.$params['src'].'/';
-	$cacheFile='/uploads/PicCache'.$params['src'].'/'.$sSizeFile.'.jpeg';
+	$cacheFile='/uploads/PicCache'.$params['src'].'/'.$sSizeFile.'.png';
 	$attributes=array(
 		'src',
 		'mode',
@@ -84,7 +84,7 @@ function smarty_function_Pic($params, &$subsmarty)
 				{
 					$KS_FS->makedir($cacheDir);
 				}
-				if(!$obImage->Save(ROOT_DIR.$cacheFile))
+				if(!$obImage->SavePNG(ROOT_DIR.$cacheFile))
 				{
 					throw new CError('SYSTEM_FILE_NOT_FOUND_OR_NOT_WRITABLE',$cacheFile);
 				}

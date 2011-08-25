@@ -35,6 +35,7 @@ class CUser extends CUsersCommon implements User
 	private $arUserVars;
 	private $bUpdateVars;
 	private $obModules;
+	private $obLog;
 
 	/**
 	 * Конструктор объекта пользовательского класса
@@ -57,6 +58,8 @@ class CUser extends CUsersCommon implements User
 			global $KS_MODULES;
 			$this->obModules=$KS_MODULES;
 		}
+
+		$this->obLog=new CObject('users_log');
 
 		/* Вызов обработчика перед инициализацией объекта класса */
 		$onBeforeInitParams = array();
@@ -103,7 +106,7 @@ class CUser extends CUsersCommon implements User
 					$this->logout();
 				}
 			}
-			elseif (isset($_SESSION['cu_user']))
+			elseif(isset($_SESSION['cu_user']))
 			{
 				if (($_SESSION['cu_user'] - time()) > 0)
 				{
@@ -134,23 +137,22 @@ class CUser extends CUsersCommon implements User
 							else
 							{
 								throw new CUserError('MAIN_USER_INACTIVE');
-								$this->logout();		// Если пользователь стал неактивным, то разлогиниваемся
-								return;
 							}
 						}
 						else
 						{
 							throw new CUserError('MAIN_USER_BLOCKED');
-							//Если вобще не нашли такого пользователя - разлогиним его нафиг
-							$this->logout();
-							return;
 						}
 					}
 				}
 				else
 				{
-					$this->logout();
+					$this->TryLogout();
 				}
+			}
+			else
+			{
+				$this->TryCookieLogin();
 			}
 		}
 		catch (CUserError $e)
@@ -163,6 +165,37 @@ class CUser extends CUsersCommon implements User
 		/* Вызов обработчика при инициализации объекта класса */
 		$onInitParams = $this->userdata;
 		$onUserObjectInitSuccess = $KS_EVENTS_HANDLER->Execute('main', 'onUserObjectInit', $onInitParams);
+	}
+
+	function TryCookieLogin()
+	{
+		if(isset($_COOKIE['ks_token']) && IsHash($_COOKIE['ks_token']))
+		{
+			if($arUserRecord=$this->GetRecord(array('token'=>$_COOKIE['ks_token'])))
+			{
+				if($arUserRecord['last_ip']==$_SESSION['USER_IP'])
+				{
+					return $this->LoginByTitle($arUserRecord);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Метод проверяет наличие куки и если её нет выполняет логаут, иначе обновляет данные пользователя
+	 */
+	function TryLogout()
+	{
+		$this->TryCookieLogin();
+		$this->logout();
+	}
+
+	function SaveLogin()
+	{
+		$hash=md5(time().rand(0,9999).$this->userdata['id']);
+		$arFields=array('token'=>$hash,'last_ip'=>$_SESSION['USER_IP']);
+		$this->Update($this->ID(),$arFields);
+		setcookie('ks_token',$hash,time()+2678400,'/');
 	}
 
 	/**
@@ -194,6 +227,21 @@ class CUser extends CUsersCommon implements User
 	}
 
 	/**
+	 * Метод логгирует действия над базой данных пользователей в отдельной таблице
+	 */
+	function LogAction($user_id,$action,$arData)
+	{
+		$arFields=array(
+			'date'=>time(),
+			'content'=>$action,
+			'ip'=>$_SERVER['REMOTE_ADDR'],
+			'user_id'=>$user_id,
+			'request'=>json_encode($arData)
+		);
+		$this->obLog->Save('',$arFields);
+	}
+
+	/**
 	 * Выполняет активацию пользователя по переданному хэш-коду.
 	 * @param $code - хэш код пользователя.
 	 */
@@ -211,8 +259,10 @@ class CUser extends CUsersCommon implements User
 			$arData=$this->obDB->get_row($res);
 			$arData['active']=1;
 			unset($arData['password']);
-			$SaveResult = $this->Save('', $arData);
 
+			$this->LogAction($arData['id'],'Активация пользователя',$arData);
+
+			$SaveResult = $this->Save('', $arData);
 			$onActivateParams = array($arData);
 			// вызов обработчика при активации пользователя
 			if (!$KS_EVENTS_HANDLER->Execute('main', 'onActivate', $onActivateParams))
@@ -272,6 +322,8 @@ class CUser extends CUsersCommon implements User
 		}
 		if(is_array($arUser))
 		{
+			$this->LogAction($arUser['id'],'Попытка авторизации по логину',$arUser);
+
 			if ($arUser['active'] == 0)	throw new CUserError('MAIN_USER_INACTIVE');
 			if(($arUser['blocked_from']<=time())&&($arUser['blocked_till']>=time())) throw new CUserError('MAIN_USER_BLOCKED_TILL',0,date($this->obModules->GetConfigVar('main','time_format'),$arUser['blocked_till']));
 			$_SESSION['cu_user_id']=$arUser['id'];
@@ -317,6 +369,8 @@ class CUser extends CUsersCommon implements User
 			throw new CError('MAIN_HANDLER_ERROR');
 		if ($row = $this->GetRecord(array('title' => $username)))
 		{
+			$this->LogAction($row['id'],'Авторизация по паролю',array('pwd'=>$this->ConvertPassword($password),'password'=>$row['password']));
+
 			if (strcmp($this->ConvertPassword($password), $row['password']) == 0)
 			{
 				$this->LoginByTitle($row);
@@ -343,11 +397,15 @@ class CUser extends CUsersCommon implements User
 				}
 				if (($row['number_of_log_tries']+1) > $row1['log_tryes'])
 				{
+					$this->LogAction($row['id'],'Снятие активности по количеству попыток входа',array('done'=>$row['number_of_log_tries'],'available'=>$row1['log_tryes']));
+
 					$this->obDB->query("UPDATE ks_users SET active=0,number_of_log_tries=number_of_log_tries+1 WHERE id='".intval($row['id'])."'");
 					throw new CUserError('MAIN_USER_BLOCKED', 504);
 				}
 				else
 				{
+					$this->LogAction($row['id'],'Увеличение количества попыток входа',array('done'=>$row['number_of_log_tries']+1));
+
 					$this->obDB->query("UPDATE ks_users SET number_of_log_tries=number_of_log_tries+1 WHERE id='".intval($row['id'])."'");
 				}
 				throw new CUserError('MAIN_USER_WRONG_PASSWORD', 501);
@@ -371,10 +429,14 @@ class CUser extends CUsersCommon implements User
 		$onBeforeLogoutParams = $this->userdata;
 		$KS_EVENTS_HANDLER->Execute('main', 'onBeforeLogout', $onBeforeLogoutParams);
 
+		$this->LogAction($this->ID(),'Деавторизация пользователя',array('session'=>$_SESSION,'user'=>$this->userdata));
+
 		/* Уничтожаем пользовательскую сессию */
 		$_SESSION = array();
 		unset($_COOKIE[session_name()]);
 		session_destroy();
+		//Стираем печеньку с токеном
+		setcookie('ks_token','0',1,'/');
 		$this->userdata=array();
 		$this->is_login=false;
 
@@ -485,6 +547,8 @@ class CUser extends CUsersCommon implements User
 				}
 			}
 			/* Сохраняем данные пользователя и получаем его id */
+			$this->LogAction($data[$prefix.'id'],'Сохранение записи в БД',array($data));
+
 			if($res = parent::Save($prefix, $data, $mytable))
 			{
 				if($bImage)
@@ -549,6 +613,18 @@ class CUser extends CUsersCommon implements User
 		return $res;
 	}
 
+	function Update($id,$arData,$bWhere=false)
+	{
+		if(count($arData)==1 && array_key_exists('last_visit',$arData))
+		{
+		}
+		else
+		{
+			$this->LogAction($id,'Обновление записи в БД',array($arData));
+		}
+		return parent::Update($id,$arData,$bWhere);
+	}
+
 	/**
 	 * Метод возвращает значение переменной пользователя
 	 */
@@ -599,6 +675,9 @@ class CUser extends CUsersCommon implements User
 		$onBeforeDeleteParams['id'] = $arFilter['id'];
 		if (!$KS_EVENTS_HANDLER->Execute('main', 'onBeforeDelete', $onBeforeDeleteParams))		// Вызов обработчика перед удалением
 			throw new CError('MAIN_HANDLER_ERROR',0,$KS_EVENTS_HANDLER->GetLastEvent());
+
+		$this->LogAction($arUser['id'],'Удаление пользователей по фильтру',$arFilter);
+
 		$res = parent::DeleteItems($arFilter);			// Удаление элемента
 		$onDeleteParams = array();
 		if (!$KS_EVENTS_HANDLER->Execute('main', 'onDelete', $onDeleteParams))					// Вызов обработчика при удалении
@@ -641,7 +720,36 @@ class CUser extends CUsersCommon implements User
 		else
 			$id = $this->ID();
 
-		if ($this->arInGroups == false)
+		if($id!=$this->ID())
+		{
+			$time = time();
+			$arFilter=array(
+				'user_id'=>$id,
+				'AND'=>array(
+					array(
+						'OR'=>array(
+							array('>=date_end'=>$time),
+							array('date_end'=>0)
+						),
+					),
+					array(
+						'OR'=>array(
+							array('<=date_start'=>$time),
+							array('date_start'=>0)
+						),
+					),
+				)
+			);
+			$arResult = array(0);
+			if($arList=$this->obLinks->GetList(array('group_id'=>'asc'),$arFilter))
+			{
+				foreach($arList as $arRow)
+				{
+					$arResult[] = $arRow['group_id'];
+				}
+			}
+		}
+		elseif ($this->arInGroups == false)
 		{
 			$time = time();
 			$arFilter=array(

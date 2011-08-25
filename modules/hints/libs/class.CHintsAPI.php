@@ -87,7 +87,7 @@ class CHintsAPI extends CBaseAPI
 				$arItems=array();
 				foreach($arList as $arItem)
 				{
-					$arItems[]="'".$arItem['text_ident']."':".json_encode($arItem['content']);
+					$arItems[]="'".$arItem['text_ident']."':".json_encode($arItem['content'])."\n";
 				}
 				$sResult.=join(",\n",$arItems).'};</script>';
 				return $sResult;

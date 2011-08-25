@@ -28,6 +28,7 @@ if (!defined("KS_MAIN_INIT"))
 	/**
 	 * @todo Исправить!
 	 */
+	date_default_timezone_set('Europe/Moscow');
 	if(array_key_exists('KSSESSID',$_GET)) session_id($_GET['KSSESSID']);
 	unset($_GET['KSSESSID']);
 	session_name('KSSESSID');

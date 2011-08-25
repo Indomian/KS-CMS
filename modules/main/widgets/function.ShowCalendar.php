@@ -29,3 +29,5 @@ function smarty_function_ShowCalendar($params,&$smarty)
 	$sResult='<div class="date_selector"><input type="text" readonly="readonly" name="'.$params['field'].'" value="'.((isset($params['value']) && $params['value']>0)?date('d.m.Y H:i',$params['value']):'').'" class="date_input" title="'.$params['title'].'"/><img src="'.$KS_MODULES->GetText('images_path').'/calendar/img.gif" title="'.$params['title'].'" align="absmiddle" class="date_button"/></div>';
 	return $sResult;
 }
+
+

@@ -256,4 +256,4 @@ abstract class CDBInterface
 		}
 	}
 }
-?>
+
