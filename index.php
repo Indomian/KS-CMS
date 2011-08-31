@@ -93,14 +93,20 @@ try
 		$output['main_content']=$e;
 	}
 
-	if(array_key_exists('include_global_template',$output) && $output['include_global_template'] != '0')
+	$bUsuallPage=false;
+	if(isset($output['include_global_template']) && array_key_exists('include_global_template',$output) && $output['include_global_template'] != '0')
 	{
+		$bUsuallPage=true;
 		$smarty->assign('output', $output);
 		$page = $smarty->fetch($global_template.'/'.$KS_MODULES->GetScheme().'.tpl');
 	}
-	else
+	elseif(isset($output['main_content']))
 	{
 		$page = $output['main_content'];
+	}
+	else
+	{
+		$page='';
 	}
 	$page=str_replace('#HEAD_STRINGS#',$KS_MODULES->GetHeader(),$page);//join("\n",$KS_MODULES->arHeads),$page);
 	echo $page;
@@ -113,7 +119,7 @@ try
 	$end=microtime(1);
 	if(KS_RELEASE!=1)
 	{
-		if(array_key_exists('include_global_template',$output) && $output['include_global_template'] != '0' && KS_DEBUG==1)
+		if($bUsuallPage && KS_DEBUG==1)
 		{
 			$sys_info['gen_tyme'] = ($end-$begin);
 			$sys_info['sql_gen_tyme'] = $ks_db->MySQL_time_taken;
