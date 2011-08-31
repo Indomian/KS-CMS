@@ -77,7 +77,7 @@ class CnavigationAIindex extends CModuleAdmin
 	/**
 	 * Метод выполняет реализацию операции сохранения данных
 	 */
-	function Save($id)
+	function Save()
 	{
 		global $KS_URL;
 		try
@@ -157,6 +157,8 @@ class CnavigationAIindex extends CModuleAdmin
 		{
 			$this->CommonActions();
 		}
+		$page='';
+		$data=false;
 		switch($sAction)
 		{
 			case "edit":

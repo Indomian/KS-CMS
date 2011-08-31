@@ -27,7 +27,9 @@ try
 	/* Объект для работы с шаблонами */
 	$KS_TEMPLATES = new CTemplates;
 	$sName='';
-	switch($_REQUEST['ACTION'])
+	$sAction='';
+	if(isset($_REQUEST['ACTION'])) $sAction=$_REQUEST['ACTION'];
+	switch($sAction)
 	{
 		case 'save':
 			$sName=$_POST['id'];
@@ -196,7 +198,7 @@ try
 		break;
 	}
 
-	if($_POST['ACTION']=='savesub')
+	if($sAction=='savesub')
 	{
 		if($_POST['copysub']==1)
 		{
@@ -293,13 +295,13 @@ try
 			}
 		}
 	}
-	elseif($_POST['ACTION']=='clearCache')
+	elseif($sAction=='clearCache')
 	{
 		$smarty->clear_all_cache();
 		$smarty->clear_compiled_tpl();
 		$page=_ShowList($KS_TEMPLATES);
 	}
-	elseif($_POST['ACTION']=='clearPicCache')
+	elseif($sAction=='clearPicCache')
 	{
 		global $KS_FS;
 		if(!$KS_FS->cleardir(UPLOADS_DIR.'/PicCache'))
@@ -308,7 +310,7 @@ try
 		}
 		$page=_ShowList($KS_TEMPLATES);
 	}
-	elseif($_GET['ACTION']=='delete')
+	elseif($sAction=='delete')
 	{
 		if($_GET['id']!='.default')
 		{
@@ -327,7 +329,7 @@ try
 		}
 		$page=_ShowList($KS_TEMPLATES);
 	}
-	elseif($_GET['ACTION']=='deletesub')
+	elseif($sAction=='deletesub')
 	{
 		$sName=$_GET['id'];
 		try
@@ -346,7 +348,7 @@ try
 			$page='_templates_edit';
 		}
 	}
-	elseif($_GET['ACTION']=='getgroups')
+	elseif($sAction=='getgroups')
 	{
 		$obGroups=new CUserGroup();
 		$arGroups=$obGroups->GetList();
@@ -359,9 +361,9 @@ try
 		echo json_encode($result);
 		die();
 	}
-	elseif($_POST['ACTION']=='saveLinks')
+	elseif($sAction=='saveLinks')
 	{
-		if (is_array($_POST['links']))
+		if(isset($_POST['links']) && is_array($_POST['links']))
 		{
 			foreach ($_POST['links'] as $id=>$arItem)
 			{
@@ -372,16 +374,16 @@ try
 				}
 			}
 		}
-		if (is_array($_POST['newlinks']))
+		if (isset($_POST['newlinks']) && is_array($_POST['newlinks']))
 		{
 			foreach ($_POST['newlinks'] as $arItem)
 			{
-				if(($arItem['url_path']!='')||($arItem['function1']!=''))
-					//print_r($arItem);
+				if((isset($arItem['url_path']) && $arItem['url_path']!='')||
+					(isset($arItem['function1']) && $arItem['function1']!=''))
 					$obTpl->Save("",$arItem);
 			}
 		}
-		if(is_array($_POST['delete']))
+		if(isset($_POST['delete']) && is_array($_POST['delete']))
 		{
 			$obTpl->DeleteByIds(array_keys($_POST['delete']));
 		}
@@ -409,13 +411,6 @@ catch (CError $e)
 {
 	$smarty->assign('last_error',$e);
 	$page=_ShowList($KS_TEMPLATES);
-}
-
-if($_GET['mode']=='small')
-{
-	echo $smarty->get_template_vars('last_error');
-	$smarty->display('admin/main'.$page.'.tpl');
-	die();
 }
 
 function _ShowList($KS_TEMPLATES)

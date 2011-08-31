@@ -10,7 +10,6 @@
 if (!defined('KS_ENGINE')) die("Hacking attempt!");
 include_once MODULES_DIR.'/main/libs/class.CUsersCommon.php';
 include_once MODULES_DIR.'/main/libs/interface.User.php';
-include_once MODULES_DIR.'/main/libs/class.ImageResizer.php';
 include_once MODULES_DIR.'/main/libs/class.CModulesAccess.php';
 include_once MODULES_DIR.'/main/libs/class.CImageUploader.php';
 

@@ -64,9 +64,13 @@
 				</tr>
 				<tr>
 					<td>{if $data.type=='cat'}{Title field=img_category}{else}{Title field=img_record}{/if}</td>
-					<td><input type="file" name="CSC_img" value="" style="width:100%"/><br/>
-						{if $data.img!=""}<img src="/uploads/{$data.img}"><br/>
-						<input type="checkbox" name="CSC_img_del" value="1"/> Удалить{/if}
+					<td>
+						{if $data.img!=''}
+							<a href="/uploads{$data.img}" alt="{#view_in_full_size#}" target="_blank">{Pic src="/uploads`$data.img`" width="100" height="100" mode="crop"}</a><br/>
+							<label><input type="checkbox" name="CSC_img_del" value="1"/> {#delete#}</label><br/>
+							{#replace#}<br/>
+						{/if}
+						<input type="file" name="CSC_img" value="" style="width:100%"/>
 					</td>
 				</tr>
 			</table>

@@ -37,13 +37,19 @@ class CnavigationAImenu extends CModuleAdmin
 	{
 		if(!$data)
 		{
-			$arData=$this->oElement->GetList(
+			if($arData=$this->oElement->GetList(
 				array('orderation'=>'desc'),
 				array('parent_id'=>$this->iParentId,'type_id'=>$this->iCurSection),
 				array(1),
 				array('orderation')
-			);
-			$arItem=array_pop($arData);
+			))
+			{
+				$arItem=array_pop($arData);
+			}
+			else
+			{
+				$arItem['orderation']=0;
+			}
 			$data=array();
 			$data['orderation']=intval($arItem['orderation'])+10;
 			$data['id']=-1;

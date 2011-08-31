@@ -6,7 +6,7 @@
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 include_once MODULES_DIR.'/main/libs/class.CFileUploader.php';
-include_once MODULES_DIR.'/main/libs/class.ImageResizer.php';
+include_once MODULES_DIR.'/main/libs/class.CImageResizer.php';
 
 class CImageUploader extends CFileUploader
 {
@@ -61,29 +61,19 @@ class CImageUploader extends CFileUploader
 	{
 		if(!$this->IsReady()) return false;
 		$sFilepath=$this->GetRealFilePath();
-		$obImage=new ImageResizer($sFilepath,true);
-		$obImage->isCreateDir=false;
-		$obImage->isSave=false;
-		$bKeepRatio=false;
-		$bKeepRatioWb=true;
+		$obImage=new CImageResizer($sFilepath);
+		$obMode=new CScale(intval($width),intval($width));
 		if($this->sResizeMode=='stretch')
-		{
-			$bKeepRatio=false;
-			$bKeepRatioWb=false;
-		}
+			$obMode=new CRectGenerator(intval($width),intval($width));
 		elseif($this->sResizeMode=='crop')
+			$obMode=new CCropToCenter(intval($width),intval($width));
+		elseif($this->sResizeMode=='croptop')
+			$obMode=new CCropToTop(intval($width),intval($width));
+		if($obImage->Resize($obMode))
 		{
-			$bKeepRatio=true;
-			$bKeepRatioWb=true;
+			if(!$obImage->SavePNG($sFilepath))
+				throw new CError('SYSTEM_FILE_NOT_FOUND_OR_NOT_WRITABLE',$sFilepath);
 		}
-		elseif($this->sResizeMode=='resize')
-		{
-			$bKeepRatio=true;
-			$bKeepRatioWb=false;
-		}
-		$obImage->Resize(intval($width),intval($height),$bKeepRatio,$bKeepRatioWb,false);
-		if(!$obImage->SavePNG($sFilepath))
-			throw new CError('SYSTEM_FILE_NOT_FOUND_OR_NOT_WRITABLE',$sFilepath);
 		chmod($sFilepath,0655);
 		return true;
 	}

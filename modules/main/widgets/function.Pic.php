@@ -12,118 +12,87 @@
  */
 /*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
-
 function smarty_function_Pic($params, &$subsmarty)
 {
 	global $KS_MODULES,$KS_FS;
 	if($params['src']=='') return '';
+	if(isset($params['only_url'])) $params['only_url']=$params['only_url']?true:false;
 	$sSizeFile='';
 	if($params['width']!='') $sSizeFile.=intval($params['width']);
 	$sSizeFile.='x';
 	if($params['height']!='') $sSizeFile.=intval($params['height']);
 	$cacheDir=ROOT_DIR.'/uploads/PicCache'.$params['src'].'/';
 	$cacheFile='/uploads/PicCache'.$params['src'].'/'.$sSizeFile.'.png';
-	$attributes=array(
-		'src',
-		'mode',
-		'default',
-		'lifetime',
-	);
-	/**
-	 * @todo Убрать эту хрень к чертям собачьим
-	 */
-	/*if(!isset($params['cache_time'])||intval($params['cache_time'])<=0)
+	if(file_exists(ROOT_DIR.$cacheFile))
 	{
-		$obConfig=new CConfigParser('main');
-		$ks_config=$obConfig->LoadConfig();
-		$params['lifetime'] = $ks_config['lifetime'];
-	}*/
-	try
+		$res=$cacheFile;
+	}
+	else
 	{
-		if(file_exists(ROOT_DIR.$cacheFile))// && (filectime(ROOT_DIR.$cacheFile)+$params['lifetime'] >= time()))
+		//Такой файл не был закеширован, значит надо его создавать
+		if(file_exists(ROOT_DIR.$params['src']) && is_file(ROOT_DIR.$params['src']))
 		{
-			$res='<img src="'.$cacheFile.'"';
-			foreach($params as $key=>$value)
+			include_once(MODULES_DIR.'/main/libs/class.CImageResizer.php');
+			try
 			{
-				if(!in_array($key,$attributes))
+				$obImage=new CImageResizer(ROOT_DIR.$params['src']);
+				$obMode=new CScale(intval($params['width']),intval($params['height']));
+				if($params['mode']=='stretch')
+					$obMode=new CRectGenerator(intval($params['width']),intval($params['height']));
+				elseif($params['mode']=='crop')
+					$obMode=new CCropToCenter(intval($params['width']),intval($params['height']));
+				elseif($params['mode']=='croptop')
+					$obMode=new CCropToTop(intval($params['width']),intval($params['height']));
+				if($obImage->Resize($obMode))
 				{
-					$res.=' '.$key.'="'.$value.'"';
+					if(!file_exists($cacheDir)) $KS_FS->makedir($cacheDir);
+					if($obImage->SavePNG(ROOT_DIR.$cacheFile))
+					{
+						chmod(ROOT_DIR.$cacheFile,0655);
+						$res=$cacheFile;
+					}
+					else
+					{
+						throw new CError('SYSTEM_CANT_SAVE');
+					}
+				}
+				else
+				{
+					throw new CError('SYSTEM_CANT_RESIZE');
 				}
 			}
-			$res.='/>';
-			return $res;
+			catch (CError $e)
+			{
+				if($e->getMessage()=='SYSTEM_WRONG_FILE')
+					$cacheFile=$params['src'];
+				else
+					return $e->__toString();
+			}
+		}
+		elseif($params['default']!='')
+		{
+			$res=$params['default'];
 		}
 		else
 		{
-			//Такой файл не был закеширован, значит надо его создавать
-			if(file_exists(ROOT_DIR.$params['src']))
-			{
-				include_once(MODULES_DIR.'/main/libs/class.ImageResizer.php');
-				$obImage=new ImageResizer($params['src']);
-				$obImage->isCreateDir=false;
-				$obImage->isSave=false;
-				$bKeepRatio=false;
-				$bKeepRatioWb=true;
-				if($params['mode']=='stretch')
-				{
-					$bKeepRatio=false;
-					$bKeepRatioWb=false;
-				}
-				elseif($params['mode']=='crop')
-				{
-					$bKeepRatio=true;
-					$bKeepRatioWb=true;
-				}
-				elseif($params['mode']=='resize')
-				{
-					$bKeepRatio=true;
-					$bKeepRatioWb=false;
-				}
-				$obImage->Resize(intval($params['width']),intval($params['height']),$bKeepRatio,$bKeepRatioWb,false);
-				if(!file_exists($cacheDir))
-				{
-					$KS_FS->makedir($cacheDir);
-				}
-				if(!$obImage->SavePNG(ROOT_DIR.$cacheFile))
-				{
-					throw new CError('SYSTEM_FILE_NOT_FOUND_OR_NOT_WRITABLE',$cacheFile);
-				}
-				chmod(ROOT_DIR.$cacheFile,0655);
-				$res='<img src="'.$cacheFile.'"';
-				foreach($params as $key=>$value)
-				{
-					if(!in_array($key,$attributes))
-					{
-						$res.=' '.$key.'="'.$value.'"';
-					}
-				}
-				$res.='/>';
-				return $res;
-			}
-			elseif($params['default']!='')
-			{
-				$res='<img src="'.$params['default'].'"';
-				foreach($params as $key=>$value)
-				{
-					if(!in_array($key,$attributes))
-					{
-						$res.=' '.$key.'="'.$value.'"';
-					}
-				}
-				$res.='/>';
-				return $res;
-			}
 			throw new CError('SYSTEM_FILE_NOT_FOUND',0,$params['src']);
 		}
 	}
-	catch(CError $e)
+	if($res!='' && !$params['only_url'])
 	{
-		return $e->__toString();
+		$res='<img src="'.$cacheFile.'"';
+		foreach($params as $key=>$value)
+		{
+			if($params['keepSmall']=='Y' && ($key=='width' || $key=='height')) continue;
+			if($key!='mode'&&$key!='default')
+				$res.=' '.$key.'="'.$value.'"';
+		}
+		$res.='/>';
 	}
+	return $res;
 }
 
 function widget_params_Pic($params)
 {
-
 }
-?>
+

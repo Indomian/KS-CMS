@@ -26,6 +26,8 @@ function smarty_function_CatCategory($params, &$smarty)
 	$obCategory = new CCategory();		// создание экземпляра объекта для работы с категориями текстовых страниц
 	if (isset($params['ID']))
 		$arFilter = array('id' => $params['ID']);
+	elseif(isset($params['text_ident']) && IsTextIdent($params['text_ident']))
+		$arFilter = array('text_ident' => $params['text_ident']);
 	$arFilter['active']=1;
 	if($data['main_content']= $obCategory->GetRecord($arFilter))
 	{

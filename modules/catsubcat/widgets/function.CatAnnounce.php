@@ -188,9 +188,22 @@ function smarty_function_CatAnnounce($params, &$subsmarty)
 			$arLimit = intval($announces_count);
 
 			/* Массив выбираемых полей */
-			//$arSelect = array("id", "parent_id", "text_ident", "title", "description", "img", "date_add", "views_count");
-			$arSelect=$obElement->GetFields();
-
+			if(!isset($params['select']))
+			{
+				$arSelect = array("id", "parent_id", "text_ident", "title", "description", "img", "date_add", "views_count");
+			}
+			else
+			{
+				$params['select']=explode(',',$params['select']);
+				$arSelectAv=$obElement->GetFields();
+				$arSelect=array('id',"parent_id", "text_ident", "title","img");
+				foreach($arSelect as $sField)
+				{
+					if(in_array($sField,$params['select']))
+						$arSelect[]=$sField;
+				}
+				$arSelect=array_unique($arSelect);
+			}
 			/* Использование постраничной навигации */
 			if ($params["use_page_navigation"] == "Y")
 			{

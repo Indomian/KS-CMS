@@ -41,14 +41,16 @@ function smarty_function_CatSubcategoriesList($params, &$subsmarty)
 
 		$parent_id = intval($params["parent_id"]);
 		$orderby = $params["orderby"];
+		$orderdir= 'desc';
+		if(isset($params['orderdir']) && $params['orderdir']=='asc') $orderdir='asc';
 
 		if ($parent_id >= 0)
 		{
 			/* Определяем принцип сортировки */
 			if ($orderby != "random")
-				$arOrder = array($orderby => "desc");
+				$arOrder = array($orderby => $orderdir);
 			else
-				$arOrder = array("RAND()" => "desc");
+				$arOrder = array("RAND()" => $orderdir);
 
 			/* Выбираем разделы, для которых указанный является родительским */
 			$arFilter = array("parent_id" => $parent_id, "active" => 1, '?!parent_id'=>'id');

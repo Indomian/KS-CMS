@@ -181,7 +181,7 @@ class CcatsubcatAIindex extends CModuleAdmin
 				//Операции выполняемые после сохранения записи в базе данных
 				$data = $this->obEditable->GetById($id);
 
-				if ($this->obModules->IsModule("navigation") && $_POST['CM_add'] == 1)
+				if ($this->obModules->IsModule("navigation") && isset($_POST['CM_add']) && $_POST['CM_add'] == 1)
 				{
 					$_POST['CM_link'] = $data['URL'];
 					include_once MODULES_DIR . "/navigation/libs/class.CNav.php";

@@ -174,7 +174,18 @@ class CUrlParser
 		{
 			$path="?".join("&amp;",$arParams);
 		}
-        return $this->path.$path;
+		$sRootPath=$this->path;
+		if(isset($params['part']) && is_numeric($params['part']))
+		{
+			$params['part']=intval($params['part']);
+			$arPath=explode('/',$this->path);
+			if(is_array($arPath) && count($arPath)>0)
+			{
+				$arPath=array_slice($arPath,0,$params['part']+1);
+			}
+			$sRootPath=join('/',$arPath).'/';
+		}
+        return $sRootPath.$path;
 	}
 
 	/**
@@ -219,7 +230,7 @@ class CUrlParser
 					if ($res==1) break;
 				}
 			}
-			if($key!='path')
+			if($key!='path' && $key!='part')
 			{
 				if ($res==0)
 				{
