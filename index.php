@@ -77,15 +77,29 @@ try
 			$output['include_global_template']=0;
 			$output['main_content']=$smarty->fetch($global_template.'/403.tpl');
 		}
+		else
+		{
+			$output['main_content']=$e->__toString();
+		}
 	}
 	catch(CHTTPError $e)
 	{
-		header('HTTP/1.0 404 Not found');
+		header($e->GetHeader());
 		$smarty->assign('error', $e->__toString());
-		if($smarty->template_exists($global_template.'/404.tpl'))
+		$iCode=$e->GetCode();
+		if($smarty->template_exists($global_template.'/'.$iCode.'.tpl'))
+		{
+			$output['include_global_template']=0;
+			$output['main_content']=$smarty->fetch($global_template.'/'.$iCode.'.tpl');
+		}
+		elseif($smarty->template_exists($global_template.'/404.tpl'))
 		{
 			$output['include_global_template']=0;
 			$output['main_content']=$smarty->fetch($global_template.'/404.tpl');
+		}
+		else
+		{
+			$output['main_content']=$e->__toString();
 		}
 	}
 	catch(CError $e)

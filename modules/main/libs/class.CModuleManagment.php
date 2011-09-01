@@ -439,7 +439,7 @@ abstract class CModuleManagment extends CObject
 	 */
 	function Install($module)
 	{
-		global $smarty,$KS_FS,$ks_db;
+		global $smarty,$KS_FS;
 		if($this->IsModule($module)) throw new CModuleError("MAIN_MODULE_ALREADY_INSTALLED",0);
 		if(file_exists(MODULES_DIR.'/'.$module.'/install/install.php'))
 		{
@@ -458,11 +458,42 @@ abstract class CModuleManagment extends CObject
 	}
 
 	/**
+	 * Метод выполняет удаление всех файлов указанного модуля из соответствующих каталогов,
+	 */
+	private function UnInstallAllModuleFiles($module_name)
+	{
+		global $KS_FS;
+		if(file_exists(MODULES_DIR.'/'.$module_name))
+		{
+			//Если есть шаблоны пользовательской части
+			if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/templates/.default/'))
+			{
+				foreach($arFiles as $sFile)
+					$KS_FS->Remove(TEMPLATES_DIR.'/.default/'.$module_name.'/'.$sFile);
+				if(!$KS_FS->GetDirItems(TEMPLATES_DIR.'/.default/'.$module_name.'/'))
+					$KS_FS->Remove(TEMPLATES_DIR.'/.default/'.$module_name.'/');
+			}
+			//Если есть шаблоны административной части
+			if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/templates/admin/'))
+				foreach($arFiles as $sFile)
+					$KS_FS->Remove(SYS_TEMPLATES_DIR.'/admin/'.$sFile);
+			//Шаблоны событий
+			if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/templates/events/'))
+				foreach($arFiles as $sFile)
+					$KS_FS->Remove(SYS_TEMPLATES_DIR.'/admin/eventTemplates/'.$sFile);
+			//Cкрипты модуля
+			if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/js/'))
+				foreach($arFiles as $sFile)
+					$KS_FS->Remove(ROOT_DIR.JS_DIR.'/'.$module_name.'/'.$sFile);
+		}
+	}
+
+	/**
 	 * Метод выполняет удаление указанного модуля
 	 */
 	function UnInstall($module)
 	{
-		global $smarty,$KS_FS,$ks_db;
+		global $smarty,$KS_FS;
 		if(!$this->IsModule($module)) throw new CModuleError("MAIN_MODULE_NOT_INSTALLED",0);
 		if(file_exists(MODULES_DIR.'/'.$module.'/install/uninstall.php'))
 		{

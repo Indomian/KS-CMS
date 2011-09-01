@@ -183,7 +183,25 @@ class CCriticalError extends CError
  */
 class CHTTPError extends CError
 {
+	private $sHeader;
 
+	/*!Конструктор класса, создает новое исключение.*/
+	function __construct($message="",$code=0,$text='',$sHeader='')
+	{
+		parent::__construct($message,intval($code));
+		$this->error=$code;
+		$this->error_text=$text;
+		$this->errorTpl='error.tpl';
+		if($sHeader!='')
+			$this->sHeader=$sHeader;
+		else
+			$this->sHeader='HTTP/1.0 404 Not found';
+	}
+
+	function GetHeader()
+	{
+		return $this->sHeader;
+	}
 }
 
 /**

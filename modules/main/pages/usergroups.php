@@ -56,7 +56,7 @@ class CmainAIusergroups extends CModuleAdmin
 		if($data)
 		{
 			$arGroup=$data;
-			if(array_key_exists('id',$arGroup) && $arGroup['id']>0)
+			if(array_key_exists('id',$arGroup))
 			{
 				$obAccess=new CModulesAccess();
 				$arGroup['ACCESS']=$obAccess->GetList(array('id'=>'asc'),array('group_id'=>$arGroup['id']));
@@ -96,13 +96,11 @@ class CmainAIusergroups extends CModuleAdmin
 			if($bError==0)
 			{
 				$this->obGroups->AddAutoField('id');
-				if($id=$this->obGroups->Save('',$arGroup))
+				$id=$this->obGroups->Save('',$arGroup);
+				$obAccess=new CModulesAccess();
+				foreach($_POST['CUG_level'] as $key=>$value)
 				{
-					$obAccess=new CModulesAccess();
-					foreach($_POST['CUG_level'] as $key=>$value)
-					{
-						$obAccess->Set($id,$key,min($value));
-					}
+					$obAccess->Set($id,$key,min($value));
 				}
 				if(!array_key_exists('update',$_REQUEST))
 				{

@@ -270,7 +270,7 @@ class CSimpleFs extends CFileSystem
 	function GetDirItems($dir)
 	{
 		$dir_items = array();
-		if (is_dir($dir))
+		if(file_exists($dir) && is_dir($dir))
 		{
 			if ($dh = opendir($dir))
 			{
@@ -280,13 +280,12 @@ class CSimpleFs extends CFileSystem
 						$dir_items[] = $dir_item;
 				}
 				closedir($dh);
-
+				if(count($dir_items)==0) return false;
 				return $dir_items;
 			}
 			else
 				throw new CError("SYSTEM_ERROR_OPENING_DIRECTORY", 0, $dir);
 		}
-
 		return false;
 	}
 
