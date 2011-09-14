@@ -1,11 +1,11 @@
 <?php
 /*
  * CMS-local
- * 
+ *
  * Created on 10.11.2008
  *
  * Developed by blade39
- * 
+ *
  */
 if( !defined('KS_ENGINE') )die("Hacking attempt!");
 
@@ -15,7 +15,9 @@ include_once MODULES_DIR.'/main/libs/class.CEventTemplates.php';
 //Проверка прав доступа
 if($USER->GetLevel('main')>6) throw new CAccessError("MAIN_NOT_RIGHTS_MANAGE_MAIL_TEMPLATES");
 
-$action=$_REQUEST['ACTION'];
+$action='';
+if(isset($_REQUEST['ACTION']))
+	$action=$_REQUEST['ACTION'];
 
 $KS_EVENTS=new CEvents();
 
@@ -75,8 +77,10 @@ if($page=='')
 	/** @todo Переделать в новый стиль кода!*/
 	$arSortFields=$ob->arFields;
 	// Обработка порядка вывода элементов
-	$sortField=$_REQUEST['order'];
-	$sortDir=$_REQUEST['dir'];
+	$sortField='';
+	if(isset($_REQUEST['order'])) $sortField=$_REQUEST['order'];
+	$sortDir='';
+	if(isset($_REQUEST['dir'])) $sortDir=$_REQUEST['dir'];
 	if($sortField!='')
 		$sOrderField=(in_array($sortField,$arSortFields))?$sortField:$arSortFields[0];
 	elseif($_SESSION['main']['admin_sort_main_events_by']!='')
@@ -89,7 +93,7 @@ if($page=='')
 		else $sOrderDir='desc';
 	else
 		if($_SESSION['main']['admin_sort_main_events_dir']!='')	$sOrderDir=$_SESSION['main']['admin_sort_main_events_dir'];
-		else $OrderDir=$KS_MODULES->GetConfigVar('main','admin_sort_main_events_dir');
+		else $sOrderDir=$KS_MODULES->GetConfigVar('main','admin_sort_main_events_dir');
 	$sOrderField=(in_array($sOrderField,$arSortFields))?$sOrderField:$arSortFields[0];
 	//Сохраняем сортировку в сессию
 	$_SESSION['main']['admin_sort_main_events_by']=$sOrderField;

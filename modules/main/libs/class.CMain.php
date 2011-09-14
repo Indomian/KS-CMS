@@ -1190,7 +1190,6 @@ class CObject extends CBaseList
  		{
 			$query="SELECT $fields FROM $sFrom $sWhere $sGroupBy $sOrder $limits";
 		}
-		if(KS_DEBUG_QUERIES==1) echo $query.'<br/>';
 		$ks_db_res=$this->obDB->query($query);
 		if($ks_db->num_rows($ks_db_res)<1)
 		{
@@ -1246,7 +1245,6 @@ class CObject extends CBaseList
 			{
 				$query = "SELECT COUNT(*) FROM " . $this->_GenFrom(). $sWhere;
 			}
-			if(KS_DEBUG_QUERIES==1) echo $query.'<br/>';
 			$ks_db->query($query);
 			if ($ks_db->num_rows() > 0)
 			{
@@ -1265,7 +1263,6 @@ class CObject extends CBaseList
 			$sSelect=$this->_GenSelect($fGroup,true);
 			$fGroup=$this->_GenGroup($fGroup);
 			$query = "SELECT $sSelect FROM " . $this->_GenFrom() . $sWhere . $fGroup;
-			if(KS_DEBUG_QUERIES==1) echo $query.'<br/>';
 			$ks_db->query($query);
 			while ($row = $ks_db->get_array())
 			{

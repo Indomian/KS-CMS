@@ -160,7 +160,7 @@ class CWaveAPI extends CBaseAPI
 			{
 				$bLocked=true;
 				//Плохой вариант, но что поделать
-				if(!$this->arLocksCache)
+				if($this->arLocksCache===false)
 				{
 					$this->arLocksCache=array();
 					$arFilter=array(
@@ -301,7 +301,11 @@ class CWaveAPI extends CBaseAPI
 			$arFields['active']=0;
 		else
 			$arFields['active']=1;
-		return $this->obPosts->Save('',$arFields);
+		if($iPostId=$this->obPosts->Save('',$arFields))
+		{
+			return $iPostId;
+		}
+		return false;
 	}
 
 	/**
@@ -476,6 +480,9 @@ class CWaveAPI extends CBaseAPI
 		return $arResult;
 	}
 
+	/**
+	 * Метод возвращает список сообщений в виде списка с ответами
+	 */
 	function _GetAnswerList($sHash,$sOrderDir='asc',$arFilter=false,$arSelect=false,$obPage=false)
 	{
 		global $USER;
@@ -509,6 +516,14 @@ class CWaveAPI extends CBaseAPI
 				if($arPost['depth']>2) $arPosts[$arPost['id']]['depth']=2;
 				$arPosts[$arPost['id']]['access']=$this->GetPostRights($arPost);
 			}
+			reset($arPosts);
+			$arItem=current($arPosts);
+			if($arItem['depth']>1)
+			{
+				$arFilter['id']=$arItem['parent_id'];
+				$arParentPost=$this->Posts()->GetList(false,$arFilter,1,$arSelect);
+				array_unshift($arPosts,array_shift($arParentPost));
+			}
 			$arResult=$arPosts;
 		}
 		return $arResult;
@@ -531,7 +546,9 @@ class CWaveAPI extends CBaseAPI
 			break;
 			case 'answer':
 				$arResult=$this->_GetAnswerList($sHash,$sOrderDir,$arFilter,$arSelect,$obPage);
+			break;
 			default:
+				$arResult=$this->Posts()->GetList($sOrderDir,$arFilter,$obPage->GetLimits(),$arSelect);
 		}
 		return $arResult;
 	}

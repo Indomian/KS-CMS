@@ -47,17 +47,6 @@ if (!defined("KS_MAIN_INIT"))
 	require_once MODULES_DIR . "/main/libs/db/" . $ks_config["DB_CLASS"] . '.php';
 	include_once(CONFIG_DIR . "/db_config.php");
 	if(!defined('KS_LOG_DB_ERRORS')) define('KS_LOG_DB_ERRORS',1);
-	/* Проверка структуры базы данных по требованию */
-	if($ks_config['update_db']==1)
-	{
-		include_once MODULES_DIR.'/main/libs/class.CConfigParser.php';
-		$obConfig=new CConfigParser('main');
-		$obConfig->LoadConfig();
-		include_once(CONFIG_DIR.'/db_structure.php');
-		$ks_db->CheckDB($arStructure);
-		$obConfig->Set('update_db',0);
-		$obConfig->WriteConfig();
-	}
 
 	/* Инициализация Смарти */
 	require(MODULES_DIR  ."/main/libs/class.CSmartyExtender.php");
@@ -99,6 +88,19 @@ if (!defined("KS_MAIN_INIT"))
 	require_once "libs/class.CModuleHookUp.php";
 
 	$KS_MODULES=CAdminModuleManagment::get_instance();
+
+	/* Проверка структуры базы данных по требованию */
+	if($ks_config['update_db']==1)
+	{
+		$KS_MODULES->RecountDBStructure();
+		include_once MODULES_DIR.'/main/libs/class.CConfigParser.php';
+		include CONFIG_DIR.'/db_structure.php';
+		$ks_db->CheckDB($arStructure);
+		$obConfig=new CConfigParser('main');
+		$obConfig->LoadConfig();
+		$obConfig->Set('update_db',0);
+		$obConfig->WriteConfig();
+	}
 
 	/* Подключение класса обработки url */
 	require_once "libs/class.CUrlParser.php";
@@ -190,13 +192,4 @@ else
 	{
 		throw new CError("SYSTEM_WRONG_ADMIN_PATH", 1003);
 	}
-
-	/* Подключение главной страницы администрирования
-	 Не знаю зачем оставлено по идее не надо* /
-	/*if ((file_exists(MODULES_DIR."/main/pages/" . $start_adminpage . ".php") && !$bInclude))
-	{
-		$smarty->assign("modpage", $start_adminpage);
-		include("pages/" . $start_adminpage . ".php");
-	}*/
-	//$page=$start_adminpage;
 }

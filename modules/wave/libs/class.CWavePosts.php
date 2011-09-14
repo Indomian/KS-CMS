@@ -26,21 +26,9 @@ define('BIG_STEP',10);
 
 class CWavePosts extends CFieldsObject
 {
-	private $arPostsCache;
-
 	function __construct($sTable='wave_posts',$sUploadPath='/wave',$sModule='wave')
 	{
 		parent::__construct($sTable,$sUploadPath,$sModule);
-		$this->arPostsCache=array();
-	}
-
-	/**
-	 * Метод обрабатывает запись при выборке
-	 */
-	protected function _ParseItem(&$arItem)
-	{
-		CObject::$arCache[$this->sTable][$arItem['id']]=$arItem;
-		return true;
 	}
 
 	/**
@@ -82,4 +70,3 @@ class CWavePosts extends CFieldsObject
 		return $id;
 	}
 }
-?>

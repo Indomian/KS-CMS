@@ -155,7 +155,6 @@ class CEventTemplates extends CTemplates
 			throw $e;
 		}
 		$ks_db->commit();
-
 	}
 
 	/**
@@ -171,4 +170,3 @@ class CEventTemplates extends CTemplates
 		return $result[0];
 	}
 }
-?>

@@ -25,6 +25,7 @@ define('IS_ADMIN',		false);
 
 try
 {
+	$output=array();
 	/* инициализация */
 	try
 	{
@@ -55,7 +56,7 @@ try
 				$global_template='.default';
 			}
 			$smarty->assign("glb_tpl", $global_template);
-			if($KS_MODULES->IsActive($KS_IND_dir))
+			if($KS_MODULES->IsActive($KS_IND_dir) && $KS_MODULES->CanAjaxCall($KS_IND_dir,$_REQUEST['action']))
 			{
 				$output['main_content']=$KS_MODULES->IncludeWidget($KS_IND_dir,$_REQUEST['action'],$_REQUEST);
 			}
@@ -123,6 +124,8 @@ try
 		$page='';
 	}
 	$page=str_replace('#HEAD_STRINGS#',$KS_MODULES->GetHeader(),$page);//join("\n",$KS_MODULES->arHeads),$page);
+		//Код для упаковки результата
+		$page=preg_replace('#\s{2,}#',' ',$page);
 	echo $page;
 
 	/*Вроде все отработали, можно опробовать систему сообщений
@@ -130,14 +133,14 @@ try
 	$obEvents->init();
 	$obEvents->Run();
 	$obEvents->Done();
-	$end=microtime(1);
 	if(KS_RELEASE!=1)
 	{
 		if($bUsuallPage && KS_DEBUG==1)
 		{
+			$end=microtime(1);
 			$sys_info['gen_tyme'] = ($end-$begin);
-			$sys_info['sql_gen_tyme'] = $ks_db->MySQL_time_taken;
-			$sys_info['sql_queries_quant'] = $ks_db->query_num;
+			$sys_info['sql_gen_tyme'] = $ks_db->GetTimeTaken();
+			$sys_info['sql_queries_quant'] = $ks_db->GetQueriesCount();
 			$sys_info['sql_requests']=$ks_db->GetRequests();
 			$smarty->assign('sys_info', $sys_info);
 			$smarty->display('.default/.sysfooter.tpl');

@@ -15,10 +15,16 @@
 			{foreach from=$data item=oItem key=oKey name=fList}
 			<tr {if $smarty.foreach.fList.iteration is even}class="odd"{/if}>
 				<td>{$oItem.title}</td>
-				<td>{$oItem.file_id}</td>
+				<td>{if $oItem.deleted==1}<span style="text-decoration:line-through;">{/if}{$oItem.file_id}{if $oItem.deleted==1}</span>{/if}</td>
 				<td>
 					<div style="width:60px; text-align: center;">
+					{if $oItem.deleted==1}
+						<a href="{get_url _CLEAR="CU_order.*" ACTION=delete id=$oItem.id}"><img src="{#images_path#}/icons2/delete.gif" alt="{#delete#}" title="{#delete#}" /></a>
+					{elseif $oItem.new==1}
+						<a href="{get_url _CLEAR="CU_order.*" ACTION=new id=$oItem.file_id}"><img src="{#images_path#}/icons2/add.gif" alt="{#install#}" title="{#install#}" /></a>
+					{else}
 						<a href="{get_url _CLEAR="CU_order.*" ACTION=edit id=$oItem.file_id}"><img src="{#images_path#}/icons2/edit.gif" alt="{#edit#}" title="{#edit#}" /></a>
+					{/if}
 					</div>
 				</td>
 			</tr>

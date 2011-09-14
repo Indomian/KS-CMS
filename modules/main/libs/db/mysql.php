@@ -92,50 +92,52 @@ final class mysql extends CDBInterface
 	записывает последние изменения в базе данных в кэш.
 	@param $query -- sql запрос;
 	@param $show_error -- флаг вывода ошибок.
-	 */
+	*/
 	function query($query, $show_error=true)
 	{
 		$time_before = $this->get_real_time();
 
 		if(!$this->connected) $this->connect(DBUSER, DBPASS, DBNAME, DBHOST);
 
+		if(KS_DEBUG_QUERIES==1) echo $query.'<br/>';
+
 		/*проверяем включенность режима записи операций, если работает производим
 		 * выборку в зависимости от типа операции
 		(добавление, обновление)*/
 		if($this->iBegin>0)
-	{
-		$matches=array();
-		$arRow=false;
-			//echo $query;
-		if(preg_match("#^UPDATE ([\w\d_]+) SET *((`?[\w\d`]+` ?= ?'[^']*',? *)+) *WHERE ([`\w\d= ',\(\)]+)#si",$query,$matches)>0)
 		{
-			$arRow=array();
-			$arRow['OP']='UPDATE';
-			$arRow['TABLE']=$matches[1];
-			$arRow['WHERE']=$matches[4];
-			$arRow['QUERY']=$query;
-			$myquery="SELECT * FROM ".$arRow['TABLE']." WHERE ".$arRow['WHERE'];
-			if(!($this->query_id = @mysql_query($myquery, $this->ks_db_id) ))
+			$matches=array();
+			$arRow=false;
+			//echo $query;
+			if(preg_match("#^UPDATE ([\w\d_]+) SET *((`?[\w\d`]+` ?= ?'[^']*',? *)+) *WHERE ([`\w\d= ',\(\)]+)#si",$query,$matches)>0)
 			{
-				$this->mysql_error = mysql_error();
-				$this->mysql_error_num = mysql_errno();
-				if($show_error)
+				$arRow=array();
+				$arRow['OP']='UPDATE';
+				$arRow['TABLE']=$matches[1];
+				$arRow['WHERE']=$matches[4];
+				$arRow['QUERY']=$query;
+				$myquery="SELECT * FROM ".$arRow['TABLE']." WHERE ".$arRow['WHERE'];
+				if(!($this->query_id = @mysql_query($myquery, $this->ks_db_id) ))
 				{
-					throw new CDBError("Ошибка работы системы отката:\n".$this->mysql_error, $this->mysql_error_num, "запрос:".$query."\n выборка из базы".$myquery."\n запрос на обновление".$arRow['QUERY']);
+					$this->mysql_error = mysql_error();
+					$this->mysql_error_num = mysql_errno();
+					if($show_error)
+					{
+						throw new CDBError("Ошибка работы системы отката:\n".$this->mysql_error, $this->mysql_error_num, "запрос:".$query."\n выборка из базы".$myquery."\n запрос на обновление".$arRow['QUERY']);
+					}
+				}
+				while($arResRow=$this->get_row())
+				{
+					$arRow['DATA'][]=$arResRow;
 				}
 			}
-			while($arResRow=$this->get_row())
-			{
-				$arRow['DATA'][]=$arResRow;
-			}
-		}
 			if(preg_match('#^INSERT INTO ([\w\d_]+)#',$query,$matches)>0)
-		{
-			$arRow=array();
-			$arRow['OP']='INSERT INTO';
-			$arRow['TABLE']=$matches[1];
-			$arRow['QUERY']=$query;
-		}
+			{
+				$arRow=array();
+				$arRow['OP']='INSERT INTO';
+				$arRow['TABLE']=$matches[1];
+				$arRow['QUERY']=$query;
+			}
 		}
 
 		if(!($this->query_id = @mysql_query($query, $this->ks_db_id) ))
@@ -147,18 +149,18 @@ final class mysql extends CDBInterface
 
 		if($this->iBegin>0)
 		{
-		if($arRow['OP']=='INSERT INTO')
-		{
-			$arRow['DATA']=$this->insert_id();
-		}
-		if(is_array($arRow))
-		{
-			array_push($this->arBackUpData[$this->iBegin],$arRow);
-		}
+			if($arRow['OP']=='INSERT INTO')
+			{
+				$arRow['DATA']=$this->insert_id();
+			}
+			if(is_array($arRow))
+			{
+				array_push($this->arBackUpData[$this->iBegin],$arRow);
+			}
 		}
 		/*Запись запроса в лог, запись времени его исполнения в лог*/
-			$this->add2log($query,$this->get_real_time() - $time_before);
-			$this->MySQL_time_taken += $this->get_real_time() - $time_before;
+		$this->add2log($query,$this->get_real_time() - $time_before);
+		$this->MySQL_time_taken += $this->get_real_time() - $time_before;
 		$this->query_num ++;
 		return $this->query_id;
 	}

@@ -23,7 +23,7 @@ if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
  */
 function smarty_function_WavePosts($params,&$subsmarty)
 {
-	global $global_template,$USER,$ks_db,$KS_MODULES,$KS_URL;
+	global $global_template,$USER,$ks_db,$KS_MODULES,$KS_URL,$KS_EVENTS_HANDLER;
 	$arData=array();
 	/* Проверка общих прав на просмотр тем */
 	$arData['level'] = $USER->GetLevel('wave');
@@ -104,26 +104,37 @@ function smarty_function_WavePosts($params,&$subsmarty)
 					}
 					if(!$bError)
 					{
-						$id=$obPostsAPI->AddAnswer($params['hash'],intval($_REQUEST['WV_parent_id']),$arPost);
-						$KS_MODULES->AddNotify("WAVE_ADD_OK",'',NOTIFY_MESSAGE);
-						//Пересчитываем количество комментариев
-						$url='';
-						if(!array_key_exists('noredirect',$params) || $params['noredirect']!='Y')
+						if($id=$obPostsAPI->AddAnswer($params['hash'],intval($_REQUEST['WV_parent_id']),$arPost))
 						{
-							$arFilter=array(
-								'hash'=>$params['hash']
-							);
-							if($arData['level']>KS_ACCESS_WAVE_MODERATE)
-								$arFilter['active']=1;
-							if(is_array($params['filter']))
-								$arFilter=array_merge($arFilter,$params['filter']);
-							if($arList=$obPostsAPI->Posts()->GetList(array('left_margin'=>'asc'),$arFilter,false,array('id')))
+							if($arPost=$obPostsAPI->Posts()->GetById($id))
 							{
-								$arPages=$obPages->SearchPage($id,array_keys($arList));
-								$url=$KS_URL->GetPath().'?'.$KS_URL->GetUrl(array('i','p'.$arPages['index'])).'&i='.$arPages['index'].'&p'.$arPages['index'].'='.$arPages['active'].'#com'.$id;
+								$url='';
+								$arFilter=array('hash'=>$arPost['hash']);
+								if($arData['level']>KS_ACCESS_WAVE_MODERATE)
+									$arFilter['active']=1;
+								if(is_array($params['filter']))
+									$arFilter=array_merge($arFilter,$params['filter']);
+								if($arList=$obPostsAPI->Posts()->GetList(array('left_margin'=>'asc'),$arFilter,false,array('id')))
+								{
+									$arPages=$obPages->SearchPage($id,array_keys($arList));
+									$url=$KS_URL->GetPath().'?'.$KS_URL->GetUrl(array('path','i','p'.$arPages['index'])).'&i='.$arPages['index'].'&p'.$arPages['index'].'='.$arPages['active'].'#com'.$id;
+								}
+								//Событие на успешное добавление
+								$arData=array('post'=>$arPost,'url'=>$url);
+								$KS_EVENTS_HANDLER->Execute("wave", "onAddPost",$arData);
+								if(array_key_exists('noredirect',$params) && $params['noredirect']=='Y') $url='';
+								$KS_MODULES->AddNotify("WAVE_ADD_OK",'',NOTIFY_MESSAGE);
+								$KS_URL->redirect($url);
+							}
+							else
+							{
+								throw new CError('WAVE_POST_NOT_FOUND');
 							}
 						}
-						$KS_URL->redirect($url);
+						else
+						{
+							throw new CError('WAVE_ADD_ERROR');
+						}
 					}
 					else
 					{
