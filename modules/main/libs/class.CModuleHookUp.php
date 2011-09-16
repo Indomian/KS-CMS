@@ -360,20 +360,32 @@ class CModuleHookUp extends CModuleManagment
 	 *	Подключение указанного модуля
 	 *	@param $url_ident - путь, для которого требуется подключить модуль.
 	 */
-	function hook_up($url_ident='default')
+	function hook_up($url_ident='default',$bCheckPages=true)
 	{
 		global $ks_db;
-		if( empty($url_ident) )
+		if(empty($url_ident)) $url_ident = 'default';
+		$output=array('include_global_template'=>1);
+		if($bCheckPages && $this->IsActive('pages'))
 		{
-			$url_ident = 'default';
+			//Если есть модуль "Страницы" и он активен
+			try
+			{
+				$this->IncludeModule($arModule,$output);
+				$this->obSmarty->assign('SITE',$this->GetConfigArray('main'));
+				return $output;
+			}
+			catch(CHTTPError $e)
+			{
+				//Если не обработал модуль pages просто передаём дальше
+			}
+			catch(CError $e)
+			{
+				throw $e;
+			}
 		}
-		$output=array(
-			'include_global_template'=>1
-		);
 		if($arModule=$this->GetRecord(array('URL_ident'=>$url_ident,'active'=>1)))
 		{
-			if($arModule['include_global_template'] == 0)
-				$output['include_global_template'] = 0;
+			if($arModule['include_global_template'] == 0) $output['include_global_template'] = 0;
 			try
 			{
 				$this->IncludeModule($arModule,$output);
@@ -384,7 +396,7 @@ class CModuleHookUp extends CModuleManagment
 				if( $url_ident != 'default' )
 				{
 					/* пробуем обработать дефолтовым */
-					$this->hook_up();
+					$this->hook_up('default',false);
 				}
 				else
 				{
@@ -397,10 +409,10 @@ class CModuleHookUp extends CModuleManagment
 				throw $e;
 			}
 		}
-		elseif($url_ident != 'default')
+		elseif($url_ident!='default')
 		{
 			/* модуля нет, пробуем отработать дефолтовым */
-			$output = $this->hook_up();
+			$output = $this->hook_up('default',false);
 		}
 		else
 		{
