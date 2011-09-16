@@ -1,4 +1,16 @@
 <?php
+/**
+ * Меню главного модуля системы
+ *
+ * @file modules/main/admin.menu.inc.php
+ * @author BlaDe39
+ * @version 2.6
+ *
+ */
+
+/* Проверка легальности подключения файла */
+if (!defined("KS_ENGINE"))	die("Hacking attempt!");
+
 if($this->obUser->IsLogin())
 {
 	$access = $this->obUser->GetLevel("main");
@@ -21,4 +33,4 @@ if($this->obUser->IsLogin())
 		if ($access == 0) $this->AddMenuItem(MenuItem("UPDATE","MAIN","module=main&modpage=geography",$this->GetText('menu_geography'),'item.gif '),"GLOBAL");
 	}
 }
-?>
+

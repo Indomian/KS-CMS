@@ -41,7 +41,6 @@ class CMessage extends CObject
 		global $USER,$smarty;
 		try
 		{
-
 			$ob=new CEventTemplates();
 			if($res=$ob->GetTemplate($tpl))
 			{

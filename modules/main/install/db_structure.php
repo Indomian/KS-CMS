@@ -750,5 +750,46 @@ $arStructure=array(
 			'Extra'=>'',
 		),
 	),
+	'main_pages'=>array(
+		'id' => array(
+			'Field'	=>	'id',
+			'Type'	=> 	'int(11) unsigned',
+			'Null'	=>	'NO',
+			'Key'	=>	'PRI',
+			'Default'=>	'0',
+			'Extra'	=>	'auto_increment',
+		),
+		'url_path'=>array(
+			'Field'=>'url_path',
+			'Type'=>'text(2000)',
+			'Null'=>'NO',
+			'Key'=>'',
+			'Default'=>'',
+			'Extra'=>'',
+		),
+		'type'=>array(
+			'Field'=>'type',
+			'Type'=>'enum(\'page\',\'module\',\'redirect\',\'404\')',
+			'Null'=>'NO',
+			'Key'=>'',
+			'Default'=>'page',
+			'Extra'=>'',
+		),
+		'function1'=>array(
+			'Field'=>'function1',
+			'Type'=>'char(255)',
+			'Null'=>'NO',
+			'Key'=>'',
+			'Default'=>'',
+			'Extra'=>'',
+		),
+		'function2'=>array(
+			'Field'=>'function2',
+			'Type'=>'char(255)',
+			'Null'=>'NO',
+			'Key'=>'',
+			'Default'=>'',
+			'Extra'=>'',
+		),
+	),
 );
-?>
