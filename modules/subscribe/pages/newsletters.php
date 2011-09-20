@@ -22,14 +22,19 @@ class CsubscribeAInewsletters extends CModuleAdmin
 	private $obNews;
 	private $obPages;
 	private $obUserGroups;
+	private $obAccess;
+	private $obSubsUsergroupsLevels;
 
 	function __construct($module='subscribe',&$smarty,&$parent)
 	{
 		parent::__construct($module,$smarty,$parent);
 		$this->access_level=$this->obUser->GetLevel($this->module);
-		$this->obNews = new CNewsletters();
+		$this->obNews = new CObject('subscribe_newsletters');
 		/* Объект для работы с группами пользователей */
 		$this->obUserGroups = new CUserGroup();
+		/* Объект для работы с правами доступа пользователей к модулям */
+		$this->obAccess = new CModulesAccess();
+		$this->obSubsUsergroupsLevels= new CObject('subscribe_usergroups_levels');
 	}
 
 	function Table()
@@ -40,17 +45,52 @@ class CsubscribeAInewsletters extends CModuleAdmin
 		list($sOrderField,$sOrderDir)=$this->InitSort($arSortFields,$_REQUEST['order'],$_REQUEST['dir']);
 		$sNewDir=($sOrderDir=='desc')?'asc':'desc';
 		$arSort=array($sOrderField=>$sOrderDir);
-
-		$obPages = new CPageNavigation($obNews);
-		$totalNews = $obNews->count();
+		$arFilter=array();
+		$obPages = new CPages();
+		$totalNews = $this->obNews->count();
 		/* Для постраничной навигации */
 		$this->smarty->assign("pages", $obPages->GetPages($totalNews));
 		/* Количество отображаемых на странице голосований */
 		$this->smarty->assign("num_visible", $obPages->GetVisible());
 		/* Параметры сортировки */
 		$this->smarty->assign("order", array('newdir' => $sNewDir, 'curdir' => $sOrderDir, 'field' => $sOrderField));
-		$this->smarty->assign("list", $obNews->GetList($arSort, $arFilter, $obPages->GetLimits($totalNews)));
+		$this->smarty->assign("list", $this->obNews->GetList($arSort, $arFilter, $obPages->GetLimits($totalNews)));
 		return '';
+	}
+
+	function EditForm($data=false)
+	{
+		if(!$data)
+		{
+			$data=array(
+				'id'=>-1,
+				'active'=>1,
+				'orderation'=> 10
+			);
+		}
+		/* Список групп пользователей*/
+		$access['usergroups'] = $this->obUserGroups->GetList();
+		/* Уровни доступа к модулю */
+		$access['levels'] = $this->obModules->GetAccessArray($this->module);
+		unset($access['levels'][0]);
+		/* Забиваем уровни доступа групп пользователей сначала по умолчанию */
+		$ug_levels = $this->obAccess->GetList(array('id' => "asc"), array('module' => $this->module));
+		$usergroups_levels = array();
+		if (is_array($ug_levels) && count($ug_levels))
+			foreach($ug_levels as $ug_level)
+				$usergroups_levels[$ug_level['group_id']] = $ug_level;
+
+		if($real_ug_levels = $this->obSubsUsergroupsLevels->GetList(false, array('newsletter_id' => $data['id'])))
+			foreach ($real_ug_levels as $level_item)
+				$usergroups_levels[$level_item['usergroup_id']]['level'] = $level_item['level'];
+		else
+			foreach ($usergroups_levels as $usergroup_level_key => $usergroup_level)
+				if ($usergroup_level['level'] == 0)
+					$usergroups_levels[$usergroup_level_key]['level'] = 5;
+		$access['usergroups_levels'] = $usergroups_levels;
+		$this->smarty->assign("data", $data);
+		$this->smarty->assign("access", $access);
+		return '_edit';
 	}
 
 	function Run()
@@ -58,28 +98,14 @@ class CsubscribeAInewsletters extends CModuleAdmin
 		$action='';
 		if(isset($_REQUEST['action']))
 			$action=$_REQUEST['action'];
-		/* Объект для работы с группами пользователей */
-		$obUserGroups = new CUserGroup();
-		/* Объект для работы с правами доступа пользователей к модулям */
-		$obAccess = new CModulesAccess();
-		$obSubsUsergroupsLevels= new CNewsletterUsergroupsLevels();
-		$page='_newsletters';
 
-		/* Список групп пользователей*/
-		$access['usergroups'] = $obUserGroups->GetList();
+		$page='';
 
-		/* Уровни доступа к модулю */
-		$access['levels'] = $KS_MODULES->GetAccessArray($module_name);
 
-		unset($access['levels'][0]);
 
-		/* Забиваем уровни доступа групп пользователей сначала по умолчанию */
-		$ug_levels = $obAccess->GetList(array('id' => "asc"), array('module' => $module_name));
-		$usergroups_levels = array();
-		if (is_array($ug_levels) && count($ug_levels))
-			foreach($ug_levels as $ug_level)
-				$usergroups_levels[$ug_level['group_id']] = $ug_level;
-
+		$data=false;
+		$id=0;
+		if(isset($_REQUEST['id'])) $id=intval($_REQUEST['id']);
 		switch($action)
 		{
 			case "common":
@@ -117,51 +143,19 @@ class CsubscribeAInewsletters extends CModuleAdmin
 				/* Возвращаемся к списку опросов */
 				CUrlParser::Redirect("admin.php?" . $KS_URL->GetUrl(array()));
 			break;
-			/* Новое */
-			case "new":
-				$data['id']=-1;
-				$data['active']=1;
-				$data['orderation'] = 10;
 
-
-				foreach ($usergroups_levels as $usergroup_level_key => $usergroup_level)
-				{
-					if ($usergroup_level['level'] == 0)
-						$usergroups_levels[$usergroup_level_key]['level'] = 5;
-				}
-				$access['usergroups_levels'] = $usergroups_levels;
-
-				$smarty->assign("data", $data);
-				$smarty->assign("access", $access);
-			break;
-
-			/* Редактирование */
 			case "edit":
-				/* Идентификатор */
-				$id = intval($_REQUEST['id']);
-				$data = $obNews->GetRecord(array('id' => $id));
-
-
-
-				/* Теперь перепишем все данные, какие найдём в БД */
-				$real_ug_levels = $obSubsUsergroupsLevels->GetList(array('group_id' => "asc"), array('newsletter_id' => $id));
-
-				if (is_array($real_ug_levels) && count($real_ug_levels))
-					foreach ($real_ug_levels as $level_item)
-						$usergroups_levels[$level_item['usergroup_id']]['level'] = $level_item['level'];
-
-				$max_access = 10;
-				foreach ($usergroups_levels as $usergroup_level)
+				if($data=$this->obNews->GetRecord(array('id'=>$id)))
 				{
-					if ($usergroup_level['level'] < $max_access)
-						$max_access = $usergroup_level['level'];
+
 				}
-
-
-
-				$access['usergroups_levels'] = $usergroups_levels;
-				$smarty->assign("data", $data);
-				$smarty->assign("access", $access);
+				else
+				{
+					throw new CError('SUBSCRIBE_NEWSLETTER_NOT_FOUND');
+				}
+			case "new":
+				/* Новое */
+				$page=$this->EditForm($data);
 			break;
 
 			/* Сохранение */
@@ -256,7 +250,9 @@ class CsubscribeAInewsletters extends CModuleAdmin
 			break;
 
 			default:
+				$page=$this->Table();
 			break;
 		}
+		return '_newsletters'.$page;
 	}
 }
