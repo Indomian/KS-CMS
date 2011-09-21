@@ -16,7 +16,7 @@ require_once MODULES_DIR."/main/libs/class.CUserGroup.php";
 require_once MODULES_DIR."/main/libs/class.CAccess.php";
 require_once MODULES_DIR.'/main/libs/class.CModuleAdmin.php';
 
-class CsubscribeAInewsletters extends CModuleAdmin
+class CsubscribeAIindex extends CModuleAdmin
 {
 	private $access_level;
 	private $obNews;
@@ -56,6 +56,82 @@ class CsubscribeAInewsletters extends CModuleAdmin
 		$this->smarty->assign("order", array('newdir' => $sNewDir, 'curdir' => $sOrderDir, 'field' => $sOrderField));
 		$this->smarty->assign("list", $this->obNews->GetList($arSort, $arFilter, $obPages->GetLimits($totalNews)));
 		return '';
+	}
+
+	function Save($id)
+	{
+		/* Параметры для сохранения */
+		$arData = $_POST;
+		/* Попытка сохранения данных */
+		$bError=0;
+		/* Поле для автозаполнения */
+		if (strlen(trim($arData['SB_name'])) == 0)
+			$bError+=$this->obModules->AddNotify("SUBSCRIBE_NAME_ERROR");
+		/* Сохранение*/
+		if($bError==0)
+		{
+			try
+			{
+				if($id = $this->obNews->Save('SB_', $arData))
+				{
+					/* Теперь остаётся сохранить выставленные уровни доступа */
+					if (is_array($_POST['SB_groupLevel']))
+					{
+						$groups_levels = $_POST['SB_groupLevel'];
+						if (count($groups_levels))
+							foreach ($groups_levels as $group_id => $group_levels)
+							{
+								if (count($group_levels))
+								{
+									$max_group_level = 10;
+									foreach ($group_levels as $group_level)
+									{
+										if ($group_level < $max_group_level)
+											$max_group_level = $group_level;
+									}
+									/* Формируем массив для записи */
+									$usergroups_levels_row = array('newsletter_id' => $id, 'usergroup_id' => $group_id, 'level' => $max_group_level);
+
+									/* Параметры идентификации уровня доступа */
+									$ident_filter = array('newsletter_id' => $id, 'usergroup_id' => $group_id);
+
+									/* Проверяем запись на существование */
+									$row = $this->obSubsUsergroupsLevels->GetRecord($ident_filter);
+									if (is_array($row) && count($row) > 0)
+										$this->obSubsUsergroupsLevels->Update($row['id'], $usergroups_levels_row);
+									elseif (!$this->obSubsUsergroupsLevels->Save("", $usergroups_levels_row))
+										throw new CError("SUBSCRIBE_NEWSLETTER_ACCESS_SAVE_ERROR");
+								}
+							}
+					}
+				}
+				else
+				{
+					throw new CError('SUBSCRIBE_NEWSLETTER_SAVE_ERROR');
+				}
+				$this->obModules->AddNotify('SUBSCRIBE_NEWSLETTER_SAVE_OK','',NOTIFY_MESSAGE);
+				/* Осуществляем редирект после успешного сохранения */
+				if (array_key_exists('update', $_REQUEST))
+					CUrlParser::get_instance()->Redirect("admin.php?".CUrlParser::get_instance()->GetUrl(array('action')).'&action=edit&id='.$id);
+				else
+					CUrlParser::get_instance()->Redirect("admin.php?".CUrlParser::get_instance()->GetUrl(array('action','p')));
+			}
+			catch(CError $e)
+			{
+				$this->obModules->AddNotify($e->getMessage());
+			}
+		}
+		$data=$obNews->GetRecordFromPost('SB_',$_POST);
+		foreach ($usergroups_levels as $usergroup_level_key => $usergroup_level)
+		{
+			if ($usergroup_level['level'] == 0)
+				$usergroups_levels[$usergroup_level_key]['level'] = 5;
+		}
+		$access['usergroups_levels'] = $usergroups_levels;
+
+		$this->smarty->assign('data',$data);
+		$tihs->smarty->assign("access", $access);
+		return '_edit';
 	}
 
 	function EditForm($data=false)
@@ -100,9 +176,6 @@ class CsubscribeAInewsletters extends CModuleAdmin
 			$action=$_REQUEST['action'];
 
 		$page='';
-
-
-
 		$data=false;
 		$id=0;
 		if(isset($_REQUEST['id'])) $id=intval($_REQUEST['id']);
@@ -160,81 +233,7 @@ class CsubscribeAInewsletters extends CModuleAdmin
 
 			/* Сохранение */
 			case "save":
-
-
-				/* Параметры для сохранения */
-				$arData = $_POST;
-				/* Попытка сохранения данных */
-				try
-				{
-					/* Поле для автозаполнения */
-					$obNews->AddAutoField('id');
-					if (strlen(trim($arData['SB_name'])) == 0)
-						throw new CError("SUBSCRIBE_NAME_ERROR",0);
-
-					/* Сохранение*/
-					$id = $obNews->Save('SB_', $arData);
-					/* Теперь остаётся сохранить выставленные уровни доступа */
-					if (is_array($_POST['SB_groupLevel']))
-					{
-						$groups_levels = $_POST['SB_groupLevel'];
-						if (count($groups_levels))
-							foreach ($groups_levels as $group_id => $group_levels)
-							{
-								if (count($group_levels))
-								{
-									$max_group_level = 10;
-									foreach ($group_levels as $group_level)
-									{
-										if ($group_level < $max_group_level)
-											$max_group_level = $group_level;
-									}
-
-									/* Формируем массив для записи */
-									$usergroups_levels_row = array('newsletter_id' => $id, 'usergroup_id' => $group_id, 'level' => $max_group_level);
-
-									/* Параметры идентификации уровня доступа */
-									$ident_filter = array('newsletter_id' => $id, 'usergroup_id' => $group_id);
-
-									/* Проверяем запись на существование */
-									$row = $obSubsUsergroupsLevels->GetRecord($ident_filter);
-									if (is_array($row) && count($row) > 0)
-									{
-										$obSubsUsergroupsLevels->Update($row['id'], $usergroups_levels_row);
-									}
-									else
-									{
-										if (!$obSubsUsergroupsLevels->Save("", $usergroups_levels_row))
-											throw new CError("VOTES_ACCESS_SAVE_ERROR");
-									}
-								}
-							}
-						}
-
-					/* Осуществляем редирект после успешного сохранения */
-					if (array_key_exists('update', $_REQUEST))
-						CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl(array('ACTION')).'&ACTION=edit&id='.$id);
-					else
-						CUrlParser::Redirect("admin.php?".$KS_URL->GetUrl(array('ACTION','p')));
-				}
-				catch(CError $e)
-				{
-					$data=$obNews->GetRecordFromPost('SB_',$_POST);
-					foreach ($usergroups_levels as $usergroup_level_key => $usergroup_level)
-					{
-						if ($usergroup_level['level'] == 0)
-							$usergroups_levels[$usergroup_level_key]['level'] = 5;
-					}
-					$access['usergroups_levels'] = $usergroups_levels;
-
-					$smarty->assign('last_error', $e);
-					$smarty->assign('data',$data);
-					$smarty->assign("access", $access);
-					$page.='_edit';
-
-				}
-
-
+				$page=$this->Save($id);
 			break;
 
 			/* Удаление */
@@ -256,3 +255,4 @@ class CsubscribeAInewsletters extends CModuleAdmin
 		return '_newsletters'.$page;
 	}
 }
+

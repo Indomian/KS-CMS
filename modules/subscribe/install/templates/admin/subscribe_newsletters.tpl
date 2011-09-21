@@ -1,15 +1,11 @@
 {strip}
 <ul class="nav" id="navChain">
 	<li><a href="/admin.php"><img src="{#images_path#}/icons_menu/home.gif" alt="icon_home" height="13" width="13" />&nbsp;<span>{#home#}</span></a></li>
-    <li><a href="{get_url _CLEAR="action type id i p1"}"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;<span>{#title#}</span></a></li>
-    {foreach from=$navChain item=oItem}
-    {if $oItem.id!=0}
-    <li><a href="{get_url _CLEAR="action i p1 type id"}"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;<span>{$oItem.title}</span></a></li>
-    {/if}
-    {/foreach}
+	<li><a href="/admin.php?module=subscribe"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;<span>{#title#}</span></a></li>
+	<li><a href="{get_url _CLEAR="action type id i p1"}"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;<span>{#title_newsletters#}</span></a></li>
 </ul>
 {/strip}
-<h1>{#title#}</h1>
+<h1>{#title_newsletters#}</h1>
 <div class="manage">
 	<table class="layout">
 		<tr>
@@ -78,7 +74,7 @@
     			<input type="submit" id="comdel" name="comdel" disabled value="{#delete#}" onclick="return confirm('{#delete_common_confirm#}');" />&nbsp;
     			<input type="submit" id="comact" name="comact" disabled value="{#activate#}" />&nbsp;
     			<input type="submit" id="comdea" name="comdea" disabled value="{#deactivate#}" />
-    			<input type="hidden" id="ACTION" name="ACTION" value="common" />
+    			<input type="hidden" id="action" name="action" value="common" />
     		</td>
     	</tr>
     </table>
@@ -87,7 +83,7 @@
 
 {strip}
 <dl class="def" style="background:#FFF6C4 url('{#images_path#}/big_icons/folder.gif') left 50% no-repeat;{if $smarty.cookies.showHelpBar==1}display:none;{/if}">
-	<dt>{#title#}</dt>
+	<dt>{#title_newsletters#}</dt>
 	<dd>{#hint#}</dd>
 </dl>
 <div class="content_arrow_{if $smarty.cookies.showHelpBar==1}down{else}up{/if}" onclick="ToggleHelpBar(this)" style="cursor:pointer;">&nbsp;</div>
