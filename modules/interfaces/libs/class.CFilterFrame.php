@@ -69,6 +69,7 @@ class CFilterFrame extends CFrame
 			}
 		}
 		$arMatches=array();
+
 		if(array_key_exists('filter',$arFrom) && ($arFrom['filter']==1)&&(!array_key_exists('fundo',$arFrom)))
 		{
 			foreach($arFrom as $key=>$value)

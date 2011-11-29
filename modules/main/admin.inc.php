@@ -29,11 +29,7 @@ if (!defined("KS_MAIN_INIT"))
 	 * @todo Исправить!
 	 */
 	date_default_timezone_set('Europe/Moscow');
-	if(array_key_exists('KSSESSID',$_GET)) session_id($_GET['KSSESSID']);
-	unset($_GET['KSSESSID']);
-	session_name('KSSESSID');
-	if (!session_start())
-		echo "No sessions";
+	require_once MODULES_DIR.'/main/libs/class.CSessionManager.php';
 
 	setlocale(LC_NUMERIC, 'C');
 	/* Полезные функции */
@@ -47,15 +43,26 @@ if (!defined("KS_MAIN_INIT"))
 	require_once MODULES_DIR . "/main/libs/db/" . $ks_config["DB_CLASS"] . '.php';
 	include_once(CONFIG_DIR . "/db_config.php");
 	if(!defined('KS_LOG_DB_ERRORS')) define('KS_LOG_DB_ERRORS',1);
+	/* Проверка структуры базы данных по требованию */
+	if($ks_config['update_db']==1)
+	{
+		include_once MODULES_DIR.'/main/libs/class.CConfigParser.php';
+		$obConfig=new CConfigParser('main');
+		$obConfig->LoadConfig();
+		include_once(CONFIG_DIR.'/db_structure.php');
+		$ks_db->CheckDB($arStructure);
+		$obConfig->Set('update_db',0);
+		$obConfig->WriteConfig();
+	}
 
 	/* Инициализация Смарти */
 	require(MODULES_DIR  ."/main/libs/class.CSmartyExtender.php");
 	$smarty = new CSmartyExtender;
 	$smarty->template_dir	= SYS_TEMPLATES_DIR."/";
-	$smarty->compile_dir	= SYS_TEMPLATES_DIR."/templates_c/";
-	$smarty->config_dir		= SYS_TEMPLATES_DIR."/configs/";
-	$smarty->cache_dir		= SYS_TEMPLATES_DIR."/cache/";
-	$smarty->plugins_dir 	= array(MODULES_DIR.'/main/libs/smarty/plugins/',MODULES_DIR.'/main/widgets/');
+	$smarty->compile_dir	= SYS_TEMPLATES_DIR."/templates_c";
+	$smarty->config_dir		= SYS_TEMPLATES_DIR."/configs";
+	$smarty->cache_dir		= SYS_TEMPLATES_DIR."/cache";
+	$smarty->plugins_dir 	= array(MODULES_DIR.'/main/libs/smarty/plugins',MODULES_DIR.'/main/widgets');
 	/* Настройки безопасности смарти */
 	include_once CONFIG_DIR.'/smarty.php';
 
@@ -88,19 +95,6 @@ if (!defined("KS_MAIN_INIT"))
 	require_once "libs/class.CModuleHookUp.php";
 
 	$KS_MODULES=CAdminModuleManagment::get_instance();
-
-	/* Проверка структуры базы данных по требованию */
-	if($ks_config['update_db']==1)
-	{
-		$KS_MODULES->RecountDBStructure();
-		include_once MODULES_DIR.'/main/libs/class.CConfigParser.php';
-		include CONFIG_DIR.'/db_structure.php';
-		$ks_db->CheckDB($arStructure);
-		$obConfig=new CConfigParser('main');
-		$obConfig->LoadConfig();
-		$obConfig->Set('update_db',0);
-		$obConfig->WriteConfig();
-	}
 
 	/* Подключение класса обработки url */
 	require_once "libs/class.CUrlParser.php";
@@ -192,4 +186,13 @@ else
 	{
 		throw new CError("SYSTEM_WRONG_ADMIN_PATH", 1003);
 	}
+
+	/* Подключение главной страницы администрирования
+	 Не знаю зачем оставлено по идее не надо* /
+	/*if ((file_exists(MODULES_DIR."/main/pages/" . $start_adminpage . ".php") && !$bInclude))
+	{
+		$smarty->assign("modpage", $start_adminpage);
+		include("pages/" . $start_adminpage . ".php");
+	}*/
+	//$page=$start_adminpage;
 }

@@ -222,9 +222,14 @@ class CmainAIusers extends CModuleAdmin
 				{
 					$bError+=$this->obModules->AddNotify('MAIN_USERS_PASSWORD_SHORT');
 				}
-				if($_POST['CU_password']!=$_POST['CU_password_c'])
+				elseif($_POST['CU_password']!=$_POST['CU_password_c'])
 				{
 					$bError+=$this->obModules->AddNotify('MAIN_USERS_PASSWORD_MISTAPE');
+				}
+				else
+				{
+					$_POST['CU_password']=md5($_POST['CU_password']);
+					$_POST['CU_password_c']=$_POST['CU_password'];
 				}
 			}
 			//Блокировка пользователя по времени

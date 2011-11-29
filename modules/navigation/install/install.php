@@ -26,7 +26,7 @@ $arDBList=array(
 	'navigation_menu_elements',
 );
 //Получаем список таблиц системы
-$arTables=$ks_db->ListTables();
+$arTables=$this->obDB->ListTables();
 
 $showButtons=0;
 $arFields=array();
@@ -35,11 +35,11 @@ foreach($arDBList as $sTable)
 	//Чистим базу (если были таблицы - потрем)
 	if(in_array($sTable,$arTables))
 	{
-		$ks_db->CheckTable($sTable,$arStructure[$sTable]);
+		$this->obDB->CheckTable($sTable,$arStructure[$sTable]);
 	}
 	else
 	{
-		$ks_db->AddTable($sTable,$arStructure[$sTable]);
+		$this->obDB->AddTable($sTable,$arStructure[$sTable]);
 	}
 }
 //Прописываем уровни доступа для всех групп

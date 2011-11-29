@@ -16,14 +16,7 @@ if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 if (!defined('KS_MAIN_INIT'))
 {
 	/* Запускаем сессию */
-	/**
-		* @todo Исправить!
-		*/
-	if(array_key_exists('KSSESSID',$_GET)) session_id($_GET['KSSESSID']);
-	unset($_GET['KSSESSID']);
-	session_name('KSSESSID');
-	if (!session_start())
-		echo "No sessions";
+	require_once MODULES_DIR.'/main/libs/class.CSessionManager.php';
 
 	/* Устанавливаем локаль */
 	setlocale(LC_ALL, "ru_RU.UTF-8");
@@ -65,7 +58,7 @@ if (!defined('KS_MAIN_INIT'))
 	/* Настройки безопасности смарти */
 	include_once CONFIG_DIR.'/smarty.php';
 
-	/* домен для смарти */
+ /* домен для смарти */
 	$smarty->assign('home_domain', $ks_config['home_url']);
 
 	/* Устанавливаем директорию загрузки файлов модулей и шаблонов */
@@ -104,6 +97,9 @@ if (!defined('KS_MAIN_INIT'))
 	/* пользователи */
 	require_once MODULES_DIR.'/main/libs/class.CUser.php';
 	$USER = new CUser();
+	/* Подгружаем список уровней доступа */
+	$obGroup = new CObject('usergroups');
+	$USER->SetGroupList($obGroup->GetList(false, false, false, array('id','title')));
 	/*Подключение системы событий*/
 	require_once MODULES_DIR.'/main/libs/class.CEvents.php';
 	$obEvents=new CEvents();

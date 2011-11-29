@@ -41,7 +41,7 @@
 										<a class="menu_link {$oItem.class}" href="/admin.php?{$oItem.href}">{$oItem.title}</a>
 										<ul id="b{$smarty.foreach.menu.iteration}" style="{if $module.current!=$oItem.module}display: none;{/if}">
 											{foreach from=$oItem.items key=soKey item=soItem}
-											<li><img src="{#images_path#}/icons_menu/{$soItem.class}" alt="icon" />&nbsp;<a href="/admin.php?{$soItem.href}">{$soItem.title}</a></li>
+											<li><img src="{#images_path#}/icons_menu/{$soItem.class}" alt="icon" /><a href="/admin.php?{$soItem.href}">{$soItem.title}</a></li>
 											{/foreach}
 										</ul>
 										<span class="menu_arrow_down" id="i{$smarty.foreach.menu.iteration}" onclick="dis('i{$smarty.foreach.menu.iteration}', 'b{$smarty.foreach.menu.iteration}'); return false;">&nbsp;</span>

@@ -112,7 +112,6 @@ abstract class CDBInterface
 
 	abstract function get_row($query_id = '');
 	abstract function get_array($query_id = '');
-	abstract function super_query($query, $multi = false);
 	abstract function num_rows($query_id = '');
 	abstract function insert_id();
 	abstract function AffectedRows();

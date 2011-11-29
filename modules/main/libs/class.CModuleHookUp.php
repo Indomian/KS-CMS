@@ -18,6 +18,7 @@ class CModuleHookUp extends CModuleManagment
 
 	function __construct($sTable='main_modules')
 	{
+		global $USER;
 		parent::__construct($sTable);
 	}
 

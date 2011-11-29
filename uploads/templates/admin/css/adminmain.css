@@ -149,7 +149,7 @@ a:hover {
 	background: #F95311;
 	padding: 0;
 }
-/*.menu ul li img {display: block; padding: 6px 0;}*/
+
 .menu_arrow_down {
 	display: block;
 	font-size: 1px;
@@ -180,8 +180,12 @@ a:hover {
 }
 
 .menu ul ul li img {
-	position: relative;
-	top: 2px;
+	float:left;
+}
+
+.menu ul ul li a{
+	padding-left:30px;
+	display:block;
 }
 
 .menu ul ul ul {
@@ -2198,4 +2202,31 @@ table.calendar td.checked
 table.calendar td.unchecked
 {
 	background-color:#F2A8A8;
+}
+
+.tabs {
+	width: 100%;
+}
+
+.lite_content { padding: 8px 8px 60px; }
+
+.showhide_tabs { float: right; margin-top:-20px;}
+
+.float_tip {width: 300px;z-index:1000;}
+.float_tip_top {position: relative; border-top: 1px solid #666; background:#fff; height: 1px; overflow: hidden; margin: 0 1px;}
+.float_tip_bottom {background:#666; height: 1px; overflow: hidden; margin: 0 1px;}
+.float_tip_main {border: solid #666; border-width: 0 1px; margin: -1px 0 0; background:#F7E49F; padding: 5px; color:#666; font-size: 11px; line-height: 16px;}
+
+div.ajaxLoad
+{
+
+}
+
+div.ajaxLoad
+{
+	position:absolute;
+	left:0;
+	top:0;
+	background:#ff5500;
+	display:block;
 }

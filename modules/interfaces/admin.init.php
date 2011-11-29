@@ -16,3 +16,5 @@ include_once (MODULES_DIR.'/interfaces/libs/class.CPages.php');
 
 $KS_TABS=new CTabs();
 $KS_TEXTPARSER=new CAdminTextParser();
+
+$this->UseJavaScript('/interfaces/object.popup.0.6.js');

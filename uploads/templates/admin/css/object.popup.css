@@ -1,0 +1,23 @@
+.window-info {
+	width: 300px; position: absolute; top: 60%; left: 60%; margin-top: -150px; margin-left: -150px; z-index: 5; padding: 0 0px; background: #fff; border: 1px solid #D5D6D1; box-shadow: 0 0 10px #cdcdcd; -webkit-box-shadow: 0 0 10px #cdcdcd; -moz-box-shadow: 0 0 10px #cdcdcd; display: none;}
+/*.info-wrapper {position: relative; }*/
+.info-close {position: absolute; top: -9px; right: -9px; width: 19px; height: 19px;  border: 0px none;cursor:pointer;}
+.info-close a {background: #fff url('../images/close.gif') no-repeat; display: block; width: 19px; height: 19px; box-shadow: 0 0 10px #cdcdcd; -webkit-box-shadow: 0 0 10px #cdcdcd; -moz-box-shadow: 0 0 10px #cdcdcd;}
+.info-close a:hover {box-shadow: none; -webkit-box-shadow: none; -moz-box-shadow: none;}
+.window-info h2 {color:#ec7435; font-size: 17px;}
+.window-info span {width: 100px; display: block; float: left; color: #02a4a8; font-size: 12px; text-align: right;}
+.window-info p {width: 200px; margin-left: 110px; color: #000; font-size: 12px; text-align: left;}
+
+.window-info-title
+{
+	height:20px;
+	color:#FFB31B;
+	font-size:14px;
+	cursor:move;
+	padding-left:10px;
+}
+
+*+html .window-info {width: 330px;}
+*+html .window-info p {margin: 0px;}
+*+html .info-item {margin-bottom: 10px;}
+*+html .window-info h2 {margin-top: 14px;}

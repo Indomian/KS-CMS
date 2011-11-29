@@ -1,11 +1,11 @@
 <?php
 /*
  * CMS-local
- *
+ * 
  * Created on 10.11.2008
  *
  * Developed by blade39
- *
+ * 
  */
 if( !defined('KS_ENGINE') )die("Hacking attempt!");
 

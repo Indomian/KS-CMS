@@ -208,11 +208,6 @@ class CObject extends CBaseList
 		}
 	}
 
-	function AddFileField($field)
-	{
-		$this->file_fields[]=$field;
-	}
-
 	function GenCheck($data)
 	{
 		$res=Array();
@@ -323,8 +318,9 @@ class CObject extends CBaseList
 	/**
 	 * Метод выполняет сохранение записи в БД
 	 *
-	 * @version 2.5
+	 * @version 2.6
 	 * Изменения:
+	 * 2.6 - первый параметр стало возможным не задавать, т.е. просто передавать массив с данными
 	 * 2.5 - поддержка загрузки файлов убрана в дополнительный класс
 	 * BlaDe39 13.03.10 Изменен способ загрузки файлов
 	 * 2.3		- добавлен тип binary
@@ -343,13 +339,20 @@ class CObject extends CBaseList
 
 		$table = $this->sTable;
 
-		/* Определяем массив входных данных для сохранения в базе */
-		if ($data == "")
-			$input = $_REQUEST;
-		elseif(is_array($data))
-			$input = $data;
+		if(is_array($prefix) && $data=="")
+		{
+			$input = $prefix;
+		}
 		else
-			throw new CError ("MAIN_INCORRECT_DATA_FORMAT", 999);
+		{
+			/* Определяем массив входных данных для сохранения в базе */
+			if ($data == "")
+				$input = $_REQUEST;
+			elseif(is_array($data))
+				$input = $data;
+			else
+				throw new CError ("MAIN_INCORRECT_DATA_FORMAT", 999);
+		}
 		$data = array();
 
 		$fields=$this->_GetTableFields();
@@ -597,21 +600,22 @@ class CObject extends CBaseList
 						{
 							//Значит впереди идет имя таблицы
 							$arField=explode(".",$field);
-							if($arField[0]!='')
+							$sTable=$arField[0];
+							unset($arField[0]);
+							if($sTable!='')
 							{
-								if(!array_key_exists($arField[0],$this->arTables))
+								$sField=join('.',$arField);
+								if(!array_key_exists($sTable,$this->arTables))
 								{
 									//Такая таблица еще не добавлена
 									$code=chr(65+count($this->arTables));
-									$this->arTables[$arField[0]]=$code;
-									$field=$code.'.'.$arField[1];
+									$this->arTables[$sTable]=$code;
+									$field=$code.'.'.$sField;
 								}
-								else
-								{
-									$field=$this->arTables[$arField[0]].'.'.$arField[1];
-								}
-							} else continue;
-							$arRow['fromTable']=$arField[0];
+								else $field=$this->arTables[$sTable].'.'.$sField;
+							}
+							else continue;
+							$arRow['fromTable']=$sTable;
 						}
 						else
 						{
@@ -621,25 +625,34 @@ class CObject extends CBaseList
 						{
 							//Значит впереди идет имя таблицы
 							$arField=explode(".",$value);
-							if($arField[0]!='')
+							$sTable=$arField[0];
+							unset($arField[0]);
+							if($sTable!='')
 							{
-								if(!array_key_exists($arField[0],$this->arTables))
+								$sField=join('.',$arField);
+								if(!array_key_exists($sTable,$this->arTables))
 								{
 									//Такая таблица еще не добавлена
 									$code=chr(65+count($this->arTables));
-									$this->arTables[$arField[0]]=$code;
-									$value=$code.'.'.$arField[1];
+									$this->arTables[$sTable]=$code;
+									$value=$code.'.'.$sField;
 								}
 								else
 								{
-									$value=$this->arTables[$arField[0]].'.'.$arField[1];
+									$value=$this->arTables[$sTable].'.'.$sField;
 								}
 							} else continue;
-							$arRow['toTable']=$arField[0];
+							$arRow['toTable']=$sTable;
 						}
 						else
 						{
 							$arRow['toTable']=$this->sTable;
+						}
+						if($arRow['toTable']==$this->sTable)
+						{
+							$sTmp=$arRow['toTable'];
+							$arRow['toTable']=$arRow['fromTable'];
+							$arRow['fromTable']=$sTmp;
 						}
 						$arRow['ON']=$field.'='.$value;
 						$this->arJoinTables[]=$arRow;
@@ -751,7 +764,7 @@ class CObject extends CBaseList
 								continue;
 							}
 						}
-						elseif($operation=='%') $operation=" $myfield is '".$ks_db->safesql($value)."' ";
+						elseif($operation=='%') $operation=" $myfield is ".$ks_db->safesql($value)." ";
 						elseif($noSafe) $operation=" $myfield $operation $value ";
 						else $operation=" $myfield $operation '".$ks_db->safesql($value)."' ";
 						$arFil[]=$operation;
@@ -1190,6 +1203,7 @@ class CObject extends CBaseList
  		{
 			$query="SELECT $fields FROM $sFrom $sWhere $sGroupBy $sOrder $limits";
 		}
+		if(KS_DEBUG_QUERIES==1) echo $query.'<br/>';
 		$ks_db_res=$this->obDB->query($query);
 		if($ks_db->num_rows($ks_db_res)<1)
 		{
@@ -1245,6 +1259,7 @@ class CObject extends CBaseList
 			{
 				$query = "SELECT COUNT(*) FROM " . $this->_GenFrom(). $sWhere;
 			}
+			if(KS_DEBUG_QUERIES==1) echo $query.'<br/>';
 			$ks_db->query($query);
 			if ($ks_db->num_rows() > 0)
 			{
@@ -1263,6 +1278,7 @@ class CObject extends CBaseList
 			$sSelect=$this->_GenSelect($fGroup,true);
 			$fGroup=$this->_GenGroup($fGroup);
 			$query = "SELECT $sSelect FROM " . $this->_GenFrom() . $sWhere . $fGroup;
+			if(KS_DEBUG_QUERIES==1) echo $query.'<br/>';
 			$ks_db->query($query);
 			while ($row = $ks_db->get_array())
 			{

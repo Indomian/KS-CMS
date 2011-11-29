@@ -23,7 +23,7 @@ class CImageResizer extends CBaseObject
   	/**
   	 * Статический массив допустимых расширений
   	 */
-  	static $arAllowExt=array('jpg','jpeg','png');
+  	static $arAllowExt=array('jpg','jpeg','png','gif');
 
 	/**
 	 * Конструктор, принимает только путь к файлу, абсолютный на сервере
@@ -82,8 +82,9 @@ class CImageResizer extends CBaseObject
 		{
 			switch ($this->iType)
 			{
-				case 2: $im = imagecreatefromjpeg($this->sFilename);  break;
-				case 3:
+				case IMAGETYPE_GIF: $im = imagecreatefromgif($this->sFilename); break;
+				case IMAGETYPE_JPEG: $im = imagecreatefromjpeg($this->sFilename);  break;
+				case IMAGETYPE_PNG:
 					//Поддержка прозрачных png
 					$im = imagecreatefrompng($this->sFilename);
 					imagealphablending($im, false);

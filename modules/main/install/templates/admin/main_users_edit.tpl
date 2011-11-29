@@ -35,7 +35,7 @@
 					</tr>
 					<tr class="is_necessary_light">
 						<td>{Title field="title"}</td>
-						<td><input type="text" name="CU_title" value="{$userdata.title|htmlspecialchars:2:"UTF-8":false}" class="form_input" style="width:80%"/></td>
+						<td><input type="text" name="CU_title" value="{$userdata.title|htmlspecialchars:2:"UTF-8":false}" class="form_input" style="width:98%"/></td>
 					</tr>
 					<tr>
 						<td>{Title field="new_password"}</td>

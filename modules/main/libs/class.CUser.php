@@ -34,6 +34,7 @@ class CUser extends CUsersCommon implements User
 	private $arUserVars;
 	private $bUpdateVars;
 	private $obModules;
+	private $obSession;
 	private $obLog;
 
 	/**
@@ -57,7 +58,7 @@ class CUser extends CUsersCommon implements User
 			global $KS_MODULES;
 			$this->obModules=$KS_MODULES;
 		}
-
+		$this->obSession=CSessionManager::get_instance();
 		$this->obLog=new CObject('users_log');
 
 		/* Вызов обработчика перед инициализацией объекта класса */
@@ -75,35 +76,30 @@ class CUser extends CUsersCommon implements User
 		$this->userdata = array();
 		$this->arAccessLevels = array();
 		$this->sUploadPath = '/users';
-		$this->fType = 'elm';
-		$this->sWidth=0; //максимальная высота аватара
-		$this->sHeight=0; //максимальная ширина аватара
-		$this->sRatio=true; //маштабирование
-		$this->sRatio_wb=false; //добаление белых полей при маштабировании
-		$this->sSize=0; // максимальный размер фала аватара
-		$this->bUpdateVars=false;
-
-		/* Подгружаем список уровней доступа */
-		$this->obDB->query("SELECT id, title FROM ks_usergroups ORDER BY id");
-		while($row = $this->obDB->get_row())
-			$this->groups_list[$row['id']] = $row['title'];
 		$this->arInGroups = false;
 		$this->is_login = false;
 
+		$this->IsValid();
+
+		$smarty->assign('USER', $this->userdata);
+		/* Вызов обработчика при инициализации объекта класса */
+		$onInitParams = $this->userdata;
+		$onUserObjectInitSuccess = $KS_EVENTS_HANDLER->Execute('main', 'onUserObjectInit', $onInitParams);
+	}
+
+	function SetGroupList($arGroupList)
+	{
+		$this->groups_list = $arGroupList;
+	}
+
+	function IsValid()
+	{
 		try
 		{
 			/* Проверка адреса пользователя и имени его сессии */
 			if($_SESSION['USER_IP'] != $_SERVER['REMOTE_ADDR'])
 			{
 				$this->logout();
-			}
-			elseif(array_key_exists('CU_ACTION', $_REQUEST))
-			{
-				if (strcmp($_REQUEST['CU_ACTION'], 'logout') == 0)
-				{
-					/* Разлогинивание */
-					$this->logout();
-				}
 			}
 			elseif(isset($_SESSION['cu_user']))
 			{
@@ -160,10 +156,6 @@ class CUser extends CUsersCommon implements User
 			$this->userdata['LAST_ERROR']=$e->__toString();
 			throw $e;
 		}
-		$smarty->assign('USER', $this->userdata);
-		/* Вызов обработчика при инициализации объекта класса */
-		$onInitParams = $this->userdata;
-		$onUserObjectInitSuccess = $KS_EVENTS_HANDLER->Execute('main', 'onUserObjectInit', $onInitParams);
 	}
 
 	function TryCookieLogin()
@@ -357,12 +349,18 @@ class CUser extends CUsersCommon implements User
 	 * Метод осуществляет авторизацию пользователя по параметрам переданным
 	 * в скрипт из браузера
 	 */
-	function login()
+	function login( $sLogin = false, $sPassword = false )
 	{
 		global $smarty, $KS_EVENTS_HANDLER,$ks_config;
 		$this->is_login = false;
-		$username = $this->obDB->safesql($_REQUEST['CU_LOGIN']);			// Имя пользователя
-		$password = $this->obDB->safesql($_REQUEST['CU_PASSWORD']);		// Пароль
+
+		if( !$sLogin )
+			$sLogin = $_REQUEST['CU_LOGIN'];
+		if( !$sPassword )
+			$sPassword = $_REQUEST['CU_PASSWORD'];
+			
+		$username = $this->obDB->safesql($sLogin);			// Имя пользователя
+		$password = $this->obDB->safesql($sPassword);		// Пароль
 		$onBeforeLoginParams = array('username' => $username, 'password' => $password);
 		if (!$KS_EVENTS_HANDLER->Execute('main', 'onBeforeLogin', $onBeforeLoginParams))	// Вызов обработчика перед входом
 			throw new CError('MAIN_HANDLER_ERROR');
@@ -431,9 +429,7 @@ class CUser extends CUsersCommon implements User
 		$this->LogAction($this->ID(),'Деавторизация пользователя',array('session'=>$_SESSION,'user'=>$this->userdata));
 
 		/* Уничтожаем пользовательскую сессию */
-		$_SESSION = array();
-		unset($_COOKIE[session_name()]);
-		session_destroy();
+		CSessionManager::get_instance()->Destroy();
 		//Стираем печеньку с токеном
 		setcookie('ks_token','0',1,'/');
 		$this->userdata=array();
@@ -480,6 +476,8 @@ class CUser extends CUsersCommon implements User
 	 * 1. Добавлена фильтрация префикса полей перед вызовом обработчика onSave
 	 * 2. Исправлены ошибки, связанные с формированием параметров для обработчика onSave
 	 *
+	 * Удалена вся лишняя фигня
+	 *
 	 * @param string $prefix Префикс полей пользователя
 	 * @param array $data Массив полей (параметров) пользователя, которые нужно сохранить
 	 * @param string $mytable Таблица пользователей
@@ -497,76 +495,23 @@ class CUser extends CUsersCommon implements User
 		if (!$KS_EVENTS_HANDLER->Execute('main', 'onBeforeSave', $onBeforeSaveParams))
 			throw new CError('MAIN_HANDLER_ERROR');
 
-		/* Длина имени пользователя должна быть не менее 4 */
-		if(array_key_exists($prefix . 'title', $data) && (strlen($data[$prefix . 'title']) < 4))
-			throw new CError('MAIN_USER_TOO_SHORT_LOGIN');
-
-		/* Проверка пароля на непустоту и его сравнение с повторением пароля */
-		if(($data[$prefix . 'password'] != "") && (strcmp($data[$prefix . 'password'], $data[$prefix . 'password_c']) == 0))
-			$data[$prefix . 'password'] = $this->ConvertPassword($data[$prefix . 'password']);
-		elseif($data[$prefix . 'password'] != $data[$prefix . 'password_c'])
-			throw new CError('MAIN_USER_WRONG_PASSWORD_CONFIRM');
-		else
-			unset($data[$prefix . 'password']);
-
-		$data[$prefix . "number_of_log_tries"] = 0;
-		if(!array_key_exists($prefix . "pwd_updated",$data))
-			$data[$prefix . "pwd_updated"] = 0;
-
 		$this->AddFileField('img');
 		$this->AddCheckField('title');
 		$this->obDB->begin();			// соединяемся с базой данных ЦМС
 		try
 		{
 			/* Читаем текущие настройки существующего пользователя */
-			if ($data[$prefix."id"] > 0)
+			if ( !empty($data[$prefix."id"]) && $data[$prefix."id"] > 0)
 				$previous_user_row = $this->GetRecord(array("id" => $data[$prefix."id"]));
 			else
 				$data[$prefix.'date_register']=time();
-			//Здесь добавлена проверка на то, что файл вобще заливали
 
-			$obImage=new CImageUploader($prefix.'img');
-			$obImage->SetMaxFileSize($this->sSize*1024);
-			$obImage->SetMaxDimension(500,500);
-			$bImage=false;
-			try
-			{
-				$bImage=$obImage->IsReady();
-			}
-			catch(CError $e)
-			{
-				switch ($e->getCode())
-				{
-					case 1:
-						throw new CError('USER_AVA_SIZE_BIG', 0 , '('.($this->sSize*1024).'Kb)');
-					default:
-						throw $e;
-					break;
-
-				}
-			}
 			/* Сохраняем данные пользователя и получаем его id */
-			$this->LogAction($data[$prefix.'id'],'Сохранение записи в БД',array($data));
+			$nId = (!empty($data[$prefix."id"])) ? (int)$data[$prefix."id"] : 0;
+			$this->LogAction($nId,'Сохранение записи в БД',array($data));
 
 			if($res = parent::Save($prefix, $data, $mytable))
 			{
-				if($bImage)
-				{
-					//если данные успешно сохранились, делаем проверку дефолтных значений
-					if($res && $this->sWidth && $this->sHeight && $_FILES[$prefix.'img'])
-					{
-						//получаем данные созданного пользователя (существкещего)
-						if($data = $this->GetRecord(array("id" => $res)))
-						{
-							//ресайзим картинку как нам надо
-							$obPhoto = new ImageResizer("/uploads/".$data['img']);
-							//дирректорию не создаем, затираем старый файл
-							$obPhoto->isCreateDir =false;
-							$obPhoto->Resize($this->sWidth, $this->sHeight, $this->sRatio,$this->sRatio_wb,"/uploads".$this->sUploadPath);
-						}
-					}
-				}
-
 				/* Избавляемся от префикса, чтобы в обработчике не заниматься проверкой */
 				if ($prefix != '')
 				{

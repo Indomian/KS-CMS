@@ -52,10 +52,8 @@ class CModuleAdmin extends CBaseAPI
 	 * @param $sortDir string - направление сортировки
 	 * @return array - массив, 0 элемент - поле сортировки, 1 - направление
 	 */
-	protected function InitSort($arSortFields,&$sortField,&$sortDir)
+	protected function InitSort($arSortFields,&$sortField,&$sortDir, $sOrderField = 'id', $sOrderDir = 'asc')
 	{
-		$sOrderField='id';
-		$sOrderDir='asc';
 		if(!array_key_exists($this->module,$_SESSION)) $_SESSION[$this->module]=array();
 		// Обработка порядка вывода элементов
 		if($sortField!='')

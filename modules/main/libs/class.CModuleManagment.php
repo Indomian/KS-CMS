@@ -46,6 +46,7 @@ abstract class CModuleManagment extends CObject
 			}
 		}
 		parent::__construct('main_modules');
+		$this->obSession=CSessionManager::get_instance();
 		if(!array_key_exists('notifies',$_SESSION) || !is_array($_SESSION['notifies'])) $_SESSION['notifies']=array();
 		$this->arNotifies=$_SESSION['notifies'];
 		$this->arIsModules=array();
@@ -439,7 +440,7 @@ abstract class CModuleManagment extends CObject
 	 */
 	function Install($module)
 	{
-		global $smarty,$KS_FS,$ks_db;
+		global $smarty,$KS_FS;
 		if($this->IsModule($module)) throw new CModuleError("MAIN_MODULE_ALREADY_INSTALLED",0);
 		if(file_exists(MODULES_DIR.'/'.$module.'/install/install.php'))
 		{
@@ -493,7 +494,7 @@ abstract class CModuleManagment extends CObject
 	 */
 	function UnInstall($module)
 	{
-		global $smarty,$KS_FS,$ks_db;
+		global $smarty,$KS_FS;
 		if(!$this->IsModule($module)) throw new CModuleError("MAIN_MODULE_NOT_INSTALLED",0);
 		if(file_exists(MODULES_DIR.'/'.$module.'/install/uninstall.php'))
 		{

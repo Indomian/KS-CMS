@@ -50,6 +50,10 @@ final class CAdminModuleManagment extends CModuleManagment
 		{
 			$this->sMode='small';
 		}
+		elseif(array_key_exists('mode',$_GET) && $_GET['mode']=='content')
+		{
+			$this->sMode='content';
+		}
 		if (array_key_exists('module',$_GET))
 		{
 			if ($this->IsModule($_GET['module']))
@@ -235,6 +239,25 @@ final class CAdminModuleManagment extends CModuleManagment
 				$smarty->display('admin/header_ajax.tpl');
 				echo $content;
 				$smarty->display('admin/footer_ajax.tpl');
+			}
+			catch(CError $e)
+			{
+				echo $e->__toString();
+			}
+		}
+		elseif($this->sMode=='content')
+		{
+			try
+			{
+				$content='';
+				$template_to_display = 'admin/' . $this->current . $this->page . '.tpl';
+				if($smarty->template_exists($template_to_display))
+					$content=$smarty->fetch($template_to_display);
+				elseif($smarty->template_exists('admin/common/'.$this->page.'.tpl'))
+					$content=$smarty->fetch('admin/common/'.$this->page.'.tpl');
+				else
+					throw new CError('SYSTEM_PAGE_NOT_FOUND',0,$this->page);
+				echo $content;
 			}
 			catch(CError $e)
 			{

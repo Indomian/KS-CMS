@@ -1,4 +1,4 @@
-{ShowEditor object="textarea[name=description]" theme="advanced" path=$data.URL}
+<script type="text/javascript" src="/js/subscribe/admin.js"></script>
 <script type="text/javascript">
 	$(document).bind("InitCalendar",function()
 		{ldelim}
@@ -59,8 +59,8 @@
 					<tr class="is_necessary_light">
 						<td>{Title field="uin"}</td>
 						<td>
-							<input type="text" name="SB_uin" style="width:100px;" class="form_input" {$isReadonly} value="{$data.uin|intval|default:"-1"}"/>
-							<input type="button" onclick="SelectUser()" value="..." {$isDisabled}/>
+							<input type="text" name="SB_uin" style="width:100px;" class="form_input" {$isReadonly} value="{$data.uin|intval|default:"-1"}" id="uid"/>
+							<input type="button" value="..." {$isDisabled} id="uid_select"/>
 						</td>
 					</tr>
 					<tr>
