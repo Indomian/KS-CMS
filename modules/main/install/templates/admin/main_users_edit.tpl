@@ -1,7 +1,7 @@
 <script type="text/javascript" src="/js/jquery/ui.datetimepicker.js"></script>
 <ul class="nav" id="navChain">
 	<li><a href="/admin.php"><img src="{#images_path#}/icons_menu/home.gif" alt="icon_home" height="13" width="13" />&nbsp;<span>{#home#}</span></a></li>
-    <li><a href="{get_url _CLEAR="ACTION id"}"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;<span>{#title#}</span></a></li>
+    <li><a href="{get_url _CLEAR="action id"}"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;<span>{#title#}</span></a></li>
     <li><a href="{get_url}"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;
 	{strip}
 	{if $userdata.id>0}
@@ -19,12 +19,10 @@
 		<span>{#title_create#}</span>
 	{/if}</h1>
 
-<form action="{get_url _CLEAR="ACTION id"}" method="POST" enctype="multipart/form-data">
-	<input type="hidden" name="module" value="main">
-	<input type="hidden" name="modpage" value="users">
+<form action="{get_url _CLEAR="action id"}" method="POST" enctype="multipart/form-data">
 	<input type="hidden" name="id" value="{$userdata.id}">
 	<input type="hidden" name="CU_id" value="{$userdata.id}">
-	<input type="hidden" name="ACTION" value="save">
+	<input type="hidden" name="action" value="save">
 	{ksTabs NAME=users_edit head_class=tabs2 title_class=bold}
 		{ksTab NAME=$smarty.config.tabs_common selected=1}{strip}
 			<div class="form">
@@ -35,30 +33,33 @@
 					</tr>
 					<tr class="is_necessary_light">
 						<td>{Title field="title"}</td>
-						<td><input type="text" name="CU_title" value="{$userdata.title|htmlspecialchars:2:"UTF-8":false}" class="form_input" style="width:98%"/></td>
+						<td><input type="text" name="CU_title" value="{$userdata.title|htmlspecialchars:2:"UTF-8":false}" class="form_input" style="width:98%"></td>
 					</tr>
 					<tr>
 						<td>{Title field="new_password"}</td>
-						<td><input type="password" name="CU_password" value="" class="form_input" style="width:98%"/></td>
+						<td><input type="password" name="CU_password" value="" class="form_input" style="width:98%"></td>
 					</tr>
 					<tr>
 						<td>{Title field="repeat_password"}</td>
-						<td><input type="password" name="CU_password_c" value="" class="form_input" style="width:98%"/></td>
+						<td><input type="password" name="CU_password_c" value="" class="form_input" style="width:98%"></td>
 					</tr>
 					<tr class="is_necessary_light">
 						<td>{Title field="email"}</td>
-						<td><input type="text" name="CU_email" value="{$userdata.email}" class="form_input"  style="width:98%"/></td>
+						<td><input type="text" name="CU_email" value="{$userdata.email|htmlspecialchars:2:"UTF-8":false}" class="form_input"  style="width:98%"></td>
 					</tr>
 					<tr>
 						<td>{Title field="active"}</td>
-						<td><input type="checkbox" name="CU_active" value="1" {if $userdata.active==1}checked="checked"{/if}/></td>
+						<td><input type="checkbox" name="CU_active" value="1" {if $userdata.active==1}checked="checked"{/if}></td>
 					</tr>
 					<tr>
 						<td>{Title field="img"}</td>
 						<td>
-							<input type="file" name="CU_img" value="" style="width:98%"/><br/>
-							{if $userdata.img!=""}<img src="/uploads/{$userdata.img}"><br/>
-							<input type="checkbox" name="CU_img_del" value="1"/> {#delete#}{/if}</td>
+							{if $userdata.img!=''}
+								<a href="/uploads{$userdata.img}" alt="{#view_in_full_size#}" target="_blank">{Pic src="/uploads`$userdata.img`" width="100" height="100" mode="crop"}</a><br/>
+								<label><input type="checkbox" name="CU_img_del" value="1"/> {#delete#}</label><br/>
+								{#replace#}<br/>
+							{/if}
+							<input type="file" name="CU_img" value="" style="width:98%">
 						</td>
 					</tr>
 				</table>
@@ -79,21 +80,21 @@
 					{foreach from=$groupslist item=oItem key=oKey}
 					<tr>
 						<td>
-							<input type="checkbox" name="CU_groups[]" value="{$oItem.id}" id="groupidcb{$oItem.id}" {if $userdata.GROUPS[$oItem.id]!=''}checked="checked"{/if}/>
+							<input type="checkbox" name="CU_groups[]" value="{$oItem.id}" id="groupidcb{$oItem.id}" {if $userdata.GROUPS[$oItem.id]!=''}checked{/if}>
 						</td>
 						<td>
 							<label for="groupidcb{$oItem.id}">{$oItem.title}</label>
 						</td>
 						<td>
 							<div class="date_selector">
-								<input type="text" name="CU_groups_from{$oItem.id}" readonly="readonly" {if $userdata.GROUPS[$oItem.id].date_start!=0}value="{$userdata.GROUPS[$oItem.id].date_start|date_format:"%d.%m.%Y %H:%M":""}"{else}value=""{/if} class="date_input"/>
-								<img src="{#images_path#}/calendar/img.gif" title="{#select_date#}" class="date_button"/>
+								<input type="text" name="CU_groups_from{$oItem.id}" readonly="readonly" {if $userdata.GROUPS[$oItem.id].date_start!=0}value="{$userdata.GROUPS[$oItem.id].date_start|date_format:"%d.%m.%Y %H:%M":""}"{else}value=""{/if} class="date_input">
+								<img src="{#images_path#}/calendar/img.gif" title="{#select_date#}" class="date_button">
 							</div>
 						</td>
 						<td>
 							<div class="date_selector">
-								<input type="text" name="CU_groups_to{$oItem.id}" readonly="readonly" {if $userdata.GROUPS[$oItem.id].date_end!=0}value="{$userdata.GROUPS[$oItem.id].date_end|date_format:"%d.%m.%Y %H:%M":""}"{else}value=""{/if} class="date_input"/>
-								<img src="{#images_path#}/calendar/img.gif" id="f_trigger_c1{$oItem.id}" style="border: 0pt none ; cursor: pointer;" title="{#select_date#}" align="absmiddle" class="date_button"/>
+								<input type="text" name="CU_groups_to{$oItem.id}" readonly="readonly" {if $userdata.GROUPS[$oItem.id].date_end!=0}value="{$userdata.GROUPS[$oItem.id].date_end|date_format:"%d.%m.%Y %H:%M":""}"{else}value=""{/if} class="date_input">
+								<img src="{#images_path#}/calendar/img.gif" id="f_trigger_c1{$oItem.id}" style="border: 0pt none ; cursor: pointer;" title="{#select_date#}" align="absmiddle" class="date_button">
 							</div>
 						</td>
 					</tr>
@@ -113,14 +114,14 @@
 						<td>{Title field="blocked"}</td>
 						<td>
 							<div class="date_selector">
-								<input type="text" name="CU_blocked_from" readonly="readonly" {if $userdata.blocked_from!=0}value="{$userdata.blocked_from|date_format:"%d.%m.%Y %H:%M":""}"{else}value=""{/if} class="date_input"/>
-								<img src="{#images_path#}/calendar/img.gif" title="{#select_date#}" class="date_button"/>
+								<input type="text" name="CU_blocked_from" readonly="readonly" {if $userdata.blocked_from!=0}value="{$userdata.blocked_from|date_format:"%d.%m.%Y %H:%M":""}"{else}value=""{/if} class="date_input">
+								<img src="{#images_path#}/calendar/img.gif" title="{#select_date#}" class="date_button">
 							</div>
 						</td>
 						<td>
 							<div class="date_selector">
-								<input type="text" name="CU_blocked_till" readonly="readonly" {if $userdata.blocked_till!=0}value="{$userdata.blocked_till|date_format:"%d.%m.%Y %H:%M":""}"{else}value=""{/if} class="date_input"/>
-								<img src="{#images_path#}/calendar/img.gif" title="{#select_date#}" class="date_button"/>
+								<input type="text" name="CU_blocked_till" readonly="readonly" {if $userdata.blocked_till!=0}value="{$userdata.blocked_till|date_format:"%d.%m.%Y %H:%M":""}"{else}value=""{/if} class="date_input">
+								<img src="{#images_path#}/calendar/img.gif" title="{#select_date#}" class="date_button">
 							</div>
 						</td>
 					</tr>
@@ -128,47 +129,24 @@
 			</div>
 		{/strip}{/ksTab}
 		{if $addFields!=''}
-			{ksTab NAME=$smarty.config.tabs_userfields}{strip}
-			<div class="form">
-				<table class="layout">
-					<tr class="titles">
-						<th width=30%>{#header_field#}</th>
-						<th width=70%>{#header_value#}</th>
-					</tr>
-					{foreach from=$addFields item=oItem}
-					<tr>
-						<td>{$oItem.description}</td>
-						{assign var=value value=ext_`$oItem.title`}
-						<td>{showField field=$oItem value=$userdata[$value] prefix="CU_"}</td>
-					</tr>
-					{/foreach}
-				</table>
-			</div>
-			{/strip}{/ksTab}
+			{include file="admin/common/userfieldstab.tpl" data=$userdata addFields=$addFields prefix="CU_"}
 		{/if}
 	{/ksTabs}
 	<div class="form_buttons">
 		{if $shortMode!='Y'}
     	<div>
-    		<input type="submit" value="{#save#}" class="save" name="save"/>
+    		<input type="submit" value="{#save#}" class="save" name="save">
     	</div>
     	<div>
-    		<input type="submit" value="{#apply#}" name="update"/>
+    		<input type="submit" value="{#apply#}" name="update">
     	</div>
     	{/if}
     	<div>
-    		<a href="{get_url _CLEAR="ACTION id"}" class="cancel_button">{#cancel#}</a>
+    		<a href="{get_url _CLEAR="action id"}" class="cancel_button">{#cancel#}</a>
     	</div>
    	</div>
 </form>
-
-{strip}
-<dl class="def" style="background:#FFF6C4 url('{#images_path#}/big_icons/people.gif') left 50% no-repeat;{if $smarty.cookies.showHelpBar==1}display:none;{/if}">
-	<dt>{#title_edit#}</dt>
-	<dd>{#hint#}</dd>
-</dl>
-<div class="content_arrow_{if $smarty.cookies.showHelpBar==1}down{else}up{/if}" onclick="ToggleHelpBar(this)" style="cursor:pointer;">&nbsp;</div>
-{/strip}
+{include file="admin/common/bottomhint.tpl" title=$smarty.config.title_edit hint=$smarty.config.hint_edit icon="people"}
 
 <script type="text/javascript">
 {literal}

@@ -80,7 +80,7 @@ if (file_exists(MODULES_DIR.'/main'))
 	try
 	{
 		//! Подключение главного модуля ЦМС, определение пользователя и др.
-		include_once(MODULES_DIR.'/main/admin.inc.php');
+		include_once(MODULES_DIR.'/main/admin.init.php');
 	}
 	catch(CAccessError $e)
 	{

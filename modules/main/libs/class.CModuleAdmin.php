@@ -13,9 +13,6 @@
 /*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
-require_once MODULES_DIR.'/main/libs/class.CMain.php';
-require_once MODULES_DIR.'/main/libs/class.CConfigParser.php';
-
 class CModuleAdmin extends CBaseAPI
 {
 	protected $module;
@@ -36,13 +33,9 @@ class CModuleAdmin extends CBaseAPI
 		$this->obUser=&$USER;
 		$this->obUrl=CUrlParser::get_instance();
 		if($this->obModules->IsActive('interfaces'))
-		{
 			$this->obModules->IncludeModule('interfaces');
-		}
 		else
-		{
 			throw new CError('MAIN_MODULE_NOT_FOUND','','interfaces');
-		}
 	}
 
 	/**

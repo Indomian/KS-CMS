@@ -10,6 +10,7 @@ class CLanguageSmarty extends CLanguage
 {
 	private $obSmarty;
 	private $sFilename;
+	private $sLastSection;
 
 	function __construct($smarty,$filename)
 	{
@@ -23,6 +24,7 @@ class CLanguageSmarty extends CLanguage
 	function LoadSection($section='')
 	{
 		$this->obSmarty->config_load($this->sFilename,$section);
+		$this->sLastSection=$section;
 	}
 
 	function Text($code)
@@ -32,6 +34,8 @@ class CLanguageSmarty extends CLanguage
 		{
 			return $sResult;
 		}
+		if(KS_DEBUG==1)
+			error_log($this->sLastSection.' - '.$code."\n",3,ROOT_DIR.'/lang.notfound');
 		return $code;
 	}
 }

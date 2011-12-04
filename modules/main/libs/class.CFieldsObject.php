@@ -14,9 +14,6 @@
 /*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
-require_once MODULES_DIR.'/main/libs/class.CFilesObject.php';
-require_once MODULES_DIR.'/main/libs/class.CFields.php';
-
 class CFieldsObject extends CFilesObject
 {
 	/**
@@ -38,9 +35,7 @@ class CFieldsObject extends CFilesObject
 				$obFields=new CFields();
 				$this->arUserFields=$obFields->GetModuleFields($this->sFieldsModule,$this->sTable);
 				foreach($this->arUserFields as $item)
-				{
 					$this->arFields[]='ext_'.$item['title'];
-				}
 			}
 		}
 	}

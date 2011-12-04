@@ -10,10 +10,10 @@
  * @since 03.03.2009
  */
 
- if (!defined('KS_ENGINE'))
-	die("Hacking attempt!");
- include_once('class.CError.php');			// Подключение класса ошибок
- include_once('class.CMain.php');
+ if (!defined('KS_ENGINE'))die("Hacking attempt!");
+
+//include_once MODULES_DIR.'/main/libs/class.CError.php';			// Подключение класса ошибок
+
 
  /**
   * Класс CEventsHandler - класс, предназначенный для вызова обработчиков событий

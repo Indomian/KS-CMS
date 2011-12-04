@@ -8,10 +8,8 @@
  * @version 2.6
  */
 if (!defined('KS_ENGINE')) die("Hacking attempt!");
-include_once MODULES_DIR.'/main/libs/class.CUsersCommon.php';
+
 include_once MODULES_DIR.'/main/libs/interface.User.php';
-include_once MODULES_DIR.'/main/libs/class.CModulesAccess.php';
-include_once MODULES_DIR.'/main/libs/class.CImageUploader.php';
 
 define('PASSWORD_CHARS','abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890');
 
@@ -33,9 +31,15 @@ class CUser extends CUsersCommon implements User
 	private $arAllowExt=array('jpg','jpeg','png');
 	private $arUserVars;
 	private $bUpdateVars;
-	private $obModules;
+	private $obModules=false;
 	private $obSession;
 	private $obLog;
+	/**
+	 * Массив со списком групп к которым принадлежит данный пользователь.
+	 * @var array $arInGroups
+	 */
+	protected $arInGroups;
+	protected $arAccessLevels; 		/**<Хранит список уровней доступа к которым был сделан запрос*/
 
 	/**
 	 * Конструктор объекта пользовательского класса
@@ -48,16 +52,6 @@ class CUser extends CUsersCommon implements User
 	{
 		global $smarty, $KS_EVENTS_HANDLER;
 
-		/*\todo Свести работу к одному классу */
-		if(IS_ADMIN)
-		{
-			$this->obModules=CAdminModuleManagment::get_instance();
-		}
-		else
-		{
-			global $KS_MODULES;
-			$this->obModules=$KS_MODULES;
-		}
 		$this->obSession=CSessionManager::get_instance();
 		$this->obLog=new CObject('users_log');
 
@@ -87,6 +81,37 @@ class CUser extends CUsersCommon implements User
 		$onUserObjectInitSuccess = $KS_EVENTS_HANDLER->Execute('main', 'onUserObjectInit', $onInitParams);
 	}
 
+	/**
+	 * @return object
+	 */
+	private function GetModules()
+	{
+		if(!$this->obModules)
+		{
+			if(IS_ADMIN)
+			{
+				$this->obModules=CAdminModuleManagment::get_instance();
+			}
+			else
+			{
+				global $KS_MODULES;
+				$this->obModules=$KS_MODULES;
+			}
+		}
+		return $this->obModules;
+	}
+
+	/**
+	 * Метод выполняет получение конфигурационных переменных, просто обёртка для стандартного метода
+	 * @param $sModule
+	 * @param $sVar
+	 * @param $sDefault
+	 */
+	function GetConfigVar($sModule,$sVar,$sDefault="")
+	{
+		return $this->GetModules()->GetConfigVar($sModule,$sVar,$sDefault);
+	}
+
 	function SetGroupList($arGroupList)
 	{
 		$this->groups_list = $arGroupList;
@@ -99,7 +124,7 @@ class CUser extends CUsersCommon implements User
 			/* Проверка адреса пользователя и имени его сессии */
 			if($_SESSION['USER_IP'] != $_SERVER['REMOTE_ADDR'])
 			{
-				$this->logout();
+				$this->Logout();
 			}
 			elseif(isset($_SESSION['cu_user']))
 			{
@@ -108,9 +133,7 @@ class CUser extends CUsersCommon implements User
 					/* Обновление времени жизни сессии пользователя */
 					$iUserID = $_SESSION['cu_user_id'];
 					if (!is_numeric($iUserID))
-					{
-						$this->logout();
-					}
+						$this->Logout();
 					else
 					{
 						/* Проверка залогиненного пользователя на активность */
@@ -120,24 +143,21 @@ class CUser extends CUsersCommon implements User
 								" AND NOT(" .
 									" ((blocked_from<='".time()."'))" .
 									" AND ((blocked_till>='".time()."'))) LIMIT 1";
-						$resUser=$this->obDB->query($query);
-						if ($this->obDB->num_rows($resUser) > 0)
+						$obResult=$this->obDB->Query($query);
+						if ($obResult->NumRows() > 0)
 						{
-							$arRow = $this->obDB->get_row($resUser);
-							if ($arRow['active'] == 1)
+							$arRow = $obResult->GetRow();
+							$obResult->Free();
+							if($arRow['active'] == 1)
 							{
 								$this->GetGroups();
 								$this->OnSessionUpdate($arRow);
 							}
 							else
-							{
 								throw new CUserError('MAIN_USER_INACTIVE');
-							}
 						}
 						else
-						{
 							throw new CUserError('MAIN_USER_BLOCKED');
-						}
 					}
 				}
 				else
@@ -152,7 +172,7 @@ class CUser extends CUsersCommon implements User
 		}
 		catch (CUserError $e)
 		{
-			$this->logout();
+			$this->Logout();
 			$this->userdata['LAST_ERROR']=$e->__toString();
 			throw $e;
 		}
@@ -178,7 +198,7 @@ class CUser extends CUsersCommon implements User
 	function TryLogout()
 	{
 		$this->TryCookieLogin();
-		$this->logout();
+		$this->Logout();
 	}
 
 	function SaveLogin()
@@ -201,7 +221,7 @@ class CUser extends CUsersCommon implements User
 		//Проверка является ли данный запрос хитом, не лучший вариант, но позволяет блокировать не нужные хиты
 		//на продление авторизации
 		if(!(isset($_REQUEST['ishit']) && $_REQUEST['ishit']=='no'))
-			$_SESSION['cu_user'] = time() + $this->obModules->GetConfigVar('main','user_inactive_time',3600);
+			$_SESSION['cu_user'] = time() + $this->GetConfigVar('main','user_inactive_time',3600);
 		$this->Update($this->userdata['id'],array('last_visit'=>time()));
 		$this->is_login = true;
 		/* Вызов обработчика при обновлении времени жизни сессии */
@@ -316,7 +336,7 @@ class CUser extends CUsersCommon implements User
 			$this->LogAction($arUser['id'],'Попытка авторизации по логину',$arUser);
 
 			if ($arUser['active'] == 0)	throw new CUserError('MAIN_USER_INACTIVE');
-			if(($arUser['blocked_from']<=time())&&($arUser['blocked_till']>=time())) throw new CUserError('MAIN_USER_BLOCKED_TILL',0,date($this->obModules->GetConfigVar('main','time_format'),$arUser['blocked_till']));
+			if(($arUser['blocked_from']<=time())&&($arUser['blocked_till']>=time())) throw new CUserError('MAIN_USER_BLOCKED_TILL',0,date($this->GetConfigVar('main','time_format'),$arUser['blocked_till']));
 			$_SESSION['cu_user_id']=$arUser['id'];
 			$_SESSION['USER_IP']=$_SERVER['REMOTE_ADDR'];
 			$this->is_login = true;
@@ -358,7 +378,7 @@ class CUser extends CUsersCommon implements User
 			$sLogin = $_REQUEST['CU_LOGIN'];
 		if( !$sPassword )
 			$sPassword = $_REQUEST['CU_PASSWORD'];
-			
+
 		$username = $this->obDB->safesql($sLogin);			// Имя пользователя
 		$password = $this->obDB->safesql($sPassword);		// Пароль
 		$onBeforeLoginParams = array('username' => $username, 'password' => $password);
@@ -419,7 +439,7 @@ class CUser extends CUsersCommon implements User
 	 * Метод разлогинивания пользователя
 	 *
 	 */
-	function logout()
+	function Logout()
 	{
 		global $KS_EVENTS_HANDLER;
 		/* Вызов обработчика перед выходом */
@@ -629,14 +649,7 @@ class CUser extends CUsersCommon implements User
 		return $res;
 	}
 
-	var $groups_list;
-	protected $userdata;
-	/**
-	 * Массив со списком групп к которым принадлежит данный пользователь.
-	 * @var array $arInGroups
-	 */
-	protected $arInGroups;
-	protected $arAccessLevels; 		/**<Хранит список уровней доступа к которым был сделан запрос*/
+
 
 	/**
 	 * Метод возвращает массив упорядоченных по номеру групп, к которым принадлежит текущий пользователь

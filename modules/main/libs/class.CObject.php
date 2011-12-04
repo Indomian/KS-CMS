@@ -5,106 +5,42 @@
  * Классы основы дерева классов системы администрирования, основной класс для работы с базой данных
  * Файл проекта CMS-local.
  *
- * @filesource class.CMain.php
+ * @filesource main/libs/class.CObject.php
  * @author blade39 <blade39@kolosstudio.ru>, north-e <pushkov@kolosstudio.ru>
- * @version 2.4
+ * @version 2.7
  * @since 21.11.2007
  * Изменения:
+ * 2.7 		- Обновлена поддержка базы данных
  * 2.4 		- Добавлена поддержка выборки из нескольких таблиц для класса CObject
  * 2.3		- изменено имя объекта для работы с базой данных с $db на $ks_db
  * 			- добавлен тип данных binary в методе CObject::Save()
  */
-
+if(!defined('KS_ENGINE')){  die("Hacking attempt!");}
 // Список констант для ошибок
 define('KS_ERROR_MAIN_ALREADY_EXISTS',1); //Запись уже существует
 
-require_once 'class.CBaseObject.php';
-require_once 'class.CBaseAPI.php';
-
-abstract class CBaseList extends CBaseObject
-{
-	/**
-	 * Количество записей в списке, доступно после выполнения метода Count или GetList
-	 */
-	public $iCount;
-	/**
-	 * Массив со списком полей в списке. Необходимо для проверки при выполнении запросов.
-	 */
-	protected $arFields;
-
-	abstract protected function _ParseItem(&$item);
-	abstract public function GetList($arOrder=false,$arFilter=false,$limit=false,$arSelect=false,$arGroupBy=false);
-	/**
-	 * Метод выполняет подсчет количества элементов соответствующих заданому фильтру
-	 *
-	 * @version 2.3
-	 * @since 29.03.2009
-	 * Изменения:
-	 * 2.3		- добавлен параметр $fGroup
-	 *
-	 * @param array $arFilter ассоциативный массив филтрации, также смотрите CObject::_GenWhere.
-	 * @param string $fGroup Используется для группировки количества элементов
-	 * @return mixed Число элементов, подходящих к фильтру, или массив с числами элементов, соответствующих различным значениям fGroup
-	 * @sa CObject::GetList(), CObject::_GenWhere()
-	 */
-	abstract function Count($arFilter = false, $fGroup = false);
-
-	/**
-	 * Метод возвращает список полей текущего объекта
-	 */
-	function GetFields()
-	{
-		return $this->arFields;
-	}
-
-	/**
-	 * Метод создает массив данных из данных переданных в пост с префиксом.
-	 * \param $prefix - префикс к данным
-	 * \param $data - ассоциативный массив данных обычно $_POST
-	 * \return ассоциативный массив с заполнеными полями данных
-	 */
-	public function GetFromPost($prefix,$data)
-	{
-		$arResult=array();
-		foreach($this->arFields as $field)
-		{
-			if(array_key_exists($prefix.$field,$data))
-			{
-				$arResult[$field]=$data[$prefix.$field];
-			}
-		}
-		return $arResult;
-	}
-}
-
 /**
-Класс CObject - базовый класс для работы с различными элементами в базе данных
-позволяет производить автоматическое сохранение данных любой сложности
-имеется возможность задавать Автозаполняемые поля, поля требующие проверки,
-поля для которых необходимо произвести загрузку файла.
-
-Изменения:
-15.10.2008 - добавлен конструктор и деструктор в стиле ПХП5;
-16.10.2008 - изменена фукция выборки, теперь фильтр поддерживает продвинутую выборку (больше, меньше, LIKE и т.д.);
-22.11.2008 - добавлен тип проверки полей, по функции "И" или по "ИЛИ", по умолчанию используется "И" для обратной совместимости;
-20.05.2009 - добавлена возможность сложных выборок из нескольких таблиц;
-@version 2.3
-*/
+ * Класс CObject - базовый класс для работы с различными элементами в базе данных
+ * позволяет производить автоматическое сохранение данных любой сложности
+ * имеется возможность задавать Автозаполняемые поля, поля требующие проверки,
+ * поля для которых необходимо произвести загрузку файла.
+ *
+ * Изменения:
+ * 15.10.2008 - добавлен конструктор и деструктор в стиле ПХП5;
+ * 16.10.2008 - изменена фукция выборки, теперь фильтр поддерживает продвинутую выборку (больше, меньше, LIKE и т.д.);
+ * 22.11.2008 - добавлен тип проверки полей, по функции "И" или по "ИЛИ", по умолчанию используется "И" для обратной совместимости;
+ * 20.05.2009 - добавлена возможность сложных выборок из нескольких таблиц;
+ * 04.12.2011 - обновлены имена методов работающих с базой данных, удалены методы AddAutoField, AddCheckField, GenCheck, убраны ключи $my_table
+ * @version 2.7
+ */
 class CObject extends CBaseList
 {
-	protected $check_fields;	/*!<поля требующие уникального значения.*/
+	protected $check_fields;/*!<поля требующие уникального значения.*/
 	protected $auto_fields;	/*!<поля заполняемые автоматчески (без взятия данных из параметров).*/
-	public $sTable;		/*!<таблица с которой работает данный класс.*/
-	protected $arTables;/*!<список таблиц участвующих в следующем запросе.*/
+	protected $sTable;		/*!<таблица с которой работает данный класс.*/
+	protected $arTables;	/*!<список таблиц участвующих в следующем запросе.*/
 	protected $arJoinTables;/*!<массив таблиц участвующих в объединении типа join.*/
-	/**
-	 * @var $obDB - указатель на объект класса $ks_db осуществляющего связь с базой данных
-	 */
-	protected $obDB;
-	/**
-	 * @todo Сделать скрытым
-	 */
-	public $sUploadPath; 	/*!<Путь для загрузки файлов через функцию save.*/
+	protected $obDB;		/*!<указатель на объект класса $ks_db осуществляющего связь с базой данных*/
 	protected $checkMethod;	/*!<Метод проверки для нескольких полей.*/
 	protected $sFieldsModule; /*!<Название модуля из которого брать значения доп полей*/
 	protected $arFilter;		/*!<список полей для доп фильтрации*/
@@ -130,9 +66,7 @@ class CObject extends CBaseList
 				self::$dbStructure=$arStructure;
 			}
 			else
-			{
 				self::$dbStructure=array();
-			}
 		}
 		$this->sTable=$sTable;
 		$this->auto_fields=array();
@@ -142,19 +76,12 @@ class CObject extends CBaseList
 		$this->bDistinctMode=false;
 		$this->bJustAdd=false;
 		if(array_key_exists($sTable,self::$dbStructure))
-		{
 			$this->arFields=array_keys(self::$dbStructure[$sTable]);
-		}
 		else
 		{
 			self::$dbStructure[$sTable]=$this->GetFieldsList();
 			$this->arFields=array_keys(self::$dbStructure[$sTable]);
 		}
-	}
-
-	/*!Деструктор класса. Не выполняет никакой определенной работы.*/
-	function __destruct()
-	{
 	}
 
 	/**
@@ -181,85 +108,22 @@ class CObject extends CBaseList
 	}
 
 	/**
-	 * Метод добавляет поле для проверки перед сохранением элемента в базу.
-	 * Если добавить несколько методов, проверка будет идти по принципу "ИЛИ"
+	 * /Метод возвращает имя таблицы с которой работает объёкт
 	 */
-	function AddCheckField($field)
+	function GetTable()
 	{
-		if (is_array($field))
-		{
-			$this->check_fields=array_merge($this->check_fields,$field);
-		}
-		else
-		{
-			if(!in_array($field,$this->check_fields)) $this->check_fields[]=$field;
-		}
-	}
-
-	function AddAutoField($field)
-	{
-		if (is_array($field))
-		{
-			$this->auto_fields=array_merge($this->check_fields,$field);
-		}
-		else
-		{
-			$this->auto_fields[]=$field;
-		}
-	}
-
-	function GenCheck($data)
-	{
-		$res=Array();
-		if(is_array($this->check_fields))
-		{
-		foreach ($this->check_fields as $field)
-		{
-			if (array_key_exists($field,$data))
-			{
-				if (is_array($data[$field]))
-				{
-					foreach ($data[$field] as $value)
-					{
-						$res[]="$field='$value'";
-					}
-				}
-				else
-				{
-					$res[]="$field='".$data[$field]."'";
-				}
-			}
-		}
-		}
-		if (count($res)>0)
-		{
-			$result=implode(' '.$this->checkMethod.' ',$res);
-		}
-		else
-		{
-			$result="";
-		}
-		return $result;
+		return $this->sTable;
 	}
 
 	/**
 	 * Метод получает список полей для указанной таблицы или для
 	 * таблицы стандартной для данного класса
 	 * @param string $prefix префикс названия полей которые надо получить, пустой по умолчанию
-	 * @param string $my_table название таблицы для которой надо получить список полей, если пустой
-	 * то значение для текущего класса
 	 * @return array массив со списком полей, где ключи - названия полей, значения - описание поля.
 	 */
-	function GetFieldsList($prefix="",$my_table="")
+	function GetFieldsList($prefix="")
 	{
-		global $ks_db;
-
-		$table=$my_table;
-		if ($my_table=="")
-		{
-			$table=$this->sTable;
-		}
-		$arFields=$ks_db->GetTableFields($table,$prefix);
+		$arFields=$this->obDB->GetTableFields($this->sTable,$prefix);
 		foreach($arFields as $key=>$field)
 		{
 			$fType=$field['Type'];
@@ -273,14 +137,10 @@ class CObject extends CBaseList
 			if ($prefix!="")
 			{
 				if (!(strpos($field['Field'],$prefix)===false))
-				{
 					$fields[$field['Field']]=Array('Type'=>strtolower($fType),'Size'=>$fSize,'Default'=>$field['Default']);
-				}
 			}
 			else
-			{
 				$fields[$field['Field']]=Array('Type'=>strtolower($fType),'Size'=>$fSize,'Default'=>$field['Default']);
-			}
 		}
 		return $fields;
 	}
@@ -294,22 +154,21 @@ class CObject extends CBaseList
 	 */
 	protected function _ParseField($prefix,$key,&$input,&$value)
 	{
-		global $ks_db;
 		/* Преобразование входных данных в соответствии с форматом полей таблицы для записи */
 		if (array_key_exists($prefix.$key, $input))
 		{
 			if (($value['Type'] == 'int')||($value['Type']=='smallint')||($value['Type']=='tinyint'))
 				$result = intval($input[$prefix . $key]);
 			if (($value['Type'] == 'char') || ($value['Type'] == 'varchar'))
-				$result = $ks_db->safesql(mb_substr($input[$prefix . $key], 0, $value['Size'],'UTF-8'));
+				$result = $this->obDB->SafeSQL(mb_substr($input[$prefix . $key], 0, $value['Size'],'UTF-8'));
 			if ($value['Type'] == 'text')
-				$result = $ks_db->safesql($input[$prefix . $key]);
+				$result = $this->obDB->SafeSQL($input[$prefix.$key]);
 			if ($value['Type'] == 'float')
-				$result = $ks_db->safesql($input[$prefix . $key]);
+				$result = $this->obDB->SafeSQL($input[$prefix.$key]);
 			if ($value['Type'] == 'enum')
-				$result = $ks_db->safesql($input[$prefix . $key]);
+				$result = $this->obDB->SafeSQL($input[$prefix.$key]);
 			if ($value['Type'] == 'binary')
-				$result = intval($input[$prefix . $key]);
+				$result = intval($input[$prefix.$key]);
 			return $result;
 		}
 		return false;
@@ -335,14 +194,8 @@ class CObject extends CBaseList
 
 	function Save($prefix = "KS_", $data = "")
 	{
-		global $ks_db, $bMagicGPC, $KS_FS;
-
-		$table = $this->sTable;
-
 		if(is_array($prefix) && $data=="")
-		{
 			$input = $prefix;
-		}
 		else
 		{
 			/* Определяем массив входных данных для сохранения в базе */
@@ -360,63 +213,39 @@ class CObject extends CBaseList
 		{
 			$sValue=$this->_ParseField($prefix,$key,$input,$value);
 			if($sValue!==false)
-				{
 				$data[$key]=$sValue;
-			}
 		}
 		/* Определение, есть ли запись с заданным id в таблице или нет.
 		   В зависимости от этого обновим старую запись или добавим новую. */
+		$arList=false;
 		if(array_key_exists('id',$data))
+			$arList=$this->GetList(false,array('id'=>$data['id']),false,array('id'));
+		if(is_array($arList) && count($arList)==1)
 		{
-			$query_select = "SELECT id FROM " . PREFIX . $table . " WHERE id = '" . $data['id'] . "' LIMIT 1";
-			$ks_db->query($query_select);
-			if ($ks_db->num_rows()>0)
-			{
-				$query = "";
-				foreach($data as $key=>$item)
-					$query .= "`$key` = '" . $item . "', ";
-				$query = chop($query, " ,");
-				$update_query = "UPDATE " . PREFIX . $table . " SET $query WHERE id = '" . $data['id'] . "'";
-				$ks_db->query($update_query);
-				$res = $data['id'];
-				if($res)
-					unset(CObject::$arCache[$this->sTable][$res]);
-				return $res;
-			}
-		}
-
-		$fields = "";
-		$values = "";
-		if (is_array($this->auto_fields))
+			$query = "";
 			foreach($data as $key=>$item)
-			{
-				if (!in_array($key, $this->auto_fields))
-				{
-					$fields .= "`".$key."`,";
-					$values .= "'$item',";
-				}
-			}
-
-		$fields = chop($fields, " ,");
-		$values = chop($values, " ,");
-		$check = $this->GenCheck($data);		// Проверка на существование записи в таблице
-		if ($check != "")
-		{
-			$ks_db->query("SELECT id FROM ".PREFIX.$table." WHERE $check");
-			$numrows=$ks_db->num_rows();
-		}
-		else
-			$numrows=0;
-		if ($numrows > 0)
-		{
-			throw new CError("MAIN_RECORD_ALREADY_EXISTS",KS_ERROR_MAIN_ALREADY_EXISTS,$this->check_fields);
-			$res = $_REQUEST[$prefix . 'id'];
+				$query .= "`$key` = '" . $item . "', ";
+			$query = chop($query, " ,");
+			$update_query = "UPDATE " . PREFIX . $this->sTable . " SET $query WHERE id = '" . $data['id'] . "'";
+			$this->obDB->Query($update_query);
+			$res = $data['id'];
 		}
 		else
 		{
-			$query_string = "INSERT INTO " . PREFIX . $table . "($fields) VALUES ($values)";
-			$ks_db->query($query_string);
-			$res = $ks_db->insert_id();
+			$fields = "";
+			$values = "";
+			if (is_array($this->auto_fields))
+				foreach($data as $key=>$item)
+					if (!in_array($key, $this->auto_fields))
+					{
+						$fields .= "`".$key."`,";
+						$values .= "'$item',";
+					}
+			$fields = chop($fields, " ,");
+			$values = chop($values, " ,");
+			$query_string = "INSERT INTO " . PREFIX . $this->sTable . "($fields) VALUES ($values)";
+			$this->obDB->Query($query_string);
+			$res = $this->obDB->InsertId();
 		}
 		if($res)
 			unset(CObject::$arCache[$this->sTable][$res]);
@@ -424,10 +253,10 @@ class CObject extends CBaseList
 	}
 
 	/**
-	получает одну запись из таблицы по указанным параметрам
-	@param $where - ассоциативный массив
-	   поле => значение
-	*/
+	 * получает одну запись из таблицы по указанным параметрам
+	 * @param $where - ассоциативный массив поле => значение
+	 * @return mixed
+	 */
 	function GetRecord($where=false)
 	{
 		if(!is_array(CObject::$arCache)) CObject::$arCache=array();
@@ -506,9 +335,7 @@ class CObject extends CBaseList
 		if (is_array($arFilter))
 		{
 			if(is_array($this->arFilter))
-			{
 				$arFilter=array_merge($arFilter,$this->arFilter);
-			}
 			$arFil=Array();
 			foreach ($arFilter as $field=>$value)
 			{
@@ -1098,21 +925,21 @@ class CObject extends CBaseList
 
 	/**
 	 * Защишенный метод выполняющий получение списка полей для любой таблицы
+	 * @todo Определить откуда вызываетя метод и зачем он необходим!
 	 */
 	protected function _GetTableFields($table=false)
 	{
-		global $ks_db;
 		if(!$table) $table=$this->sTable;
 		/* Глобальное изменение.
 		   Теперь обработке подвергаются любые поставляемые данные.
 		   Позволяет предотвратить ошибки при добавлении данных в БД. */
 
 		/* Чтение всех полей таблицы */
-		$ks_db->query("SHOW COLUMNS FROM " . PREFIX . $table);
+		$obResult=$this->obDB->query("SHOW COLUMNS FROM " . PREFIX . $table);
 
 		/* Формирование массива с параметрами полей - Type (тип данных), Size (размер в байтах) */
 		$fields = array();
-		while ($field = $ks_db->get_row())
+		while ($field = $obResult->GetRow())
 		{
 			$fType = $field['Type'];		// MySQL-тип поля
 			$lpos = strpos($fType, '(');
@@ -1124,6 +951,7 @@ class CObject extends CBaseList
 			}
 			$fields[$field['Field']] = array('Type' => strtolower($fType), 'Size' => $fSize);
 		}
+		$obResult->Free();
 		return $fields;
 	}
 
@@ -1177,21 +1005,15 @@ class CObject extends CBaseList
 		$sFrom=$this->_GenFrom();
 		//Блокировка запросов если не указан список полей при сложном запросе
 		if(!$arSelect && (count($this->arJoinTables)>0 || count($this->arTables)>1))
-		{
 			throw new CError('SYSTEM_QUERY_FIELDS_REQUIRE');
-		}
 		/*Считаем сколько элементов*/
 		$limits='';
 		if ($limit!=false)
 		{
 			if(is_array($limit))
-			{
 				$arLimits=$limit;
-			}
 			else
-			{
 				$arLimits[0]=$limit;
-			}
 			$limits="LIMIT ".join(',',$arLimits);
 		}
 		if($this->bDistinctMode)
@@ -1200,27 +1022,23 @@ class CObject extends CBaseList
 			$this->bDistinctMode=false;
 		}
 		else
- 		{
 			$query="SELECT $fields FROM $sFrom $sWhere $sGroupBy $sOrder $limits";
-		}
 		if(KS_DEBUG_QUERIES==1) echo $query.'<br/>';
-		$ks_db_res=$this->obDB->query($query);
-		if($ks_db->num_rows($ks_db_res)<1)
+		$obResult=$this->obDB->query($query);
+		if($obResult->NumRows()<1)
 		{
+			$obResult->Free();
 			return false;
 		}
 		$res=array();
-		while ($item=$ks_db->get_row($ks_db_res))
-		{
+		while ($item=$obResult->GetRow())
 			if($this->_ParseItem($item))
-			{
 				if(array_key_exists('id',$item)&&$this->bJustAdd==false)
 					$res[$item['id']]=$item;
 				else
 					$res[]=$item;
-			}
-		}
 		$this->data=$res;
+		$obResult->Free();
 		return $res;
 	}
 
@@ -1244,7 +1062,6 @@ class CObject extends CBaseList
 	 */
 	function Count($arFilter = false, $fGroup = false)
 	{
-		global $ks_db;
 		$this->arTables=array($this->sTable=>'A');
 		$this->arJoinTables=array();
 		$sWhere = $this->_GenWhere($arFilter);
@@ -1260,30 +1077,28 @@ class CObject extends CBaseList
 				$query = "SELECT COUNT(*) FROM " . $this->_GenFrom(). $sWhere;
 			}
 			if(KS_DEBUG_QUERIES==1) echo $query.'<br/>';
-			$ks_db->query($query);
-			if ($ks_db->num_rows() > 0)
+			$obResult=$this->obDB->query($query);
+			if ($obResult->NumRows() > 0)
 			{
-				$row = $ks_db->get_array();
+				$row = $obResult->GetArray();
 				$this->items = $row[0];
 			}
+			$obResult->Free();
 		}
 		else
 		{
 			/* Группировка результатов по полю $arGroup */
 			$results_count = array();
 			if(!is_array($fGroup))
-			{
 				$fGroup=array($fGroup);
-			}
 			$sSelect=$this->_GenSelect($fGroup,true);
 			$fGroup=$this->_GenGroup($fGroup);
 			$query = "SELECT $sSelect FROM " . $this->_GenFrom() . $sWhere . $fGroup;
 			if(KS_DEBUG_QUERIES==1) echo $query.'<br/>';
-			$ks_db->query($query);
-			while ($row = $ks_db->get_array())
-			{
+			$obResult=$this->obDB->query($query);
+			while ($row = $obResult->GetArray())
 				$results_count[$row[0]] = $row[1];
-			}
+			$obResult->Free();
 			$this->items = count($results_count);
 			$this->arJoinTables=array();
 			return $results_count;

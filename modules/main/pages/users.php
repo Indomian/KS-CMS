@@ -13,9 +13,6 @@
 /* Защита от взлома */
 if (!defined("KS_ENGINE")) die("Hacking attempt!");
 
-include_once(MODULES_DIR . "/main/libs/class.CUserGroup.php");
-require_once MODULES_DIR.'/main/libs/class.CModuleAdmin.php';
-
 class CmainAIusers extends CModuleAdmin
 {
 	private $obGroups;
@@ -117,14 +114,12 @@ class CmainAIusers extends CModuleAdmin
 	{
 		if($data==false)
 		{
-			$data=array(
-				'id'=>-1,
-			);
+			$data=array('id'=>-1);
 			if (class_exists("CFields"))
 			{
 				/* Чтение пользовательских полей модуля users */
 				$obFields = new CFields();
-				$arFields = $obFields->GetList(array("id" => "asc"), array("module" => "users", "type" => $this->obUser->sTable));
+				$arFields = $obFields->GetList(array("id" => "asc"), array("module" => "users", "type" => $this->obUser->GetTable()));
 				if (is_array($arFields))
 					foreach($arFields as $item)
 						$data['ext_'.$item["title"]] = $item["default"];
@@ -140,7 +135,7 @@ class CmainAIusers extends CModuleAdmin
 		if (class_exists("CFields"))
 		{
 			$obFields=new CFields();
-			$arFields=$obFields->GetList(Array("id"=>"asc"),Array("module"=>"users","type"=>$this->obUser->sTable));
+			$arFields=$obFields->GetList(Array("id"=>"asc"),Array("module"=>"users","type"=>$this->obUser->GetTable()));
 			$this->smarty->assign("addFields",$arFields);
 		}
 		return '_edit';
@@ -331,12 +326,10 @@ class CmainAIusers extends CModuleAdmin
 		/* Проверка прав доступа к редактированию пользователей */
 		if ($this->obUser->GetLevel("main") > 9) throw new CAccessError("MAIN_NO_RIGHT_TO_VIEW_USERS");
 		if($this->obUser->GetLevel('main')>8)
-		{
 			$this->smarty->assign('shortMode','Y');
-		}
 		$userdata=false;
-		if(array_key_exists('ACTION',$_REQUEST))
-			$sAction=$_REQUEST['ACTION'];
+		if(array_key_exists('action',$_REQUEST))
+			$sAction=$_REQUEST['action'];
 		else
 			$sAction='';
 		if(array_key_exists('id',$_REQUEST))

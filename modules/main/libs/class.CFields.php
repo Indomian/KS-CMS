@@ -1,22 +1,11 @@
 <?php
+if(!defined('KS_ENGINE')) die("Hacking attempt!");
 
-if( !defined('KS_ENGINE') )
-{
-  die("Hacking attempt!");
-}
 
-include_once MODULES_DIR.'/main/libs/class.CMain.php';
-
-/*
-KS ENGINE
-
-File: /catsubcat/libs/class.CFields.php
-Original Code by BlaDe39
-http://kolos-studio.ru/
-(c) 2008
-
-Назначение: Управление полями (создание редактрирование удаление)
-*/
+/**
+ * @filesource main/libs/class.CFields.php
+ * азначение: Управление полями (создание редактрирование удаление)
+ */
 
 class CFields extends CObject
 {
@@ -27,18 +16,6 @@ class CFields extends CObject
 	{
 		global $smarty;
 		parent::__construct($sTable);
-		$this->arFields=Array(
-			'id',
-			'title',
-			'description',
-			'script',
-			'module',
-			'type',
-			'orderation',
-			'default',
-			'option_1',
-			'option_2',
-		);
 		if(!self::$bInit)
 		{
 			$sName="CFields";
@@ -59,9 +36,7 @@ class CFields extends CObject
 			return $sResult;
 		}
 		else
-		{
-			return "Не найден обработчик поля";
-		}
+			throw new CError('SYSTEM_FIELD_HANDLER_NOT_FOUND');
 	}
 
 	static function _configField($params)
@@ -86,9 +61,7 @@ class CFields extends CObject
 	{
 		$key=$this->_GenFilterHash($arFilter);
 		if(!array_key_exists($key,self::$arUserFields))
-		{
 			self::$arUserFields[$key]=parent::GetRecord($arFilter);
-		}
 		return self::$arUserFields[$key];
 	}
 
@@ -377,55 +350,48 @@ class CFields extends CObject
 	 * @version 2.3
 	 * Добавлен необязательный параметр $script, указывающий на имя обработчика полей
 	 *
-	 * @param string $module Имя модуля
-	 * @param string $type Тип записи
-	 * @param string $script Имя обработчика полей, которые выбираются для списка
+	 * @param string $sModule Имя модуля
+	 * @param string $sType Тип записи
+	 * @param string $sScript Имя обработчика полей, которые выбираются для списка
 	 * @return array
 	 */
-	function GetModuleFields($module, $type, $script = false)
+	function GetModuleFields($sModule, $sType, $sScript = false)
 	{
-		global $ks_db;
-		if (is_array(self::$arUserFields) && array_key_exists($module,self::$arUserFields) && array_key_exists($type,self::$arUserFields[$module]) && !$script)
-		{
-			return self::$arUserFields[$module][$type];
-		}
+		if (is_array(self::$arUserFields) && array_key_exists($sModule,self::$arUserFields) && array_key_exists($sType,self::$arUserFields[$sModule]) && !$sScript)
+			return self::$arUserFields[$sModule][$sType];
 		else
 		{
-			$arResult=array();
-			$query = "SELECT * FROM " . PREFIX . $this->sTable . " WHERE module = '" . $module . "' AND type = '" . $type . "'";
-			if ($script)
-				$query .= " AND script = '" . $script . "'";
-			$ks_db->query($query);
-			if($ks_db->num_rows()>0)
-			{
-				while($arRow=$ks_db->get_row())
-				{
-					$arResult[$arRow['id']]=$arRow;
-				}
-			}
-			if (!$script)
-				self::$arUserFields[$module][$type]=$arResult;
+			$arFilter=array(
+				'module'=>$sModule,
+				'type'=>$sType
+			);
+			if($sScript)
+				$arFilter['script']=$sScript;
+			$arResult=$this->GetList(false,$arFilter);
+			if(!$arResult) $arResult=array();
+			if (!$sScript)
+				self::$arUserFields[$sModule][$sType]=$arResult;
 			return $arResult;
 		}
 	}
 
+	/**
+	 * Метод выполняет удаление записи по её коду
+	 * @param $id
+	 */
 	function Delete($id)
 	{
-		global $ks_db;
-		$arField=$this->GetRecord(array('id'=>$id));
-		if($arField)
+		if($arField=$this->GetRecord(array('id'=>$id)))
 		{
 			try
 			{
 				$query="ALTER TABLE ".PREFIX.$arField['type'].' DROP COLUMN ext_'.$arField['title'];
-				$ks_db->query($query);
+				$this->obDB->query($query);
 			}
 			catch(Exception $e)
-			{
-
-			}
+			{}
 			$query="DELETE FROM ".PREFIX.$this->sTable." WHERE id='".intval($id)."'";
-			$ks_db->query($query);
+			$this->obDB->query($query);
 		}
 	}
 }

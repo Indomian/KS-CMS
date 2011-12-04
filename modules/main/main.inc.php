@@ -23,17 +23,24 @@ if (!defined('KS_MAIN_INIT'))
 	setlocale(LC_NUMERIC, 'C');
 	/* Полезные функции */
 	require_once MODULES_DIR."/main/libs/functions.php";
-
+	/* системная конфигурация */
+	include(CONFIG_DIR.'/sys_config.php');
 	/* Отправляем заголовок с кодировкой */
 	header('Content-Type: text/html; charset=UTF-8');
 
-	/* системная конфигурация */
-	include(CONFIG_DIR.'/sys_config.php');
-	define("ERROR_LEVEL", $ks_config['debugmode']);
-
-	/* БД */
-	require_once MODULES_DIR.'/main/libs/db/' . $ks_config['DB_CLASS'] . '.php';
-	include(CONFIG_DIR.'/db_config.php');
+	/* Подключение класса для работы с базой данных и инициализация его объекта */
+	include_once(CONFIG_DIR . "/db_config.php");
+	if(file_exists(MODULES_DIR.'/main/libs/db/'.KS_DB_ENGINE.'.php'))
+	{
+		require_once MODULES_DIR."/main/libs/db/".KS_DB_ENGINE.'.php';
+		$sClassName=KS_DB_ENGINE;
+		$ks_db = new $sClassName(KS_DEBUG);
+	}
+	else
+	{
+		echo "DB Init error";
+		die();
+	}
 
 	/* Проверка структуры базы данных по требованию */
 	if($ks_config['update_db']==1)

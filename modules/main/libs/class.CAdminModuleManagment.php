@@ -413,13 +413,14 @@ final class CAdminModuleManagment extends CModuleManagment
 	{
 		$bIsCurrent=false;
 		foreach($this->arModules as $arModule)
-		{
 			if (file_exists(MODULES_DIR.'/'.$arModule['directory'].'/admin.menu.inc.php'))
 			{
 				$this->obLanguage->LoadSection($arModule['directory'].'_menu');
+				$arMenu=false;
 				include_once(MODULES_DIR.'/'.$arModule['directory'].'/admin.menu.inc.php');
+				if(is_array($arMenu))
+					$this->AddMenuItem($arMenu);
 			}
-		}
 		foreach($this->menu as $key=>$arItem)
 		{
 			if($arItem['module']==$this->current){
@@ -515,7 +516,7 @@ final class CAdminModuleManagment extends CModuleManagment
 				$this->menu[strtolower($key)]=$arMenu;
 			}
 		}
-		}
+	}
 
 	/**
 	 * Метод добавляет стандартный пункт в систему меню

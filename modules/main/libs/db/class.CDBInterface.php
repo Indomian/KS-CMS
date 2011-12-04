@@ -35,8 +35,29 @@ abstract class CDBInterface
 	/**
 	 * Метод выполняет подключение к базе данных
 	 */
-	abstract function connect($ks_db_user, $ks_db_pass, $ks_db_name, $ks_db_location = 'localhost', $show_error=1);
-	abstract function query($query, $show_error=true);
+	abstract function Connect($ks_db_user, $ks_db_pass, $ks_db_name, $ks_db_location = 'localhost', $show_error=1);
+	abstract function Query($query, $show_error=true);
+	abstract function Rollback();
+	abstract function GetRow($query_id = '');
+	abstract function GetArray($query_id = '');
+	abstract function NumRows($query_id = '');
+	abstract function InsertId();
+	abstract function AffectedRows();
+	abstract function GetResultFields($query_id = '');
+	abstract function SafeSQL( $source );
+	abstract function Free( $query_id = '' );
+	abstract function Close();
+	abstract protected function FillFieldArray($arField);
+	abstract public function AddColumn($table,$arColumn);
+	abstract public function UpdateColumnType($sTable,$sColumn,$sType);
+	abstract function UpdateColumn($sTable,$sColumn,$arParams);
+	abstract function DeleteTables($arTables);
+	abstract function DeleteColumn($sTable,$sColumn);
+	abstract function RenameTable($sTable,$sNewName);
+	/**
+	 * Метод добавляет таблицу в БД по описанию структуры
+	 */
+	abstract function AddTable($sTable,$arTableStructure);
 
 	/**
 	 * Переключает режим отладки запросов в БД
@@ -67,7 +88,7 @@ abstract class CDBInterface
 	 * @param string $message - сообщение которое необходимо добавить в лог
 	 * @param int $time - время выполнения операции, необязательный
 	 */
-	function add2log($message,$time=0)
+	function Add2Log($message,$time=0)
 	{
 		/*Запись запроса в лог, запись времени его исполнения в лог*/
 		if($this->iDebug>0)
@@ -78,9 +99,7 @@ abstract class CDBInterface
 			);
 			$this->arRequests[]=$arRow;
 			if($this->iDebug>1)
-			{
 				$this->arLocalRequests[$this->iDebug][]=$arRow;
-			}
 		}
 	}
 
@@ -90,17 +109,15 @@ abstract class CDBInterface
 	\author blade39 <blade39@kolosstudio.ru>
 	\since 1.0
 	*/
-	function begin()
+	function Begin()
 	{
 		$this->iBegin++;
 		$this->arBackUpData[$this->iBegin]=array();
 	}
 
-	abstract function rollback($show_error=false);
-
 	/**Применяет все последние изменения в БД. Не выполняет никакой работы в базе данных, фактически производит очистку массива операций
 	и снятие флага записи активности*/
-	function commit()
+	function Commit()
 	{
 		if($this->iBegin>0)
 		{
@@ -110,24 +127,8 @@ abstract class CDBInterface
 		return true;
 	}
 
-	abstract function get_row($query_id = '');
-	abstract function get_array($query_id = '');
-	abstract function num_rows($query_id = '');
-	abstract function insert_id();
-	abstract function AffectedRows();
-	abstract function get_result_fields($query_id = '');
-	abstract function safesql( $source );
-	abstract function free( $query_id = '' );
-	abstract function close();
-	abstract public function AddColumn($table,$arColumn);
-	abstract public function UpdateColumnType($sTable,$sColumn,$sType);
-	abstract function UpdateColumn($sTable,$sColumn,$arParams);
-	abstract function DeleteTables($arTables);
-	abstract function DeleteColumn($sTable,$sColumn);
-	abstract function RenameTable($sTable,$sNewName);
-
 	/**Возращает текущее время с миллисекундами.*/
-	function get_real_time()
+	function GetRealTime()
 	{
 		list($seconds, $microSeconds) = explode(' ', microtime());
 		return ((float)$seconds + (float)$microSeconds);
@@ -154,11 +155,6 @@ abstract class CDBInterface
 			}
 		}
 	}
-
-	/**
-	 * Метод добавляет таблицу в БД по описанию структуры
-	 */
-	abstract function AddTable($sTable,$arTableStructure);
 
 	/**
 	 * Метод осуществляет анализ таблицы
@@ -256,3 +252,19 @@ abstract class CDBInterface
 	}
 }
 
+/**
+ * Абстрактный класс обеспечивающий хранение результата запроса к базе данных.
+ * Для различных классов может сохранить различные значения
+ * @author blade39
+ *
+ */
+abstract class CDBResult
+{
+	protected $bFree;
+	abstract function __construct($result);
+	abstract function __destruct();
+	abstract function Get();
+	abstract function Free();
+	abstract function GetRow();
+	abstract function NumRows();
+}

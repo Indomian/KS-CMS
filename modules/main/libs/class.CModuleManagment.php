@@ -1,9 +1,15 @@
 <?php
+/**
+ * В файле содержится базовый класс обеспечивающий работу модулей
+ *
+ * @filesource main/libs/class.CModuleManagment.php
+ * @author BlaDe39 <blade39@kolosstudio.ru>
+ * @version 2.7
+ * @since 30.11.2011
+ */
 
-include_once MODULES_DIR.'/main/libs/class.CMain.php';
-include_once MODULES_DIR.'/main/libs/class.CTemplates.php';
-include_once MODULES_DIR.'/main/libs/class.CConfigParser.php';
-include_once MODULES_DIR.'/main/libs/class.CUrlParser.php';
+/* Проверка легальности подключения файла */
+if (!defined("KS_ENGINE"))	die("Hacking attempt!");
 
 define('NOTIFY_WARNING',1);
 define('NOTIFY_MESSAGE',2);
@@ -1015,23 +1021,23 @@ abstract class CModuleManagment extends CObject
 		{
 			if(file_exists(MODULES_DIR.'/main/install/install.php'))
 			{
+				//Исправление ошибки при переустановке при наличии печенек
+				CSessionManager::get_instance()->Destroy();
+				//Стираем печеньку с токеном
+				setcookie('ks_token','0',1,'/');
 				include MODULES_DIR.'/main/install/install.php';
 				if(!$this->IsModule('interfaces'))
-				{
 					$this->Install('interfaces');
-				}
 				if(!$this->IsModule('navigation'))
-				{
 					$this->Install('navigation');
-				}
 				$this->RecountDBStructure();
 				$this->RecountTextStructure();
 				$obConfig=new CConfigParser('main');
 				$obConfig->LoadConfig();
-				include_once(CONFIG_DIR.'/db_structure.php');
-				$ks_db->CheckDB($arStructure);
 				$obConfig->Set('go_install',0);
 				$obConfig->WriteConfig();
+				include_once(CONFIG_DIR.'/db_structure.php');
+				$ks_db->CheckDB($arStructure);
 				CUrlParser::get_instance()->Redirect('/admin.php');
 			}
 		}

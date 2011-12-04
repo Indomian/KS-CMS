@@ -52,38 +52,8 @@ foreach($arDBList as $sTable)
 		$ks_db->AddTable($sTable,$arStructure[$sTable]);
 	}
 }
-//Проверяем наличие модуля навигации
-/*if(!($arInterfaces=$this->GetRecord(array('directory'=>'navigation'))))
-{
-	$arFields=array(
-		'name'=>'Navigation',
-		'directory'=>'navigation',
-		'include_global_template'=>'0',
-		'active'=>1,
-		'orderation'=>1,
-		'hook_up'=>1,
-		'allow_url_edit'=>0,
-		'URL_ident'=>'',
-	);
-	$this->Save('',$arFields);
-}
-//Проверяем наличие модуля интерфейсов
-if(!($arInterfaces=$this->GetRecord(array('directory'=>'interfaces'))))
-{
-	$arFields=array(
-		'name'=>'Interfaces',
-		'directory'=>'interfaces',
-		'include_global_template'=>'0',
-		'active'=>1,
-		'orderation'=>2,
-		'hook_up'=>1,
-		'allow_url_edit'=>0,
-		'URL_ident'=>'',
-	);
-	$this->Save('',$arFields);
-}*/
 //Прописываем уровни доступа для всех групп
-$USERGROUP=new CUserGroup;
+$USERGROUP=new CObject('usergroups');
 if(!$USERGROUP->GetRecord(array('id'=>1)))
 {
 	$arFields=array(
@@ -137,10 +107,9 @@ if(!$obUser->GetRecord(array('id'=>1)))
 	);
 	$obUser->Save('',$arFields);
 }
+
 if($obUser=new CUser())
-{
 	$obUser->SetAllUserGroups(1,array(1));
-}
 
 //Создаем системные директории
 if(!file_exists(SYS_TEMPLATES_DIR))

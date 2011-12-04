@@ -1,6 +1,53 @@
 /**
  * В этом файле размещаются функции которые наобходимы на всех страницах системы
  */
+
+var _KS_CMS_ADMIN={
+	"menu":{
+		"toggleMenu":function(e){
+			e.preventDefault();
+			if($(this).hasClass('menu_arrow_up'))
+				$(this).removeClass('menu_arrow_up').addClass('menu_arrow_down').prev().slideUp(300);
+			else
+				$(this).addClass('menu_arrow_up').removeClass('menu_arrow_down').prev().slideDown(300);
+		}
+	},
+	"content":{
+		"toggelHint":function(e){
+			e.preventDefault();
+			var obPrev=$(this).prev();
+			var cookieTime=new Date();
+			cookieTime.setTime(cookieTime.getTime()+360000000);
+			if($(this).hasClass('content_arrow_up'))
+			{
+				obPrev.slideUp(300);
+				$(this).removeClass('content_arrow_up').addClass('content_arrow_down');
+				_KS_CMS_ADMIN.setCookie('showHelpBar',0,cookieTime.toGMTString());
+			}
+			else
+			{
+				obPrev.slideDown(300);
+				$(this).addClass('content_arrow_up').removeClass('content_arrow_down');
+				_KS_CMS_ADMIN.setCookie('showHelpBar',1,cookieTime.toGMTString());
+				
+			}
+		}
+	},
+	/**
+	 * Метод позволяет установить печеньку на указанные параметры
+	 * взято http://www.codenet.ru/webmast/js/Cookies.php
+	 */
+	"setCookie":function (name, value, expires, path, domain, secure)
+	{
+	      document.cookie = name + "=" + escape(value) +
+	        ((expires) ? "; expires=" + expires : "") +
+	        ((path) ? "; path=" + path : "") +
+	        ((domain) ? "; domain=" + domain : "") +
+	        ((secure) ? "; secure" : "");
+	}
+}
+
+
 var adminDate=new Date();
 /**
  * Метод позволяет установить печеньку на указанные параметры
@@ -59,33 +106,6 @@ function getCookie(name)
 		}
 	}
 	return(setStr);
-}
-
-/**
- * Функция выполняет переключение статуса отображения блока подсказок к модулю
- * @param div - объект переключатель
- * @return
- */
-function ToggleHelpBar(div)
-{
-	if(typeof(div)!='object') return false;
-	if(typeof(div.previousSibling)=='object')
-	{
-		var cookieTime=new Date();
-		cookieTime.setTime(cookieTime.getTime()+360000000);
-		if(div.previousSibling.style.display=='none')
-		{
-			div.previousSibling.style.display='';
-			if(typeof(div)=='object') div.className='content_arrow_up';
-			setCookie('showHelpBar',0,cookieTime.toGMTString());
-		}
-		else
-		{
-			div.previousSibling.style.display='none';
-			if(typeof(div)=='object') div.className='content_arrow_down';
-			setCookie('showHelpBar',1,cookieTime.toGMTString());
-		}
-    }
 }
 
 /**
@@ -718,19 +738,7 @@ function thisnode(param)
 	//alert(MyNode);
 }
 
-function dis(sender,obj)
-{
-	if (document.getElementById(obj).style.display == 'none')
-	{
-		document.getElementById(obj).style.display = 'block';
-		document.getElementById(sender).className = 'menu_arrow_up';
-	}
-	else
-	{
-		document.getElementById(obj).style.display = 'none';
-		document.getElementById(sender).className = 'menu_arrow_down';
-	}
-}
+
 
 /**
  * Функция устанавливает обработчик кнопки Отмена в лайт версии
@@ -933,5 +941,7 @@ $(document).ready(function()
 		}
 	);
 	setTimeout("adminAskServer()",10000);
+	$('a.menu_toggle').click(_KS_CMS_ADMIN.menu.toggleMenu);
+	$('div.helpbar').click(_KS_CMS_ADMIN.content.toggelHint);
 });
 

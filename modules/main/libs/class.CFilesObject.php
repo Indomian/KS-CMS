@@ -13,13 +13,10 @@
 /*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
-require_once MODULES_DIR."/main/libs/class.CMain.php";
-require_once MODULES_DIR.'/main/libs/class.CFileUploader.php';
-
 class CFilesObject extends CObject
 {
 	protected $arFileFields;	/*!<поля значения которых - файлы.*/
-	public $sUploadPath; 	/*!<Путь для загрузки файлов через функцию save.*/
+	protected $sUploadPath; 	/*!<Путь для загрузки файлов через функцию save.*/
 	private $obUploadManager;
 
 	function __construct($sTable='',$sUploadPath='')
