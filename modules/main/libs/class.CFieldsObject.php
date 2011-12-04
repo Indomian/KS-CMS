@@ -82,7 +82,6 @@ class CFieldsObject extends CFilesObject
 		global $ks_db,$KS_EVENTS_HANDLER, $KS_MODULES;
 		try
 		{
-			$ks_db->begin();
 			// 	Определяем таблицу с которой будем работать
 			$table=$this->sTable;
 			// Определяем данные с которыми будем работать
@@ -114,83 +113,58 @@ class CFieldsObject extends CFilesObject
 			}
 			// Вызываем обработчик событий перед сохранением
 			if (!$KS_EVENTS_HANDLER->Execute('main', 'onBeforeFieldsObjectSave', $data)) throw new CError("MAIN_HANDLER_ERROR", 0, $KS_EVENTS_HANDLER->GetLastEvent());
+			$arList=false;
 			if(array_key_exists('id',$data))
+				$arList=$this->GetList(false,array('id'=>$data['id']),false,array('id'));
+			if(is_array($arList) && count($arList)==1)
 			{
-				$query_select = "SELECT id FROM " . PREFIX . $table . " WHERE id = '" . $data['id'] . "' LIMIT 1";
-				$ks_db->query($query_select);
-				if ($ks_db->num_rows()>0)
-				{
-					$query = "";
-					foreach($data as $key=>$item)
-						$query .= "`$key` = '" . $item . "', ";
-					$query = chop($query, " ,");
-					$update_query = "UPDATE " . PREFIX . $table . " SET $query WHERE id = '" . $data['id'] . "'";
-					$ks_db->query($update_query);
-					$res = $data['id'];
-					if($res)
-						unset(CObject::$arCache[$this->sTable][$res]);
-					// Вызываем обработчик событий после сохранением
-					if (!$KS_EVENTS_HANDLER->Execute('main', 'onAfterFieldsObjectSave', $data))
-						throw new CError("MAIN_HANDLER_ERROR", 0, $KS_EVENTS_HANDLER->GetLastEvent());
-					$ks_db->commit();
-					return $res;
-				}
+				$query = "";
+				foreach($data as $key=>$item)
+					$query .= "`$key` = '" . $item . "', ";
+				$query = chop($query, " ,");
+				$update_query = "UPDATE " . PREFIX . $table . " SET $query WHERE id = '" . $data['id'] . "'";
+				$this->obDB->Query($update_query);
+				$res = $data['id'];
 			}
-
-			if(!array_key_exists('date_add',$data) && in_array('date_add',$this->arFields))
-				$data['date_add']=time();
-			if(!array_key_exists('date_edit',$data) && in_array('date_edit',$this->arFields))
-				$data['date_edit']=time();
-			$fields="";
-			$values="";
-			foreach($data as $key=>$item)
+			else
 			{
-				if (!in_array($key,$this->auto_fields))
+				unset($data['id']);
+				if(!array_key_exists('date_add',$data) && in_array('date_add',$this->arFields))
+					$data['date_add']=time();
+				if(!array_key_exists('date_edit',$data) && in_array('date_edit',$this->arFields))
+					$data['date_edit']=time();
+				$fields="";
+				$values="";
+				foreach($data as $key=>$item)
+				{
+					if (!in_array($key,$this->auto_fields))
 					{
 						$fields.=$key.",";
 						$values.="'$item',";
 					}
-			}
-			$fields=chop($fields," ,");
-			$values=chop($values," ,");
-			$check=$this->GenCheck($data);
-			if ($check!="")
-			{
-				$ks_db->query("SELECT id FROM ".PREFIX.$table." WHERE $check");
-				$numrows=$ks_db->num_rows();
-			}
-			else
-			{
-				$numrows=0;
-			}
-			if ($numrows>0)
-			{
-				throw new CError("MAIN_RECORD_ALREADY_EXISTS",KS_ERROR_MAIN_ALREADY_EXISTS,$this->check_fields);
-				$res=$_REQUEST[$prefix.'id'];
-			}
-			else
-			{
+				}
+				$fields=chop($fields," ,");
+				$values=chop($values," ,");
 				$query="INSERT INTO ".PREFIX.$table."($fields) VALUES ($values)";
-				$ks_db->query($query);
-				$res=$ks_db->insert_id();
+				$this->obDB->Query($query);
+				$res=$this->obDB->InsertId();
 			}
-
+			if($res)
+				unset(CObject::$arCache[$this->sTable][$res]);
 			// Вызываем обработчик событий после сохранением
 			if (!$KS_EVENTS_HANDLER->Execute('main', 'onAfterFieldsObjectSave', $data))
 				throw new CError("MAIN_HANDLER_ERROR", 0, $KS_EVENTS_HANDLER->GetLastEvent());
-			$ks_db->commit();
 			return $res;
 		}
 		catch(CError $e)
 		{
-			$ks_db->rollback();
 			throw $e;
 		}
 		catch(Exception $e)
 		{
-			$ks_db->rollback();
+			//Вне зависимости от запуска, пробуем откатить
+			$this->obDB->rollback();
 			die();
-			throw new CError($e);
 		}
 	}
 

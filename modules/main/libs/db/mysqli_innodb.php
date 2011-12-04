@@ -58,7 +58,6 @@ final class mysqli_innodb extends CDBInterface
 		$this->obDB=new mysqli($ks_db_location, $ks_db_user, $ks_db_pass, $ks_db_name);
 		if($this->obDB->connect_error)
 			throw new CDBError($this->obDB->connect_error, $this->obDB->connect_errno);
-		$this->obDB->autocommit(false);
 		//получаем номер версии
 		$this->iVersion = $this->obDB->server_version;
 		//успешно законнектились
@@ -95,8 +94,8 @@ final class mysqli_innodb extends CDBInterface
 		}
 		catch(CDBError $e)
 		{
-			$this->mysql_error = $this->obDB->error();
-			$this->mysql_error_num = $this->obDB->errno();
+			$this->mysql_error = $this->obDB->error;
+			$this->mysql_error_num = $this->obDB->errno;
 			throw new CDBError($this->mysql_error, $this->mysql_error_num, $query);
 		}
 
@@ -113,9 +112,7 @@ final class mysqli_innodb extends CDBInterface
 	 */
 	function Begin()
 	{
-		$obResult=$this->query('BEGIN TRANSACTION');
-		if($obResult->Get()!==true)
-			throw new CDBError('SYSTEM_TRANSACTION_BEGIN_ERROR');
+		$this->obDB->autocommit(false);
 	}
 
 	/**
@@ -123,9 +120,8 @@ final class mysqli_innodb extends CDBInterface
 	 */
 	function Commit()
 	{
-		$obResult=$this->query('COMMIT');
-		if($obResult->Get()!==true)
-			throw new CDBError('SYSTEM_COMMIT_ERROR');
+		$this->obDB->commit();
+		$this->obDB->autocommit(true);
 	}
 
 	/**
@@ -133,9 +129,8 @@ final class mysqli_innodb extends CDBInterface
 	 */
 	function Rollback()
 	{
-		$obResult=$this->query('ROLLBACK');
-		if($obResult->Get()!==true)
-			throw new CDBError('SYSTEM_ROLLBACK_ERROR');
+		$this->obDB->rollback();
+		$this->obDB->autocommit(true);
 	}
 
 	/**
@@ -266,12 +261,15 @@ final class mysqli_innodb extends CDBInterface
 			$arResult[current($arTable)]=current($arTable);
 		$obResult->Free();
 		if($bGetFields)
-			foreach($arDB as $sTable)
+			foreach($arResult as $sTable)
 			{
 				$obResult=$this->query('DESCRIBE '.$sTable);
 				if($obResult->NumRows()>0)
+				{
+					$arResult[$sTable]=array();
 					while($arRow=$obResult->GetRow())
 						$arResult[$sTable][$arRow['Field']]=$arRow;
+				}
 			}
 		return $arResult;
 	}

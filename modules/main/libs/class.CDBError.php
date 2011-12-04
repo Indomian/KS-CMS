@@ -31,6 +31,7 @@ class CDBError extends CError
 			$query = preg_replace("/([0-9a-f]){32}/", "********************************", $query); // Hides all hashes
 			$query_str = "$query";
 		}
+		else $query_str="";
 		$errorText="Ошибка вызова MySQL: ".$this->getMessage()."\n".
 			"Код ошибки: ".$this->error."\n".
 			"Текст запроса: ".$query_str."\n".

@@ -44,13 +44,9 @@ foreach($arDBList as $sTable)
 {
 	//Чистим базу (если были таблицы - потрем)
 	if(in_array($sTable,$arTables))
-	{
 		$ks_db->CheckTable($sTable,$arStructure[$sTable]);
-	}
 	else
-	{
 		$ks_db->AddTable($sTable,$arStructure[$sTable]);
-	}
 }
 //Прописываем уровни доступа для всех групп
 $USERGROUP=new CObject('usergroups');
@@ -80,19 +76,11 @@ $arAccess['groups']=$USERGROUP->GetList(array('title'=>'asc'));
 $obAccess=new CModulesAccess();
 //Выполняем сохранение прав доступа
 if(is_array($arAccess['groups']))
-{
 	foreach($arAccess['groups'] as $key=>$value)
-	{
 		if($value['id']=='1')
-		{
 			$obAccess->Set($value['id'],'main',0);
-		}
 		else
-		{
 			$obAccess->Set($value['id'],'main',10);
-		}
-	}
-}
 
 $obUser=new CObject('users');
 if(!$obUser->GetRecord(array('id'=>1)))

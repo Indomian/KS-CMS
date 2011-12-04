@@ -232,6 +232,7 @@ class CObject extends CBaseList
 		}
 		else
 		{
+			unset($data['id']);
 			$fields = "";
 			$values = "";
 			if (is_array($this->auto_fields))
