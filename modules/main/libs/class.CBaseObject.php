@@ -1,21 +1,19 @@
 <?php
 /**
- * \file class.CBaseObject.php
+ * @filesource main/libs/class.CBaseObject.php
  * Файл контейнер для класса абстрактного базового объекта
  * Файл проекта Update Server Dev.
- * 
- * Создан 17.02.2010
  *
- * @author blade39
- * @version 2.5 
- * @todo
+ * @since 17.02.2010
+ *
+ * @author blade39 <blade39@kolosstudio.ru>
+ * @version 2.7
  */
-/*Обязательно вставляем во все файлы для защиты от взлома*/ 
+/*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 /**
  * Класс CBaseObject - абстрактный класс от которого происходит наследование всех других классов.
- * 
  */
 abstract class CBaseObject
 {
@@ -42,4 +40,4 @@ abstract class CBaseObject
 		}
 	}
 }
-?>
+

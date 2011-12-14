@@ -74,6 +74,22 @@ abstract class CModuleManagment extends CObject
 		}
 		$this->arHeads=array();
 		$this->arHeadScripts=array();
+		if(!spl_autoload_register(array($this,'__autoload')))
+			throw new Exception('SPL_AUTOLOAD_FAIL');
+	}
+
+	/**
+	 * Метод выполняет загрузку базовых классов всех подключенных модулей
+	 */
+	function __autoload($sClassName)
+	{
+		foreach($this->arModules as $sModule=>$arModule)
+			if(file_exists(MODULES_DIR.'/'.$sModule.'/libs/class.'.$sClassName.'.php'))
+			{
+				require_once  MODULES_DIR.'/'.$sModule.'/libs/class.'.$sClassName.'.php';
+				return;
+			}
+		return false;
 	}
 
 	/**

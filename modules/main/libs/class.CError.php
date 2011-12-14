@@ -46,9 +46,7 @@ class CError extends Exception
 			$arTrace=$this->getTrace();
 			$text.='<table border="1"><tr><td>#</td><td>File</td><td>Line</td><td>function</td></tr>';
 			foreach($arTrace as $i=>$arRow)
-			{
-				$text.='<tr><td>'.$i.'</td><td>'.$arRow['file'].'</td><td>'.$arRow['line'].'</td><td>'.$arRow['function'].'</td></tr>';
-			}
+				$text.='<tr><td>'.$i.'</td><td>'.(isset($arRow['file'])?$arRow['file']:'Unknow').'</td><td>'.(isset($arRow['line'])?$arRow['line']:'').'</td><td>'.$arRow['function'].'</td></tr>';
 			$text.='</table>';
 		}
 		if(!IS_ADMIN&&is_object($smarty))

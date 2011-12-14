@@ -12,10 +12,7 @@
 if (!defined('KS_ENGINE'))
 	die("Hacking attempt!");
 
-include_once MODULES_DIR . '/main/libs/class.CTemplates.php';
-include_once MODULES_DIR . '/main/libs/class.CUserGroup.php';
-
-global $KS_URL;
+global $KS_URL,$USER;
 $smarty->assign('tabTempl',1);
 try
 {

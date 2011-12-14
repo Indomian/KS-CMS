@@ -12,9 +12,6 @@
 /*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
-require_once MODULES_DIR.'/catsubcat/libs/class.CCommonElement.php';
-require_once MODULES_DIR.'/catsubcat/libs/class.CElementLinks.php';
-
 /**
  * Класс обработки элементов для модуля production
  * Наследуется от класса модуля CCommonElement, перекрывается конструктор.
@@ -32,7 +29,6 @@ class CElement extends CCommonElement
 		$this->sFieldsModule='catsubcat';
 		parent::__construct($sCategoryTable,$sElementsTable);
 		$this->obLinks=new CElementLinks('catsubcat_links');
-		$this->obLinks->AddAutoField('id');
 	}
 
 	/**

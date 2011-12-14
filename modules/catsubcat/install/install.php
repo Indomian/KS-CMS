@@ -18,10 +18,7 @@ $module_name='catsubcat';
 $sContent='';
 
 include 'description.php';
-require_once MODULES_DIR.'/main/libs/class.CUserGroup.php';
-require_once MODULES_DIR.'/main/libs/class.CAccess.php';
 include MODULES_DIR.'/'.$module_name.'/install/db_structure.php';
-include MODULES_DIR.'/'.$module_name.'/libs/class.CCategory.php';
 
 //Список таблиц модуля
 $arDBList=array(
@@ -41,13 +38,9 @@ if(array_key_exists('go',$_POST))
 	{
 		//Чистим базу (если были таблицы - потрем)
 		if(in_array($sTable,$arTables))
-		{
 			$ks_db->CheckTable($sTable,$arStructure[$sTable]);
-		}
 		else
-		{
 			$ks_db->AddTable($sTable,$arStructure[$sTable]);
-		}
 	}
 	//Проверяем наличие корневого элемента
 	$obCategory=new CCategory();
@@ -94,7 +87,6 @@ if(array_key_exists('go',$_POST))
 		'allow_url_edit'=>1,
 		'id'=>-1,
 	);
-	$this->AddAutoField('id');
 	$this->Save('',$arModule);
 	//Устанавливаем файлы административного интерфейса
 	if(array_key_exists('installTemplates', $_POST) && ($_POST['installTemplates']==1))
@@ -104,18 +96,12 @@ if(array_key_exists('go',$_POST))
 			if(!file_exists(TEMPLATES_DIR.'/.default/catsubcat/'))
 				$KS_FS->makedir(TEMPLATES_DIR.'/.default/catsubcat/');
 			foreach($arFiles as $sFile)
-			{
 				$KS_FS->CopyFile(MODULES_DIR.'/catsubcat/install/templates/.default/'.$sFile,TEMPLATES_DIR.'/.default/catsubcat/'.$sFile,'');
-			}
 		}
 	}
 	if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/catsubcat/install/templates/admin/'))
-	{
 		foreach($arFiles as $sFile)
-		{
 			$KS_FS->CopyFile(MODULES_DIR.'/catsubcat/install/templates/admin/'.$sFile,SYS_TEMPLATES_DIR.'/admin/'.$sFile,'');
-		}
-	}
 	//Устанавливаем скрипты модуля
 	if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/catsubcat/install/js/'))
 	{
@@ -124,9 +110,7 @@ if(array_key_exists('go',$_POST))
 		if(!file_exists(ROOT_DIR.JS_DIR.'/catsubcat/'))
 			$KS_FS->makedir(ROOT_DIR.JS_DIR.'/catsubcat/');
 		foreach($arFiles as $sFile)
-		{
 			$KS_FS->CopyFile(MODULES_DIR.'/catsubcat/install/js/'.$sFile,ROOT_DIR.JS_DIR.'/catsubcat/'.$sFile,'');
-		}
 	}
 	$this->AddNotify('SYSTEM_MODULE_INSTALL_OK',$arDescription['title'],NOTIFY_MESSAGE);
 }

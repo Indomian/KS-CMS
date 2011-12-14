@@ -29,12 +29,7 @@ try
 	/* инициализация */
 	try
 	{
-		/**
-		 * Входные данные
-		 * $_GET['path'] -- полный вызываемый путь вида: dir1/dir2/file.html
-		 * $_GET['<другие перменные>']
-		 */
-		require_once MODULES_DIR.'/main/main.inc.php';
+		require_once MODULES_DIR.'/main/main.init.php';
 	}
 	catch(CUserError $e)
 	{
@@ -48,18 +43,12 @@ try
 		{
 			$KS_IND_dir=$_REQUEST['module'];
 			if(array_key_exists('gtpl',$_REQUEST) && IsTextIdent($_REQUEST['gtpl']))
-			{
 				$global_template=$_REQUEST['gtpl'];
-			}
 			else
-			{
 				$global_template='.default';
-			}
 			$smarty->assign("glb_tpl", $global_template);
 			if($KS_MODULES->IsActive($KS_IND_dir) && $KS_MODULES->CanAjaxCall($KS_IND_dir,$_REQUEST['action']))
-			{
 				$output['main_content']=$KS_MODULES->IncludeWidget($KS_IND_dir,$_REQUEST['action'],$_REQUEST);
-			}
 			$output['include_global_template']='0';
 		}
 		else

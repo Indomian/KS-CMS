@@ -1,11 +1,16 @@
 <?php
+/**
+ * Файл содержит класс управления модулями обеспечивающий их работу в пользовательской части сайта
+ *
+ * @filesource main/libs/class.CModuleHookUp.php
+ *
+ * @author BlaDe39 <blade39@kolosstudio.ru>
+ * @version 2.7
+ */
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
-
-include_once MODULES_DIR.'/main/libs/class.CModuleManagment.php';
 
 /**
  * Класс используется для обеспечения подключения модулей в пользовательской части сайта
- * @version 2.6
  */
 class CModuleHookUp extends CModuleManagment
 {
@@ -280,13 +285,9 @@ class CModuleHookUp extends CModuleManagment
 				$arModule['db_config']=array();
 			}
 			if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/init.inc.php'))
-			{
 				include_once MODULES_DIR.'/'.$arModule['directory'].'/init.inc.php';
-			}
-				if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/main.init.php'))
-			{
+			if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/main.init.php'))
 				include_once MODULES_DIR.'/'.$arModule['directory'].'/main.init.php';
-			}
 			$smarty->plugins_dir[] = MODULES_DIR.'/'.$module_name.'/widgets/';
 			$this->arModules[$module_name]=$arModule;
 			return $this->arModules;
@@ -514,20 +515,13 @@ class CModuleHookUp extends CModuleManagment
 
 	/**
 	 * Метод выполняет подключение модулей, которые использутся системой
-	 * @todo Убрать прямые запросы к БД
 	 */
 	function AutoInit()
 	{
-		global $ks_db;
-		$res_sel_modules_to_include = $ks_db->query("
-			SELECT	*
-			FROM	`".PREFIX."main_modules`
-			WHERE	(`active` = '1') AND (`hook_up`='1')
-				ORDER BY `orderation` ASC");
-		while ($r_sel_modules_to_include = $ks_db->get_array($res_sel_modules_to_include))
-		{
-			if(!$this->InitModule($r_sel_modules_to_include)) throw new CError('SYSTEM_MODULE_INIT_ERROR',0,$r_sel_modules_to_include['directory']);
-		}
+		if($arModules=$this->GetList(array('orderation'=>'asc'),array('active'=>1,'hook_up'=>1)))
+			foreach($arModules as $arModule)
+				if(!$this->InitModule($arModule))
+					 throw new CError('SYSTEM_MODULE_INIT_ERROR',0,$arModule['directory']);
 		return true;
 	}
 

@@ -16,6 +16,8 @@
  * tpl - шаблон вывода компонента, по умолчанию - стандартный
  * ID - номер элемента для вывода
  */
+/*Обязательно вставляем во все файлы для защиты от взлома*/
+if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 function smarty_function_CatCategory($params, &$smarty)
 {
@@ -24,8 +26,8 @@ function smarty_function_CatCategory($params, &$smarty)
 	$access_level=$USER->GetLevel('catsubcat');
 	$parent_id = 0;						// корень
 	$obCategory = new CCategory();		// создание экземпляра объекта для работы с категориями текстовых страниц
-	if (isset($params['ID']))
-		$arFilter = array('id' => $params['ID']);
+	if (isset($params['id']))
+		$arFilter = array('id' => $params['id']);
 	elseif(isset($params['text_ident']) && IsTextIdent($params['text_ident']))
 		$arFilter = array('text_ident' => $params['text_ident']);
 	$arFilter['active']=1;

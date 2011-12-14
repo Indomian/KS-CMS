@@ -5,14 +5,12 @@
  * Класс выполняет код переданных обработчиков при возникновении определённых событий
  *
  * @filesource class.CEventsHandler.php
- * @author north-e <pushkov@kolosstudio.ru>
- * @version 0.1
+ * @author north-e <pushkov@kolosstudio.ru>, blade39 <blade39@kolosstudio.ru>
+ * @version 2.7
  * @since 03.03.2009
  */
 
  if (!defined('KS_ENGINE'))die("Hacking attempt!");
-
-//include_once MODULES_DIR.'/main/libs/class.CError.php';			// Подключение класса ошибок
 
 
  /**

@@ -136,9 +136,7 @@ $KS_EVENTS_HANDLER->Execute("main", "onInit", $initParams);
 define("KS_MAIN_INIT",1);
 
 if($USER->GetLevel('main')> 9)
-{
 	throw new CAccessError("MAIN_ACCESS_ADMINISTRATIVE_PART_CLOSED", 403);
-}
 
 /* Список модулей, поддерживающик связь между элементами полей */
 // @todo Перенести в конфиг системы

@@ -51,7 +51,7 @@ else
 $module_parameters['setPageTitle'] = $this->GetConfigVar($module, "set_title",1) ==1 ? "Y" : "N";
 
 /* Родительский раздел */
-$module_parameters['parent_id'] = 0;
+$module_parameters['parent_id'] = 1;
 
 /* Формирование навигационной цепочки */
 $arDirs=$this->GetPathDirs(0);
@@ -111,7 +111,7 @@ elseif(array_key_exists('type',$_GET) && $_GET['type'] == "rss")
 else
 {
 	/* Категория */
-	$module_parameters['ID'] = $module_parameters['parent_id'];
+	$module_parameters['id'] = $module_parameters['parent_id'];
 	$res=$this->IncludeWidget($module,'CatCategory',$module_parameters);
 }
 /* Возвращаем результат работы */

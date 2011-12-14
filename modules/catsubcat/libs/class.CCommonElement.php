@@ -13,8 +13,6 @@
 /*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
-require_once MODULES_DIR.'/catsubcat/libs/class.CCategorySubCategory.php';
-
 /**
  * Класс реализует работу с записями текстовых страниц
  */

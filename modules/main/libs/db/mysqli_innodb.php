@@ -283,7 +283,7 @@ final class mysqli_innodb extends CDBInterface
 	public function GetTableFields($sTable,$sPrefix='')
 	{
 		$arResult=array();
-		$obResult=$this->query('DESCRIBE '.$sTable);
+		$obResult=$this->query('DESCRIBE '.PREFIX.$sTable);
 		if($obResult->NumRows()>0)
 		{
 			while($arRow=$obResult->GetRow())
