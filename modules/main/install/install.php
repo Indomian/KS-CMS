@@ -41,47 +41,12 @@ $arTables=$ks_db->ListTables();
 
 $arFields=array();
 foreach($arDBList as $sTable)
-{
 	//Чистим базу (если были таблицы - потрем)
 	if(in_array($sTable,$arTables))
-	{
 		$ks_db->CheckTable($sTable,$arStructure[$sTable]);
-	}
 	else
-	{
 		$ks_db->AddTable($sTable,$arStructure[$sTable]);
-	}
-}
-//Проверяем наличие модуля навигации
-/*if(!($arInterfaces=$this->GetRecord(array('directory'=>'navigation'))))
-{
-	$arFields=array(
-		'name'=>'Navigation',
-		'directory'=>'navigation',
-		'include_global_template'=>'0',
-		'active'=>1,
-		'orderation'=>1,
-		'hook_up'=>1,
-		'allow_url_edit'=>0,
-		'URL_ident'=>'',
-	);
-	$this->Save('',$arFields);
-}
-//Проверяем наличие модуля интерфейсов
-if(!($arInterfaces=$this->GetRecord(array('directory'=>'interfaces'))))
-{
-	$arFields=array(
-		'name'=>'Interfaces',
-		'directory'=>'interfaces',
-		'include_global_template'=>'0',
-		'active'=>1,
-		'orderation'=>2,
-		'hook_up'=>1,
-		'allow_url_edit'=>0,
-		'URL_ident'=>'',
-	);
-	$this->Save('',$arFields);
-}*/
+
 //Прописываем уровни доступа для всех групп
 $USERGROUP=new CUserGroup;
 if(!$USERGROUP->GetRecord(array('id'=>1)))
@@ -110,19 +75,11 @@ $arAccess['groups']=$USERGROUP->GetList(array('title'=>'asc'));
 $obAccess=new CModulesAccess();
 //Выполняем сохранение прав доступа
 if(is_array($arAccess['groups']))
-{
 	foreach($arAccess['groups'] as $key=>$value)
-	{
 		if($value['id']=='1')
-		{
 			$obAccess->Set($value['id'],'main',0);
-		}
 		else
-		{
 			$obAccess->Set($value['id'],'main',10);
-		}
-	}
-}
 
 $obUser=new CObject('users');
 if(!$obUser->GetRecord(array('id'=>1)))
@@ -137,10 +94,10 @@ if(!$obUser->GetRecord(array('id'=>1)))
 	);
 	$obUser->Save('',$arFields);
 }
-if($obUser=new CUser())
-{
-	$obUser->SetAllUserGroups(1,array(1));
-}
+//Устанавливаем права доступа админа
+$obAccess=new CObject('users_grouplinks');
+$arFields=array('user_id'=>1,'group_id'=>1,'date_start'=>0,'date_end'=>0);
+$obAccess->Save('',$arFields);
 
 //Создаем системные директории
 if(!file_exists(SYS_TEMPLATES_DIR))
@@ -158,27 +115,17 @@ if(!file_exists(UPLOADS_DIR))
 }
 //Устанавливаем файлы административного интерфейса
 if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/main/install/templates/.default/'))
-{
 	foreach($arFiles as $sFile)
-	{
 		$KS_FS->CopyFile(MODULES_DIR.'/main/install/templates/.default/'.$sFile,TEMPLATES_DIR.'/.default/main/'.$sFile,'');
-	}
-}
 if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/main/install/templates/admin/'))
-{
 	foreach($arFiles as $sFile)
-	{
 		$KS_FS->CopyFile(MODULES_DIR.'/main/install/templates/admin/'.$sFile,SYS_TEMPLATES_DIR.'/admin/'.$sFile,'');
-	}
-}
 //Устанавливаем скрипты модуля
 if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/main/install/js/'))
 {
 	if(!file_exists(ROOT_DIR.JS_DIR))
 		$KS_FS->makedir(ROOT_DIR.JS_DIR);
 	foreach($arFiles as $sFile)
-	{
 		$KS_FS->CopyFile(MODULES_DIR.'/main/install/js/'.$sFile,ROOT_DIR.JS_DIR.'/'.$sFile,'');
-	}
 }
 $this->AddNotify('SYSTEM_MODULE_INSTALL_OK','main',NOTIFY_MESSAGE);

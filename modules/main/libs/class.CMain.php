@@ -502,184 +502,61 @@ class CObject extends CBaseList
 	 * */
 	protected function _GenWhere($arFilter,$method='AND',$step=0)
 	{
-		global $ks_db;
-		if (is_array($arFilter))
+		if(!is_array($arFilter)) return '';
+		if(is_array($this->arFilter))
+			$arFilter=array_merge($arFilter,$this->arFilter);
+		$arFil=Array();
+		foreach ($arFilter as $field=>$value)
 		{
-			if(is_array($this->arFilter))
+			if(($field=='AND'||$field=='OR')&&is_array($value))
 			{
-				$arFilter=array_merge($arFilter,$this->arFilter);
+				//Обработка сложных запросов
+				$sWhere=substr($this->_GenWhere($value,$field,$step+1),7);
+				if($sWhere!='')	$arFil[]='('.$sWhere.')';
 			}
-			$arFil=Array();
-			foreach ($arFilter as $field=>$value)
+			elseif(is_numeric($field))
 			{
-				if(($field=='AND'||$field=='OR')&&is_array($value))
+				$sWhere=substr($this->_GenWhere($value,$method,$step+1),7);
+				if($sWhere!='') $arFil[]='('.$sWhere.')';
+			}
+			else
+			{
+				$noSafe=false;
+				if(substr($field,0,1)=='?')
 				{
-					//Обработка сложных запросов
-					$sWhere=substr($this->_GenWhere($value,$field,$step+1),7);
-					if($sWhere!='')
+					$noSafe=true;
+					$field=substr($field,1);
+					$iPointPos=strpos($value,'.');
+					/*Добавлена проверка на сложное наименование полей*/
+					if($iPointPos>0)
 					{
-						$arFil[]='('.$sWhere.')';
-					}
-				}
-				elseif(is_numeric($field))
-				{
-					$sWhere=substr($this->_GenWhere($value,$method,$step+1),7);
-					if($sWhere!='')
-					{
-						$arFil[]='('.$sWhere.')';
-					}
-				}
-				else
-				{
-					if(substr($field,0,1)=='?')
-					{
-						$noSafe=true;
-						$field=substr($field,1);
-						$iPointPos=strpos($value,'.');
-						/*Добавлена проверка на сложное наименование полей*/
-						if($iPointPos>0)
+						//Значит впереди идет имя таблицы
+						$arField=explode(".",$value);
+						if($arField[0]!='')
 						{
-							//Значит впереди идет имя таблицы
-							$arField=explode(".",$value);
-							if($arField[0]!='')
+							//Очень неудачный вариант для парсинга, но делать нечего, пробуем
+							if(preg_match_all('#((([a-z_]+)\.)[a-z_]+)#si',$value,$matches))
 							{
-								//Очень неудачный вариант для парсинга, но делать нечего, пробуем
-								if(preg_match_all('#((([a-z_]+)\.)[a-z_]+)#si',$value,$matches))
-								{
-									$arTableNames=array();
-									foreach($matches[3] as $tableName)
-									{
-										if(!array_key_exists($tableName,$this->arTables))
-										{
-											//Такая таблица еще не добавлена
-											$code=chr(65+count($this->arTables));
-											$arTableNames[$tableName.'.']=$code.'.';
-											$this->arTables[$tableName]=$code;
-										}
-										else
-										{
-											$arTableNames[$tableName.'.']=$this->arTables[$tableName].'.';
-										}
-									}
-									$value=str_replace(array_keys($arTableNames),array_values($arTableNames),$value);
-								}
-								else
-									continue;
-							}
-							else
-							{
-								//Значит впереди идет имя таблицы
-								$arField=explode(".",$value);
-								if($arField[0]!='')
-								{
-									if(!array_key_exists($arField[0],$this->arTables))
+								$arTableNames=array();
+								foreach($matches[3] as $tableName)
+									if(!array_key_exists($tableName,$this->arTables))
 									{
 										//Такая таблица еще не добавлена
 										$code=chr(65+count($this->arTables));
-										$this->arTables[$arField[0]]=$code;
-										$value=$code.'.'.$arField[1];
+										$arTableNames[$tableName.'.']=$code.'.';
+										$this->arTables[$tableName]=$code;
 									}
 									else
-									{
-										$value=$this->arTables[$arField[0]].'.'.$arField[1];
-									}
-								}
-								else
-									continue;
+										$arTableNames[$tableName.'.']=$this->arTables[$tableName].'.';
+								$value=str_replace(array_keys($arTableNames),array_values($arTableNames),$value);
 							}
-						}
-					}
-					elseif((substr($field,0,2)=='<?')||(substr($field,0,2)=='>?'))
-					{
-						//Левый или правый джоин
-						$noSafe=true;
-						$arRow['operation']=(substr($field,0,1)=='<'?'LEFT JOIN':'RIGHT JOIN');
-						$field=substr($field,2);
-						/*Добавлена проверка на сложное наименование полей*/
-						if(strpos($field,'.')>0)
-						{
-							//Значит впереди идет имя таблицы
-							$arField=explode(".",$field);
-							$sTable=$arField[0];
-							unset($arField[0]);
-							if($sTable!='')
-							{
-								$sField=join('.',$arField);
-								if(!array_key_exists($sTable,$this->arTables))
-								{
-									//Такая таблица еще не добавлена
-									$code=chr(65+count($this->arTables));
-									$this->arTables[$sTable]=$code;
-									$field=$code.'.'.$sField;
-								}
-								else $field=$this->arTables[$sTable].'.'.$sField;
-							}
-							else continue;
-							$arRow['fromTable']=$sTable;
+							else
+								continue;
 						}
 						else
-						{
-							$arRow['fromTable']=$this->sTable;
-						}
-						if(strpos($value,'.')>0)
 						{
 							//Значит впереди идет имя таблицы
 							$arField=explode(".",$value);
-							$sTable=$arField[0];
-							unset($arField[0]);
-							if($sTable!='')
-							{
-								$sField=join('.',$arField);
-								if(!array_key_exists($sTable,$this->arTables))
-								{
-									//Такая таблица еще не добавлена
-									$code=chr(65+count($this->arTables));
-									$this->arTables[$sTable]=$code;
-									$value=$code.'.'.$sField;
-								}
-								else
-								{
-									$value=$this->arTables[$sTable].'.'.$sField;
-								}
-							} else continue;
-							$arRow['toTable']=$sTable;
-						}
-						else
-						{
-							$arRow['toTable']=$this->sTable;
-						}
-						if($arRow['toTable']==$this->sTable)
-						{
-							$sTmp=$arRow['toTable'];
-							$arRow['toTable']=$arRow['fromTable'];
-							$arRow['fromTable']=$sTmp;
-						}
-						$arRow['ON']=$field.'='.$value;
-						$this->arJoinTables[]=$arRow;
-						continue;
-					}
-					elseif((substr($field,0,2)=='->')||(substr($field,0,3)=='!->'))
-					{
-						$noSafe=false;
-					}
-					else
-					{
-						$value=$ks_db->safesql($value);
-						$noSafe=false;
-					}
-					/*Проверяем на допустимые операции, если одна из них указана,
-					 * выполняем обработку введенных данных и формируем операцию.*/
-
-					if(preg_match('#^(!~|\^~|\$~|!->|[><!~=]|>=|<=|->|%)?([\w_\.\-]+)#i',$field,$matches))
-					{
-						$operation=$matches[1];
-						if($operation=='') $operation="=";
-						$myfield=$matches[2];
-						/*Добавлена проверка на сложное наименование полей*/
-						if(strpos($myfield,'.')>0)
-						{
-							//Значит впереди идет имя таблицы
-							$arField=explode(".",$myfield);
 							if($arField[0]!='')
 							{
 								if(!array_key_exists($arField[0],$this->arTables))
@@ -687,95 +564,165 @@ class CObject extends CBaseList
 									//Такая таблица еще не добавлена
 									$code=chr(65+count($this->arTables));
 									$this->arTables[$arField[0]]=$code;
-									$myfield=$code.'.'.$arField[1];
+									$value=$code.'.'.$arField[1];
 								}
 								else
-								{
-									$myfield=$this->arTables[$arField[0]].'.'.$arField[1];
-								}
-							} else continue;
-						}
-						else
-						{
-							if (in_array($myfield,$this->arFields))
-							{
-								//Простое наименование, значит поле стандартной таблицы - преобразуем
-								if(!array_key_exists($this->sTable,$this->arTables))
-								{
-									//Такая таблица еще не добавлена
-									$code=chr(65+count($this->arTables));
-									$this->arTables[$this->sTable]=$code;
-									$myfield=$code.'.'.$myfield;
-								}
-								else
-								{
-									$myfield=$this->arTables[$this->sTable].'.'.$myfield;
-								}
+									$value=$this->arTables[$arField[0]].'.'.$arField[1];
 							}
 							else
-							{
 								continue;
-							}
 						}
-						if($operation=='!')
-							if($noSafe)
-								$operation=" $myfield!=$value ";
+					}
+				}
+				elseif((substr($field,0,2)=='<?')||(substr($field,0,2)=='>?'))
+				{
+					//Левый или правый джоин
+					$noSafe=true;
+					$arRow['operation']=(substr($field,0,1)=='<'?'LEFT JOIN':'RIGHT JOIN');
+					$field=substr($field,2);
+					/*Добавлена проверка на сложное наименование полей*/
+					if(strpos($field,'.')>0)
+					{
+						//Значит впереди идет имя таблицы
+						$arField=explode(".",$field);
+						$sTable=$arField[0];
+						unset($arField[0]);
+						if($sTable!='')
+						{
+							$sField=join('.',$arField);
+							if(!array_key_exists($sTable,$this->arTables))
+							{
+								//Такая таблица еще не добавлена
+								$code=chr(65+count($this->arTables));
+								$this->arTables[$sTable]=$code;
+								$field=$code.'.'.$sField;
+							}
+							else $field=$this->arTables[$sTable].'.'.$sField;
+						}
+						else continue;
+						$arRow['fromTable']=$sTable;
+					}
+					else
+						$arRow['fromTable']=$this->sTable;
+					if(strpos($value,'.')>0)
+					{
+						//Значит впереди идет имя таблицы
+						$arField=explode(".",$value);
+						$sTable=$arField[0];
+						unset($arField[0]);
+						if($sTable!='')
+						{
+							$sField=join('.',$arField);
+							if(!array_key_exists($sTable,$this->arTables))
+							{
+								//Такая таблица еще не добавлена
+								$code=chr(65+count($this->arTables));
+								$this->arTables[$sTable]=$code;
+								$value=$code.'.'.$sField;
+							}
 							else
-								$operation=" $myfield!='".$ks_db->safesql($value)."' ";
-						elseif($operation=='~') $operation=" $myfield LIKE '%".$ks_db->safesql($value)."%' ";
-						elseif($operation=='!~') $operation=" $myfield NOT LIKE '%".$ks_db->safesql($value)."%' ";
-						elseif($operation=='^~') $operation=" $myfield LIKE '".$ks_db->safesql($value)."%' ";
-						elseif($operation=='$~') $operation=" $myfield LIKE '%".$ks_db->safesql($value)."' ";
+								$value=$this->arTables[$sTable].'.'.$sField;
+						} else continue;
+						$arRow['toTable']=$sTable;
+					}
+					else
+						$arRow['toTable']=$this->sTable;
+					if($arRow['toTable']==$this->sTable)
+					{
+						$sTmp=$arRow['toTable'];
+						$arRow['toTable']=$arRow['fromTable'];
+						$arRow['fromTable']=$sTmp;
+					}
+					$arRow['ON']=$field.'='.$value;
+					$this->arJoinTables[]=$arRow;
+					continue;
+				}
+				elseif((substr($field,0,2)=='->')||(substr($field,0,3)=='!->'))
+					$noSafe=true;
+
+				/*Проверяем на допустимые операции, если одна из них указана,
+					* выполняем обработку введенных данных и формируем операцию.*/
+
+				if(preg_match('#^(!~|\^~|\$~|!->|[><!~=]|>=|<=|->|%)?([\w_\.\-]+)#i',$field,$matches))
+				{
+					$operation=$matches[1];
+					if($operation=='') $operation="=";
+					$myfield=$matches[2];
+					/*Добавлена проверка на сложное наименование полей*/
+					if(strpos($myfield,'.')>0)
+					{
+						//Значит впереди идет имя таблицы
+						$arField=explode(".",$myfield);
+						if($arField[0]!='')
+						{
+							if(!array_key_exists($arField[0],$this->arTables))
+							{
+								//Такая таблица еще не добавлена
+								$code=chr(65+count($this->arTables));
+								$this->arTables[$arField[0]]=$code;
+								$myfield=$code.'.'.$arField[1];
+							}
+							else
+								$myfield=$this->arTables[$arField[0]].'.'.$arField[1];
+						} else continue;
+					}
+					else
+					{
+						if (in_array($myfield,$this->arFields))
+						{
+							//Простое наименование, значит поле стандартной таблицы - преобразуем
+							if(!array_key_exists($this->sTable,$this->arTables))
+							{
+								//Такая таблица еще не добавлена
+								$code=chr(65+count($this->arTables));
+								$this->arTables[$this->sTable]=$code;
+								$myfield=$code.'.'.$myfield;
+							}
+							else
+								$myfield=$this->arTables[$this->sTable].'.'.$myfield;
+						}
+						else continue;
+					}
+
+					//Переписан блок построения запросов, т.к. он с ошибками
+					if(is_array($value) && ($operation=='->' || $operation=='!->'))
+					{
+						array_walk($value,array($this->obDB,'safesql'));
+						if($operation=='!->')
+							$operation=" $myfield NOT IN ('".join("','",$value)."')";
+						else
+							$operation=" $myfield IN ('".join("','",$value)."')";
+					}
+					else
+					{
+						if(!$noSafe) $value=$this->obDB->safesql($value);
+						if($operation=='!') $operation=" $myfield!=$value ";
+						elseif($operation=='~') $operation=" $myfield LIKE '%".$value."%' ";
+						elseif($operation=='!~') $operation=" $myfield NOT LIKE '%".$value."%' ";
+						elseif($operation=='^~') $operation=" $myfield LIKE '".$value."%' ";
+						elseif($operation=='$~') $operation=" $myfield LIKE '%".$value."' ";
+						elseif($operation=='%') $operation=" $myfield IS ".$value." ";
 						elseif($operation=='->')
 						{
-							if(is_numeric($value))
-							{
-								$operation=" $myfield IN (".$ks_db->safesql($value).")";
-							}
-							elseif(is_array($value))
-							{
-								$operation=" $myfield IN ('".join("','",$value)."')";
-							}
-							elseif(is_string($value))
-							{
-								$operation=" $myfield IN $value";
-							}
-							else
-							{
-								continue;
-							}
+							if(is_numeric($value)) $operation=" $myfield IN (".$value.")";
+							elseif(is_string($value)) $operation=" $myfield IN $value";
+							else continue;
 						}
 						elseif($operation=='!->')
 						{
-							if(is_numeric($value))
-							{
-								$operation=" $myfield NOT IN ($value)";
-							}
-							elseif(is_array($value))
-							{
-								$operation=" $myfield NOT IN ('".join("','",$value)."')";
-							}
-							elseif(is_string($value))
-							{
-								$operation=" $myfield NOT IN $value";
-							}
-							else
-							{
-								continue;
-							}
+							if(is_numeric($value)) $operation=" $myfield NOT IN (".$value.")";
+							elseif(is_string($value)) $operation=" $myfield NOT IN $value";
+							else continue;
 						}
-						elseif($operation=='%') $operation=" $myfield is ".$ks_db->safesql($value)." ";
 						elseif($noSafe) $operation=" $myfield $operation $value ";
-						else $operation=" $myfield $operation '".$ks_db->safesql($value)."' ";
-						$arFil[]=$operation;
+						else $operation=" $myfield $operation '$value' ";
 					}
+					$arFil[]=$operation;
 				}
 			}
-			if(count($arFil)>0)
-			{
-				return " WHERE ".join(" $method ",$arFil);
-			}
 		}
+		if(count($arFil)>0)
+			return " WHERE ".join(" $method ",$arFil);
 		return '';
 	}
 
