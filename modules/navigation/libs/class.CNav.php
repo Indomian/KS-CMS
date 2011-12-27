@@ -2,7 +2,7 @@
 
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
-class CNavTypes extends CObject
+class CNavTypes extends CFilesObject
 {
 	protected $arMenuType;
 	/**

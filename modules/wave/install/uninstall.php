@@ -66,7 +66,7 @@ if(array_key_exists('go',$_POST))
 			$KS_FS->Remove(TEMPLATES_DIR.'/.default/wave/');
 		}
 	}
-	$this->AddNotify(SYSTEM_MODULE_UNINSTALL_OK,$arDescription['title'],NOTIFY_MESSAGE);
+	$this->AddNotify('SYSTEM_MODULE_UNINSTALL_OK',$arDescription['title'],NOTIFY_MESSAGE);
 }
 else
 {

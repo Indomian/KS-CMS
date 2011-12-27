@@ -113,7 +113,7 @@ if(array_key_exists('go',$_POST))
 			$KS_FS->CopyFile(MODULES_DIR.'/wave/install/js/'.$sFile,ROOT_DIR.JS_DIR.'/wave/'.$sFile,'');
 		}
 	}
-	$this->AddNotify(SYSTEM_MODULE_INSTALL_OK,$arDescription['title'],NOTIFY_MESSAGE);
+	$this->AddNotify('SYSTEM_MODULE_INSTALL_OK',$arDescription['title'],NOTIFY_MESSAGE);
 }
 else
 {
