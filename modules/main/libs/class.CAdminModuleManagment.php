@@ -47,20 +47,13 @@ final class CAdminModuleManagment extends CModuleManagment
 		$this->sMode='full';
 		$this->arRunModules=array();
 		if(array_key_exists('mode',$_GET) && $_GET['mode']=='small')
-		{
 			$this->sMode='small';
-		}
 		elseif(array_key_exists('mode',$_GET) && $_GET['mode']=='content')
-		{
 			$this->sMode='content';
-		}
-		if (array_key_exists('module',$_GET))
+		if (array_key_exists('module',$_GET) && $this->IsModule($_GET['module']))
 		{
-			if ($this->IsModule($_GET['module']))
-			{
-				$this->current=$_GET['module'];
-				$this->currentMenu=$this->current;
-			}
+			$this->current=$_GET['module'];
+			$this->currentMenu=$this->current;
 		}
 	}
 
@@ -124,14 +117,10 @@ final class CAdminModuleManagment extends CModuleManagment
 					return $this->page;
 				}
 				else
-				{
 					throw new CError('MAIN_MODULE_NO_USER_PART',1116,__LINE__);
-				}
 			}
 			else
-			{
 				throw new CError('MAIN_MODULE_NO_USER_PART',1121,__LINE__);
-			}
 		}
 		else
 		{
@@ -154,13 +143,9 @@ final class CAdminModuleManagment extends CModuleManagment
 		{
 			$KS_MODULES=$this;
 			if(!array_key_exists($module,$this->arModules))
-			{
 				$arModule=$this->GetRecord(array('directory'=>$module));
-			}
 			else
-			{
 				$arModule=$this->arModules[$module];
-			}
 			$this->IncludeModule($arModule);
 			try
 			{
@@ -174,23 +159,13 @@ final class CAdminModuleManagment extends CModuleManagment
 						$sPage=$_GET['page'];
 					}
 					else
-					{
 						$sPage='index';
-					}
-					//$access_level=$USER->GetLevel($module);
-					//if($access_level>0) throw new CAccessError('SYSTEM_NOT_ACCESS_MODULE');
 					if(file_exists(MODULES_DIR.'/'.$module.'/pages/'.$sPage.'.php'))
-					{
 						$sClassPage=$sPage;
-					}
 					elseif(file_exists(MODULES_DIR.'/'.$module.'/pages/index.php'))
-					{
 						$sClassPage='index';
-					}
 					else
-					{
 						throw new CError('MAIN_MODULE_NO_ADMIN_PART');
-					}
 					$this->LoadModulePage($module,$sClassPage);
 				}
 				else

@@ -55,7 +55,7 @@ try
 		{
 			$global_template =  $KS_MODULES->GetTemplate();
 			$smarty->assign("glb_tpl", $global_template);
-			$output = $KS_MODULES->hook_up($KS_MODULES->GetPathPart());
+			$output = $KS_MODULES->Run($KS_MODULES->GetPathPart());
 		}
 	}
 	catch(CAccessError $e)

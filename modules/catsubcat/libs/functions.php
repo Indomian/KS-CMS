@@ -11,13 +11,6 @@
 if( !defined('KS_ENGINE') ){ die("Hacking attempt!");}
 
 /**
- * Подключаем требуемые модули
- */
-require_once MODULES_DIR.'/catsubcat/libs/class.CParentsResult.php';
-require_once MODULES_DIR.'/catsubcat/libs/class.CCategory.php';
-require_once MODULES_DIR.'/catsubcat/libs/class.CElement.php';
-
-/**
  * Функция выполняет выборку всех записей одного уровня (и элементов и разделов).
  * @param $arOrder - массив сортировки
  * @param $arFilter - массив фильтрации

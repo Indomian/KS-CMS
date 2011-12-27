@@ -3,10 +3,8 @@
  * Файл инициализации модуля catsubcat
  * @file admin.init.php
  * @author BlaDe39 <blade39@kolosstudio.ru>
- * @version 2.5.4-14
+ * @version 2.7
  * @since 21.10.2010
+ * @todo Убрать вызов файла функций, сделав её автоматической, тем самым этот файл можно будет удалить.
  */
-$module_name=$arModule['directory'];
-require_once(MODULES_DIR . "/" . $module_name . "/libs/class.CCategory.php");
-require_once(MODULES_DIR . "/" . $module_name . "/libs/class.CElement.php");
-require_once(MODULES_DIR . "/" . $module_name . "/libs/functions.php");
+require_once(MODULES_DIR . "/" . $arModule['directory'] . "/libs/functions.php");

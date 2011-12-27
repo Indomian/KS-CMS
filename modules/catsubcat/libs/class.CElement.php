@@ -28,7 +28,7 @@ class CElement extends CCommonElement
 	{
 		$this->sFieldsModule='catsubcat';
 		parent::__construct($sCategoryTable,$sElementsTable);
-		$this->obLinks=new CElementLinks('catsubcat_links');
+		$this->obLinks=new CObject('catsubcat_links');
 	}
 
 	/**

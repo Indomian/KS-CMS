@@ -5,7 +5,7 @@
  *
  * @filesource admin.init.php
  * @author BlaDe39 <blade39@kolosstudio.ru>
- * @version 2.6
+ * @version 2.7
  * @since 30.11.2011
  */
 
@@ -32,10 +32,7 @@ if(file_exists(MODULES_DIR.'/main/libs/db/'.KS_DB_ENGINE.'.php'))
 	$ks_db = new $sClassName(KS_DEBUG);
 }
 else
-{
-	echo "DB Init error";
-	die();
-}
+	throw new CError("SYSTEM_DB_INIT_ERROR",500);
 
 /* Проверка структуры базы данных по требованию */
 if($ks_config['update_db']==1)
@@ -118,15 +115,12 @@ $KS_MODULES->SetLanguageError(new CLanguageSmarty($smarty,$KS_MODULES->GetConfig
 require_once "libs/class.CUser.php";
 $USER = new CUser();
 if($_SERVER['REQUEST_METHOD']=='POST')
-{
 	if(array_key_exists('CU_ACTION',$_POST) && $_POST['CU_ACTION']=='login')
-	{
-		$USER->login();
-	}
-}
+		$USER->Login();
+if(array_key_exists('CU_ACTION',$_REQUEST) && $_REQUEST['CU_ACTION']=='logout')
+	$USER->Logout();
 
 $KS_MODULES->SetUser($USER);
-
 $KS_MODULES->LinkModules();
 
 $smarty->assign('SITE', $KS_MODULES->GetConfigArray("main"));
@@ -137,7 +131,3 @@ define("KS_MAIN_INIT",1);
 
 if($USER->GetLevel('main')> 9)
 	throw new CAccessError("MAIN_ACCESS_ADMINISTRATIVE_PART_CLOSED", 403);
-
-/* Список модулей, поддерживающик связь между элементами полей */
-// @todo Перенести в конфиг системы
-$_ks_modules_linkable = array("catsubcat","blog","photogallery",'production');

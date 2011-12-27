@@ -21,12 +21,6 @@ class CModuleHookUp extends CModuleManagment
 	protected $arRequestData;
 	static private $instance;
 
-	function __construct($sTable='main_modules')
-	{
-		global $USER;
-		parent::__construct($sTable);
-	}
-
 	/**
 	 * Метод заменяющий конструктор. Используется для инициализации.
 	 */
@@ -299,11 +293,6 @@ class CModuleHookUp extends CModuleManagment
 	 * Метод выполняет указанный модуль и возвращает результат выполнения.
 	 * Метод осуществляет подключение модуля
 	 *
-	 * @version 2.5.4-16
-	 * @since 09.12.2010
-	 * Добавлено автоматическое подключение виджетов по параметру
-	 * Добавлено сохранение конфигурационных массивов модулей с параметрами для работы с базой данных
-	 *
 	 * @param array $arModule Массив с параметрами модуля
 	 * @param string $output
 	 */
@@ -311,10 +300,8 @@ class CModuleHookUp extends CModuleManagment
 	{
 		global $KS_URL;
 		if(!array_key_exists($arModule['directory'],$this->arModules))
-		{
 			$this->InitModule($arModule);
-		}
-		if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/main.inc.php') )
+		if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/main.inc.php'))
 		{
 			$module_main_file = MODULES_DIR . "/" . $arModule['directory'] . "/main.inc.php";
 			if(array_key_exists('fromsearch',$_GET)&&($_GET['fromsearch']!=''))
@@ -334,44 +321,31 @@ class CModuleHookUp extends CModuleManagment
 				}
 			}
 			elseif(array_key_exists('params',$arModule) && array_key_exists('is_widget',$arModule['params']) && $arModule['params']['is_widget']==1)
-			{
-				return $this->IncludeWidget($arModule['directory'],$arModule['params']['action'],$arModule['params']);
-			}
+				//return $this->IncludeWidget($arModule['directory'],$arModule['params']['action'],$arModule['params']);
+				//Выбрасываем исключение об устаревании способа вызова
+				throw new CDeprecatedError('SYSTEM_DEPRECTED',__LINE__,__FILE__);
 			else
 			{
 				/* Производим инициализацию пользовательской части модуля */
+				$module_parameters=array();
 				if(array_key_exists('params',$arModule))
-				{
 					$module_parameters = $arModule['params'];
-				}
-				else
-				{
-					$module_parameters=array();
-				}
 				include ($module_main_file);
 			}
 		}
 		else
-		{
-			/* Невозможно инициализировать модуль */
 			throw new CError("MAIN_MODULE_NO_USER_PART", 404);
-		}
 	}
 
 	/**
-	 *	Подключение указанного модуля
-	 *	@param $url_ident - путь, для которого требуется подключить модуль.
+	 * Подключение указанного модуля
+	 * @param string $url_ident - путь, для которого требуется подключить модуль.
+	 * @return array - ассоциативный массив, опеределяющий параметры отрисовки страницы
 	 */
-	function hook_up($url_ident='default')
+	function Run($url_ident='default')
 	{
-		global $ks_db;
-		if( empty($url_ident) )
-		{
-			$url_ident = 'default';
-		}
-		$output=array(
-			'include_global_template'=>1
-		);
+		if(empty($url_ident)) $url_ident = 'default';
+		$output=array('include_global_template'=>1);
 		if($arModule=$this->GetRecord(array('URL_ident'=>$url_ident,'active'=>1)))
 		{
 			if($arModule['include_global_template'] == 0)
@@ -384,15 +358,9 @@ class CModuleHookUp extends CModuleManagment
 			catch (CModuleError $e)
 			{
 				if( $url_ident != 'default' )
-				{
-					/* пробуем обработать дефолтовым */
 					$this->hook_up();
-				}
 				else
-				{
-					/* это и есть дефолтовый, нужно отдать ошибку, что страница не найдена */
 					throw new CError("SYSTEM_PAGE_NOT_FOUND",404);
-				}
 			}
 			catch (CError $e)
 			{
@@ -400,15 +368,9 @@ class CModuleHookUp extends CModuleManagment
 			}
 		}
 		elseif($url_ident != 'default')
-		{
-			/* модуля нет, пробуем отработать дефолтовым */
 			$output = $this->hook_up();
-		}
 		else
-		{
-			/* если нет дефолтового модуля, найти подходящий не удалось, отдаем 404 */
 			throw new CError("SYSTEM_PAGE_NOT_FOUND",404);
-		}
 		return $output;
 	}
 

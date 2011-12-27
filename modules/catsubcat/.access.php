@@ -13,4 +13,3 @@ $arLevels=array(
 	7=>$this->GetText('access_view'),
 	10=>$this->GetText('access_denied'),
 );
-?>
