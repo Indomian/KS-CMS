@@ -1,17 +1,10 @@
 <?php
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
-include_once MODULES_DIR.'/main/libs/class.CModuleManagment.php';
-
 /**
  * Класс CAdminModuleManagment потомок CModulesHookUp, выполняет операции связанный с работой модулей,
  * управляет меню системы администрирования
- * @todo Попытаться сократить количество вызовов при подключении модулей;
-			Добавить функции установки модулей;
-			Добавить функции проверки версии модулей;
-			Реализовать нормальную многоязыковую поддержку;
-
- * @version 2.5.5
+ * @version 2.7
  * @since 17.03.2010
  * @author blade39 <blade39@kolosstudio.ru>
  * Добавлена работа с навигационными цепочками в административной части системы
@@ -21,20 +14,13 @@ final class CAdminModuleManagment extends CModuleManagment
 	/*!Массив со списком подключенных модулей.*/
 	private $menu;			//!<Массив в котором храняться пункты меню.
 	private $arNavChain; 		/**<Массив для хранения навигационной цепочки*/
-	public $current;		//!<Текущий модуль, определяетс по строке Get запроса.
-	public $currentMenu; 		/**<Указывает на название текущего модуля для меню*/
+	private $current;		//!<Текущий модуль, определяетс по строке Get запроса.
+	private $currentMenu; 		/**<Указывает на название текущего модуля для меню*/
 	private $localTemplate;		//!<В переменой передается имя текущего шаблона. Обычно используется после подключения определенного модуля.
 	private $page;				/**<В переменной хранится текущая страница системы администрирования*/
 	private $sMode;			/** Режим отрисовки административного шаблона */
 	private $arRunModules;
 	static private $instance;
-
-	/*!Конструктор класса (оформление в стиле ПХП 4). Производить инициализацию внутренних переменных,
-	определяет запрашиваемый модуль, если модуль найден устанавливает его текущим.*/
-	function __construct($sTable='main_modules')
-	{
-		parent::__construct($sTable);
-	}
 
 	/**
 	 * Метод заменяющий конструктор. Используется для инициализации.
@@ -136,9 +122,11 @@ final class CAdminModuleManagment extends CModuleManagment
 	 * @param $module - string текстовый код модуля
 	 * @return boolean -  Возвращает true/false в зависимости от результатов выполнения
 	 */
-	function AdminShowModule($module)
+	function AdminShowModule($module=false)
 	{
 		global $USER,$smarty;
+		if(!$module)
+			$module=$this->current;
 		if($this->IsModule($module))
 		{
 			$KS_MODULES=$this;
@@ -249,13 +237,9 @@ final class CAdminModuleManagment extends CModuleManagment
 			//Выполняем отрисовку сайта
 			$smarty->assign('left_menu',$arMenu);
 			if($this->IsActive('help'))
-			{
 				$smarty->assign('showHelp','Y');
-			}
 			else
-			{
 				$smarty->assign('helpEmail',$this->GetConfigVar('main','helpEmail','dev@kolosstudio.ru'));
-			}
 			$smarty->assign('bShowTreeView',$this->GetConfigVar('main','showTreeView','Y'));
 			try
 			{
@@ -314,13 +298,9 @@ final class CAdminModuleManagment extends CModuleManagment
 				include(MODULES_DIR.'/'.$arModule['directory'].'/config.php');
 				$var="MODULE_".$arModule['directory']."_config";
 				if(isset($$var))
-				{
 					$arModule['config']=$$var;
-				}
 				else
-				{
 					$arModule['config']=array();
-				}
 			}
 			if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/.access.php'))
 			{
@@ -330,13 +310,9 @@ final class CAdminModuleManagment extends CModuleManagment
 				$arModule['ALEVELS']=$arLevels;
 			}
 			else
-			{
 				$arModule['ALEVELS']=array('0'=>$this->GetText('access_full'),'10'=>$this->GetText('access_denied'));
-			}
 			if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/admin.init.php'))
-			{
 				include(MODULES_DIR.'/'.$arModule['directory'].'/admin.init.php');
-			}
 			$this->arModules[$arModule['directory']]=$arModule;
 			return;
 		}
@@ -349,15 +325,11 @@ final class CAdminModuleManagment extends CModuleManagment
 	function IncludeModule($arModule)
 	{
 		if(is_string($arModule) && IsTextIdent($arModule))
-		{
 			$arModule=$this->GetRecord(array('directory'=>$arModule));
-		}
 		if(is_array($arModule))
 		{
 			if(!array_key_exists($arModule['directory'],$this->arModules))
-			{
 				return $this->InitModule($arModule);
-			}
 			return true;
 		}
 		throw new CError('SYSTEM_MODULE_INIT_ERROR','',$arModule);
@@ -372,15 +344,14 @@ final class CAdminModuleManagment extends CModuleManagment
 		if($arModules=$this->GetList(false,array('active'=>1)))
 		{
 			foreach($arModules as $arModule)
-			{
 				$this->InitModule($arModule);
-			}
 			return $this->arModules;
 		}
 		return false;
 	}
 
-	/** Возвращает сгенерированное системное меню. При этом проверяется какой
+	/**
+	 * Возвращает сгенерированное системное меню. При этом проверяется какой
 	 * модуль ялвяется текущим и если для модуля не найден соответсвующий раздел
 	 * то разворачивается раздел Общие настройки.
 	 * @todo Проверку нужно будет переделывать, когда будет реализована более мощная работа с меню*/
@@ -426,9 +397,7 @@ final class CAdminModuleManagment extends CModuleManagment
 		$sTemplate=$this->select_global_template($path);
 		$arTemplate=explode(':',$sTemplate);
 		if(is_array($arTemplate) && count($arTemplate)>1)
-		{
 			return $arTemplate[0];
-		}
 		return '.default';
 	}
 
@@ -471,26 +440,16 @@ final class CAdminModuleManagment extends CModuleManagment
 			if(array_key_exists($parent,$this->menu))
 			{
 				if (array_key_exists('items',$this->menu[$parent]) && is_array($this->menu[$parent]['items']))
-				{
 					$this->menu[$parent]['items']=array_merge($this->menu[$parent]['items'],$item);
-				}
 				else
-				{
 					$this->menu[$parent]['items']=$item;
-				}
 			}
 			else
-			{
 				$this->menu[$parent]=array();
-			}
 		}
 		else
-		{
 			foreach($item as $key=>$arMenu)
-			{
 				$this->menu[strtolower($key)]=$arMenu;
-			}
-		}
 	}
 
 	/**
@@ -512,9 +471,7 @@ final class CAdminModuleManagment extends CModuleManagment
 				'title' => $sTitle,
 			);
 			if(is_array($arAdd)&&count($arAdd)>0)
-			{
 				$this->menu[$sModule]=array_merge($this->menu[$sModule],$arAdd);
-			}
 		}
 		else
 		{
@@ -525,9 +482,7 @@ final class CAdminModuleManagment extends CModuleManagment
 				'title' => $sTitle,
 			);
 			if(is_array($arAdd)&&count($arAdd)>0)
-			{
 				$this->menu[$sModule]['items'][$sPage]=array_merge($this->menu[$sModule]['items'][$sPage],$arAdd);
-			}
 		}
 		return $this;
 	}

@@ -36,6 +36,7 @@ class CModuleAdmin extends CBaseAPI
 			$this->obModules->IncludeModule('interfaces');
 		else
 			throw new CError('MAIN_MODULE_NOT_FOUND','','interfaces');
+		$this->ParseAction();
 	}
 
 	/**
@@ -90,7 +91,7 @@ class CModuleAdmin extends CBaseAPI
 	/**
 	 * Метод выполняет формирование кода операции
 	 */
-	protected function ParseAction($action)
+	protected function ParseAction($action='')
 	{
 		if($this->sAction=='')
 		{

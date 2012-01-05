@@ -33,25 +33,17 @@ class CUrlParser
 		$this->items=Array();
 		$this->query=$_SERVER['QUERY_STRING'];
 		if(array_key_exists('path',$_GET) && strlen($_GET['path'])>0)
-		{
 			$this->path=$_GET['path'];
-		}
 		elseif (($pos=strpos($_SERVER['REQUEST_URI'],'?'))>0)
-		{
 			$this->path=substr($_SERVER['REQUEST_URI'],0,$pos);
-		}
 		else
-		{
 			$this->path=$_SERVER['REQUEST_URI'];
-		}
 		$params=explode("&",$this->query);
 		foreach($params as $item)
 		{
 			$ar=explode("=",$item);
 			if($ar[0]!='')
-			{
 				$this->items[$ar[0]]=$ar[1];
-			}
 		}
 		$smarty->register_function("get_url",array($this,"_smarty_get_url"));
 		$smarty->register_function("get_getform",array($this,"_smarty_get_getform"));
@@ -98,17 +90,11 @@ class CUrlParser
 						array_push($arGetResult[$matches[1]],urldecode($arItem[1]));
 					}
 					else
-					{
 						$arGetResult[$matches[1]][$matches[2]]=urldecode($arItem[1]);
-					}
 				}
 				else
-				{
 					if(is_array($arItem) && count($arItem)>1)
-					{
 						$arGetResult[urldecode($arItem[0])]=urldecode($arItem[1]);
-					}
-				}
 			}
 		}
 		return array(
@@ -171,18 +157,14 @@ class CUrlParser
 	{
 		$arParams=$this->ParseParams($params);
 		if(count($arParams)>0)
-		{
 			$path="?".join("&amp;",$arParams);
-		}
 		$sRootPath=$this->path;
 		if(isset($params['part']) && is_numeric($params['part']))
 		{
 			$params['part']=intval($params['part']);
 			$arPath=explode('/',$this->path);
 			if(is_array($arPath) && count($arPath)>0)
-			{
 				$arPath=array_slice($arPath,0,$params['part']+1);
-			}
 			$sRootPath=join('/',$arPath).'/';
 		}
         return $sRootPath.$path;
@@ -197,8 +179,7 @@ class CUrlParser
 	{
 		$clear=0;
 		$clearList=array();
-		if (array_key_exists('_CLEAR',$params))
-		{
+		if (array_key_exists('_CLEAR',$params)){
 			$clear=$params['_CLEAR'];
 			$clear="/^$clear$/";
 			$clear=str_replace(" ","$/ /^",$clear);
@@ -213,9 +194,7 @@ class CUrlParser
 		if(!is_array($items))
 			$items=$this->items;
         foreach ($params as $key=>$value)
-        {
         	$items[$key]=$value;
-        }
         //Подчищаем команду юзверя, если она не указанна принудительно
         if(!array_key_exists('CU_ACTION',$params)) unset($items['CU_ACTION']);
         $uri=array();
@@ -223,20 +202,13 @@ class CUrlParser
 		{
 			$res=0;
 			if ($clear)
-			{
 				foreach($clearList as $pattern)
 				{
 					$res=preg_match($pattern,$key);
 					if ($res==1) break;
 				}
-			}
-			if($key!='path' && $key!='part')
-			{
-				if ($res==0)
-				{
-					$uri[]= urlencode(urldecode($key)).'='.urlencode(urldecode($item));
-				}
-			}
+			if($key!='path' && $key!='part' && $res==0)
+				$uri[]= urlencode(urldecode($key)).'='.urlencode(urldecode($item));
 		}
 		return $uri;
 	}
@@ -251,15 +223,11 @@ class CUrlParser
 			$arUrl=$this->ParseUrl($_SESSION['backurl']);
 			$arParams=array();
 			if(is_array($arUrl['params']))
-			{
 				$arParams=$this->ParseParams(array('_CLEAR'=>'CU_ACTION'),$arUrl['params']);
-			}
 			$path=$arUrl['url'].(count($arParams)>0?'?'.join('&amp;',$arParams):'');
 			unset($_SESSION['backurl']);
 			if($path!='')
-			{
 				CUrlParser::get_instance()->Redirect($path);
-			}
 		}
 	}
 
@@ -284,9 +252,7 @@ class CUrlParser
 	{
 		$arParams=$this->ParseParams($params);
 		if(count($arParams)>0)
-		{
 			$path=join("&",$arParams);
-		}
         return $path;
 	}
 
@@ -346,6 +312,9 @@ class CUrlParser
    		die();
  	}
 
+ 	/**
+ 	 * @todo Выяснить что за функция
+ 	 */
 	function AjaxReq()
 	{
 		$array = array();
@@ -355,12 +324,8 @@ class CUrlParser
 		{
 			$ar=explode("=",$item);
 			if($ar[0]!='')
-			{
 				if(($ar[0] == "ajaxreq") || ($ar[0] == "module" && strlen($ar[1]) > 0) || ($ar[0] == "liid"))
-				{
 					$array[$ar[0]]=$ar[1];
-				}
-			}
 		}
 		return $array;
 	}
@@ -371,7 +336,6 @@ class CUrlParser
 		<script type=\"text/javascript\">
 			function CloseReload()
 			{
-				//alert(self.parent.MyNode);
 				self.parent.nextStep('".$array["module"]."','".$array["ajaxreq"]."','".$array["liid"]."',true);
 				self.parent.kstb_remove();
 			}

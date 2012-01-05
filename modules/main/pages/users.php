@@ -21,8 +21,6 @@ class CmainAIusers extends CModuleAdmin
 	{
 		parent::__construct($module,$smarty,$parent);
 		$this->obGroups=new CUserGroup();
-		//Устанавливаем значение для правильного вывода меню в верхней части шаблона
-		$this->smarty->assign('modpage','users');
 	}
 
 	function Table()
@@ -35,9 +33,7 @@ class CmainAIusers extends CModuleAdmin
 		//Получаем список групп пользователей
 		$arGroups=$this->obGroups->GetList();
 		foreach($arGroups as $arGroup)
-		{
 			$arRes[$arGroup['id']]=$arGroup['title'];
-		}
 
 		if(class_exists('CFilterFrame'))
 		{
@@ -126,10 +122,8 @@ class CmainAIusers extends CModuleAdmin
 			}
 		}
 		else
-		{
 			if(array_key_exists('id',$data) && $data['id']>0)
 				$data["GROUPS"] = $this->obUser->GetAllGroups($data['id']);
-		}
 		$this->smarty->assign("groupslist",$this->obGroups->GetList());
 		$this->smarty->assign("userdata",$data);
 		if (class_exists("CFields"))
@@ -167,60 +161,42 @@ class CmainAIusers extends CModuleAdmin
 			$bError=0;
 			//Проверка логина
 			if(strlen($_POST['CU_title'])==0)
-			{
 				$bError+=$this->obModules->AddNotify('MAIN_USERS_TITLE_REQUIRED');
-			}
 			elseif(!IsTextIdent($_POST['CU_title']))
-			{
 				$bError+=$this->obModules->AddNotify('MAIN_USERS_TITLE_WRONG');
-			}
 			elseif($_POST['CU_id']>0)
 			{
 				if($arUser=$this->obUser->GetRecord(array('title'=>$_POST['CU_title'],'!id'=>$_POST['CU_id'])))
-				{
 					$bError+=$this->obModules->AddNotify('MAIN_USERS_TITLE_ALREADY');
-				}
 			}
 			elseif($_POST['CU_id']<1)
 			{
 				if($arUser=$this->obUser->GetRecord(array('title'=>$_POST['CU_title'])))
-				{
 					$bError+=$this->obModules->AddNotify('MAIN_USERS_TITLE_ALREADY');
-				}
 			}
 			//Проверка адреса электронной почты
 			if(strlen($_POST['CU_email'])>0)
 			{
 				if(!IsEmail($_POST['CU_email']))
-				{
 					$bError+=$this->obModules->AddNotify('MAIN_USERS_EMAIL_WRONG');
-				}
 				elseif($_POST['CU_id']>0)
 				{
 					if($arUser=$this->obUser->GetRecord(array('email'=>$_POST['CU_email'],'!id'=>$_POST['CU_id'])))
-					{
 						$bError+=$this->obModules->AddNotify('MAIN_USERS_EMAIL_ALREADY');
-					}
 				}
 				elseif($_POST['CU_id']<1)
 				{
 					if($arUser=$this->obUser->GetRecord(array('email'=>$_POST['CU_email'])))
-					{
 						$bError+=$this->obModules->AddNotify('MAIN_USERS_EMAIL_ALREADY');
-					}
 				}
 			}
 			//Проверка пароля
 			if(strlen($_POST['CU_password'])>0)
 			{
 				if(strlen($_POST['CU_password'])<6)
-				{
 					$bError+=$this->obModules->AddNotify('MAIN_USERS_PASSWORD_SHORT');
-				}
 				elseif($_POST['CU_password']!=$_POST['CU_password_c'])
-				{
 					$bError+=$this->obModules->AddNotify('MAIN_USERS_PASSWORD_MISTAPE');
-				}
 				else
 				{
 					$_POST['CU_password']=md5($_POST['CU_password']);
@@ -229,31 +205,21 @@ class CmainAIusers extends CModuleAdmin
 			}
 			//Блокировка пользователя по времени
 			if(strlen($_POST['CU_blocked_from'])>0)
-			{
 				$_POST['CU_blocked_from']=String2Time($_POST["CU_blocked_from"]);
-			}
 			else
-			{
 				$_POST['CU_blocked_from']=0;
-			}
 			if(strlen($_POST["CU_blocked_till"])>0)
-			{
 				$_POST["CU_blocked_till"]=String2Time($_POST["CU_blocked_till"]);
-			}
 			else
-			{
 				$_POST["CU_blocked_till"]=0;
-			}
 			if($_POST["CU_blocked_till"]<$_POST['CU_blocked_from']) $_POST["CU_blocked_till"]=$_POST['CU_blocked_from']+1;
 			if($_POST['CU_id']>0 && $_POST['CU_id']==$this->obUser->ID())
-			{
 				if($_POST['CU_blocked_from']>0 || $_POST['CU_blocked_till']>0)
 				{
 					$this->obModules->AddNotify('MAIN_USERS_CANT_BLOCK_SELF');
 					$_POST['CU_blocked_from']=0;
 					$_POST['CU_blocked_till']=0;
 				}
-			}
 			$_POST['CU_active']=intval($_POST['CU_active']);
 			if($bError==0)
 			{
@@ -261,36 +227,20 @@ class CmainAIusers extends CModuleAdmin
 				{
 					$usergroups=$this->obUser->GetAllGroups($id);
 					if(isset($_POST['CU_groups']) && is_array($_POST["CU_groups"]))
-					{
 						foreach($_POST["CU_groups"] as $group_id)
 						{
+							$datefrom=0;
 							if(intval($_POST["CU_groups_from".$group_id])>0)
-							{
 								$datefrom=String2Time($_POST["CU_groups_from".$group_id]);
-							}
-							else
-							{
-								$datefrom=0;
-							}
+							$dateto=0;
 							if(intval($_POST["CU_groups_to".$group_id])>0)
-							{
 								$dateto=String2Time($_POST["CU_groups_to".$group_id]);
-							}
-							else
-							{
-								$dateto=0;
-							}
 							$this->obUser->SetUserGroup($id,$group_id,$datefrom,$dateto);
 							unset($usergroups[$group_id]);
 						}
-					}
 					if(is_array($usergroups) && count($usergroups)>0)
-					{
 						foreach($usergroups as $group_id=>$something)
-						{
 							$this->obUser->UnsetUserGroup($id,$group_id);
-						}
-					}
 					if(!array_key_exists('update',$_REQUEST))
 					{
 						$this->obModules->AddNotify('MAIN_USERS_SAVE_OK','',NOTIFY_MESSAGE);
@@ -303,14 +253,10 @@ class CmainAIusers extends CModuleAdmin
 					}
 				}
 				else
-				{
 					throw new CError('MAIN_USERS_SAVE_ERROR');
-				}
 			}
 			else
-			{
 				throw new CDataError('MAIN_USERS_FIELDS_ERROR');
-			}
 		}
 		catch(CError $e)
 		{
@@ -393,14 +339,10 @@ class CmainAIusers extends CModuleAdmin
 							CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','id')));
 						}
 						else
-						{
 							throw new CError('MAIN_USER_NOT_FOUND');
-						}
 					}
 					else
-					{
 						$this->obModules->AddNotify("MAIN_NOT_DELETE_YOURSELF");
-					}
 				break;
 				default:
 					$page=$this->Table();

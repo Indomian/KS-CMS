@@ -127,11 +127,14 @@ abstract class CDBInterface
 		return true;
 	}
 
-	/**Возращает текущее время с миллисекундами.*/
+	/**
+	 * Возращает текущее время с миллисекундами.
+	 * @since 2.7 Переделан код на вызов microtime(true)
+	 * @return float Значение микросекунд в формате плавающей запятой
+	 */
 	function GetRealTime()
 	{
-		list($seconds, $microSeconds) = explode(' ', microtime());
-		return ((float)$seconds + (float)$microSeconds);
+		return microtime(true);
 	}
 
 	/**
@@ -144,33 +147,23 @@ abstract class CDBInterface
 		if(!is_array($arDBStructure) || count($arDBStructure)==0) return false;
 		$this->arDBStructure=$this->ListTables(true);
 		foreach($arDBStructure as $sTableName=>$arTableStructure)
-		{
 			if(array_key_exists(PREFIX.$sTableName,$this->arDBStructure))
-			{
 				$this->CheckTable($sTableName,$arTableStructure);
-			}
 			else
-			{
 				$this->AddTable($sTableName,$arTableStructure);
-			}
-		}
 	}
 
 	/**
 	 * Метод осуществляет анализ таблицы
+	 * @param $sTable
 	 */
 	function CheckTable($sTable,$arTableStructure)
 	{
 		if(!is_array($this->arDBStructure))
-		{
 			$this->arDBStructure=$this->ListTables(true);
-		}
 		if(!array_key_exists(PREFIX.$sTable,$this->arDBStructure))
-		{
 			throw new CDBError('TABLE_NOT_FOUND');
-		}
 		else
-		{
 			foreach($arTableStructure as $sField=>$arField)
 			{
 				if(array_key_exists($sField,$this->arDBStructure[PREFIX.$sTable]))
@@ -180,9 +173,7 @@ abstract class CDBInterface
 					foreach($arField as $sParam=>$sValue)
 					{
 						if($sParam=='Default' && $arField['Key']=='PRI')
-						{
 							continue;
-						}
 						if($sParam=='Extra' && $sValue=='fulltext')
 						{
 							if($this->arDBStructure[PREFIX.$sTable][$sField]['Key']=='MUL')
@@ -200,17 +191,11 @@ abstract class CDBInterface
 						}
 					}
 					if($bUpdate)
-					{
 						$this->UpdateColumn($sTable,$sField,$arField);
-					}
 				}
 				else
-				{
-					//Поле таблицы не существует, надо создать
 					$this->AddColumn($sTable,$arField);
-				}
 			}
-		}
 	}
 
 	/**
@@ -220,19 +205,13 @@ abstract class CDBInterface
 	function GetRequestsTable()
 	{
 		if($this->iDebug>1)
-		{
 			$arData=$this->arLocalRequests[$this->iDebug];
-		}
 		elseif($this->iDebug==1)
-		{
 			$arData=$this->arRequests;
-		}
 		$sResult='<table border="1" width="100%"><tr><th>Запрос</th><th>Время исполнения</th></tr>';
 		for($i=0;$i<count($arData);$i++)
-		{
 			$sResult.='<tr><td>'.$arData[$i]['QUERY'].'</td><td>'.
 					$arData[$i]['TIME'].'</td></tr>';
-		}
 		$sResult.='</table>';
 		return $sResult;
 	}
@@ -242,13 +221,9 @@ abstract class CDBInterface
 	function GetRequests()
 	{
 		if($this->iDebug==1)
-		{
 			return $this->arRequests;
-		}
 		else
-		{
 			return false;
-		}
 	}
 }
 

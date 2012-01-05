@@ -261,7 +261,7 @@ class CObject extends CBaseList
 	function GetRecord($where=false)
 	{
 		if(!is_array(CObject::$arCache)) CObject::$arCache=array();
-		if($arItems=$this->GetList(array('id'=>'asc'),$where,1))
+		if($arItems=$this->GetList(false,$where,1))
 		{
 			$arItem=array_pop($arItems);
 			CObject::$arCache[$this->sTable][$arItem['id']]=$arItem;

@@ -68,9 +68,7 @@ try
 			$output['main_content']=$smarty->fetch($global_template.'/403.tpl');
 		}
 		else
-		{
 			$output['main_content']=$e->__toString();
-		}
 	}
 	catch(CHTTPError $e)
 	{
@@ -88,9 +86,7 @@ try
 			$output['main_content']=$smarty->fetch($global_template.'/404.tpl');
 		}
 		else
-		{
 			$output['main_content']=$e->__toString();
-		}
 	}
 	catch(CError $e)
 	{
@@ -98,6 +94,7 @@ try
 	}
 
 	$bUsuallPage=false;
+	$page='';
 	if(isset($output['include_global_template']) && array_key_exists('include_global_template',$output) && $output['include_global_template'] != '0')
 	{
 		$bUsuallPage=true;
@@ -105,16 +102,11 @@ try
 		$page = $smarty->fetch($global_template.'/'.$KS_MODULES->GetScheme().'.tpl');
 	}
 	elseif(isset($output['main_content']))
-	{
 		$page = $output['main_content'];
-	}
-	else
-	{
-		$page='';
-	}
-	$page=str_replace('#HEAD_STRINGS#',$KS_MODULES->GetHeader(),$page);//join("\n",$KS_MODULES->arHeads),$page);
-		//Код для упаковки результата
-		$page=preg_replace('#\s{2,}#',' ',$page);
+
+	$page=str_replace('#HEAD_STRINGS#',$KS_MODULES->GetHeader(),$page);
+	//Код для упаковки результата
+	$page=preg_replace('#\s{2,}#',' ',$page);
 	echo $page;
 
 	/*Вроде все отработали, можно опробовать систему сообщений
@@ -122,18 +114,15 @@ try
 	$obEvents->init();
 	$obEvents->Run();
 	$obEvents->Done();
-	if(KS_RELEASE!=1)
+	if(KS_RELEASE!=1 && $bUsuallPage && KS_DEBUG==1)
 	{
-		if($bUsuallPage && KS_DEBUG==1)
-		{
-			$end=microtime(1);
-			$sys_info['gen_tyme'] = ($end-$begin);
-			$sys_info['sql_gen_tyme'] = $ks_db->GetTimeTaken();
-			$sys_info['sql_queries_quant'] = $ks_db->GetQueriesCount();
-			$sys_info['sql_requests']=$ks_db->GetRequests();
-			$smarty->assign('sys_info', $sys_info);
-			$smarty->display('.default/.sysfooter.tpl');
-		}
+		$end=microtime(1);
+		$sys_info['gen_tyme'] = ($end-$begin);
+		$sys_info['sql_gen_tyme'] = $ks_db->GetTimeTaken();
+		$sys_info['sql_queries_quant'] = $ks_db->GetQueriesCount();
+		$sys_info['sql_requests']=$ks_db->GetRequests();
+		$smarty->assign('sys_info', $sys_info);
+		$smarty->display('.default/.sysfooter.tpl');
 	}
 }
 catch (CError $e)
@@ -161,7 +150,5 @@ catch(Exception $e)
 		</html><?php
 	}
 	else
-	{
 		echo $e;
-	}
 }

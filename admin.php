@@ -56,23 +56,15 @@ header('Content-Type: text/html; charset=UTF-8');
 setlocale(LC_ALL, "ru_RU.UTF-8");
 
 //Работа системы обновления
-if(array_key_exists('update',$_GET))
+if(array_key_exists('update',$_GET) && file_exists(MODULES_DIR.'/main/libs/class.CUpdate.php'))
 {
-	if(file_exists(MODULES_DIR.'/main/libs/class.CUpdate.php'))
-	{
-		include_once(MODULES_DIR.'/main/libs/class.CUpdate.php');
-		$obUpdate=new CUpdate();
-		$obUpdate->Go();
-	}
+	$obUpdate=new CUpdate();
+	$obUpdate->Go();
 }
-elseif(array_key_exists('restore',$_GET))
+elseif(array_key_exists('restore',$_GET) && file_exists(MODULES_DIR.'/main/libs/class.CUpdate.php'))
 {
-	if(file_exists(MODULES_DIR.'/main/libs/class.CUpdate.php'))
-	{
-		include_once(MODULES_DIR.'/main/libs/class.CUpdate.php');
-		$obUpdate=new CUpdate();
-		$obUpdate->Restore();
-	}
+	$obUpdate=new CUpdate();
+	$obUpdate->Restore();
 }
 
 if (file_exists(MODULES_DIR.'/main'))
@@ -103,9 +95,7 @@ if (file_exists(MODULES_DIR.'/main'))
 	catch(CError $e)
 	{
 		if($smarty)
-		{
 			$smarty->assign('last_error',$e->GetErrorText());
-		}
 		else
 		{
 			echo "<html><title>{$KS_VERSION['TITLE']} {$KS_VERSION['ID']} Init Error</title><body>$e</body></html>";
@@ -115,20 +105,21 @@ if (file_exists(MODULES_DIR.'/main'))
 
 	/* Пользователь не вошел на сайт */
 	if (!$USER->IsLogin())
-	{
 		$KS_MODULES->LoadModulePage('main','password');
-	}
 	else
-	{
-		//Проверяем наличие модуля справки, если он установлен, вызываем генерацию ссылки помощи
-		if($KS_MODULES->IsModule('help'))
-		{
-			include_once(MODULES_DIR.'/help/pages/getHelpUrl.php');
-		}
 		// Выводим текущий модуль (определяется по параметрам в УРЛ).
-		$KS_MODULES->AdminShowModule($KS_MODULES->current);
-	}
+		$KS_MODULES->AdminShowModule();
 	$KS_MODULES->Draw($smarty);
+	if(KS_RELEASE!=1 && KS_DEBUG==1)
+	{
+		$end=microtime(1);
+		$sys_info['gen_tyme'] = ($end-$begin);
+		$sys_info['sql_gen_tyme'] = $ks_db->GetTimeTaken();
+		$sys_info['sql_queries_quant'] = $ks_db->GetQueriesCount();
+		$sys_info['sql_requests']=$ks_db->GetRequests();
+		$smarty->assign('sys_info', $sys_info);
+		$smarty->display('admin/.sysfooter.tpl');
+	}
 }
 else
 {

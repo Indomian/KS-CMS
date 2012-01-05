@@ -1,440 +1,119 @@
 <?php
-
 /**
  * Страница модуля main редактирования шаблонов
  *
  * @filesource templates.php
  * @author blade39 <blade39@kolosstudio.ru>, north-e <pushkov@kolosstudio.ru>
- * @version 1.0
+ * @version 2.7
  * @since 04.05.2009
  */
 
-if (!defined('KS_ENGINE'))
-	die("Hacking attempt!");
+if (!defined('KS_ENGINE')) die("Hacking attempt!");
 
-global $KS_URL,$USER;
-$smarty->assign('tabTempl',1);
-try
+class CmainAItemplates extends CModuleAdmin
 {
-	if ($USER->GetLevel('main') > 7)
-		throw new CAccessError("MAIN_ACCESS_MANAGEMENT_TEMPLATES_CLOSED",403);
+	//Глобальные шаблоны
+	private $obGlobalTpl;
+	//Локальные шаблоны
+	private $obTemplates;
 
-	/* Объект для работы с глобальными шаблонами */
-	$obTpl = new CGlobalTemplates();
-	/* Объект для работы с шаблонами */
-	$KS_TEMPLATES = new CTemplates;
-	$sName='';
-	$sAction='';
-	if(isset($_REQUEST['ACTION'])) $sAction=$_REQUEST['ACTION'];
-	switch($sAction)
+	function __construct($module='main',&$smarty,&$parent)
 	{
-		case 'save':
-			$sName=$_POST['id'];
-			try
-			{
-				if(array_key_exists('id',$_POST))
-				{
-					if(strlen($sName)<3) throw new CError("MAIN_TEMPLATE_NAME_LENGHT_ERROR");
-					if(!preg_match('#^[a-zA-Z0-9\._]+$#',$sName)) throw new CError("MAIN_TEMPLATE_NAME_ERROR");
-				}
-				$sResult=$KS_TEMPLATES->SaveTemplate($sName,$_POST['scheme']);
-				if(!array_key_exists('update',$_REQUEST))
-				{
-	    			CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','id')));
-	    		}
-	    		else
-	    		{
-		    		CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl('ACTION','id').'&ACTION=edit&id='.$sName);
-				}
-			}
-			catch(CError $e)
-			{
-				$smarty->assign('last_error',$e);
-			}
-		case "edit":
-			$sName=$_GET['id'];
-			$data['name'] = $sName;
-		case "new":
-			/* Вывод списка всех локальных шаблонов в глобальном шаблоне для редактирования */
-			setcookie('lastSelectedTab','templates_'.time().'_tab0',time()+36000);
-			$_COOKIE['lastSelectedTab']='templates_'.time().'_tab0';
-			if($sName=='')
-			{
-				$data['is_new']=1;
-				$sName='.default';
-			}
-			/* Читаем глобальный шаблон по идентификатору */
-			$arSchemes=$KS_TEMPLATES->GetTemplate($sName);
-			foreach($arSchemes as $key=>$value)
-			{
-				$data['templates'][$key]= htmlentities($value,ENT_QUOTES,'UTF-8');
-			}
-			$data['template'] = $data['templates']['index'];
-			/* Читаем локальные шаблоны глобального шаблона */
-			$data['modules'] = $KS_TEMPLATES->GetSubTemplates($sName);
-			/* Устанавливаем данные для Смарти */
-			$smarty->assign('data', $data);
-			/* Переменная для определения административного шаблона Смарти */
-			$page = '_templates_edit';
-		break;
-		case 'copyname':
-			/* Задание имени шаблона для копирования */
-			if (strlen(trim($_GET['id']))>0)
-			{
-				$id = trim($_GET['id']);
-				$global_templates = $KS_TEMPLATES->GetList();
-				$new_id = str_replace('.','',$id) . "_copy";
-				$copy_number = 0;
-				while (in_array($new_id, $global_templates))
-				{
-					$copy_number++;
-					$new_id = str_replace('.','',$id) . "_copy_" . $copy_number;
-				}
-				$smarty->assign('templateName',$new_id);
-				$smarty->assign('templateId',$id);
-				$smarty->assign('action','copy');
-				$page='_templates_editname';
-			}
-		break;
-		case 'copy':
-			/* Копирование шаблона */
-			if (strlen(trim($_REQUEST['id']))>0)
-			{
-				if(!preg_match('#^[\.a-z0-9_]+$#i',$_REQUEST['id'])
-				||!preg_match('#^[a-z0-9_]+$#i',$_REQUEST['newId']))
-				{
-					$smarty->assign('templateName',$_REQUEST['newId']);
-					$smarty->assign('templateId',$_REQUEST['id']);
-					$smarty->assign('action','copy');
-					$page='_templates_editname';
-					throw new CDataError("MAIN_TEMPLATE_NAME_ERROR");
-				}
-				$id = trim($_REQUEST['id']);
-				$new_id=trim($_REQUEST['newId']);
-				$global_templates = $KS_TEMPLATES->GetList();
-				if($new_id=='')
-				{
-					$new_id = $id . "_copy";
-					$copy_number = 0;
-					while (in_array($new_id, $global_templates))
-					{
-						$copy_number++;
-						$new_id = $id . "_copy_" . $copy_number;
-					}
-				}
-				else
-				{
-					if(in_array($new_id,$global_templates))
-					{
-						$smarty->assign('templateName',$new_id);
-						$smarty->assign('templateId',$id);
-						$smarty->assign('action','copy');
-						$page='_templates_editname';
-						throw new CDataError("MAIN_TEMPLATE_ALREADY_EXISTS");
-					}
-				}
-				$KS_TEMPLATES->Copy($id, $new_id);
-				if($_GET['mode']=='small')
-				{
-					die();
-				}
-				$KS_URL->redirect("/admin.php?module=main&modpage=templates");
-			}
-		break;
-		case 'copysub':
-			$data['make_copy']=1;
-		case 'editsub':
-			/* Редактирование шаблона виджета */
-			setcookie('lastSelectedTab','templates_'.time().'_tab0',time()+36000);
-			$_COOKIE['lastSelectedTab']='templates_'.time().'_tab0';
-			/* Имя глобального шаблона */
-			$sName = $_GET['id'];
-			/* Имя шаблона виджета */
-			$sSubTemplate = $_GET['template'];
-			/* Читаем шаблон виджета */
-			$arRes = $KS_TEMPLATES->SubTemplate($sName, $sSubTemplate);
-			$data['template'] = htmlentities($arRes['content'], ENT_QUOTES, 'UTF-8');
-			$data['modules'] = $KS_TEMPLATES->GetSubTemplates($sName);
-			$data['is_sub'] = 1;
-			$data['sub_name'] = $arRes['name'];
-			$data['name'] = $sName;
-			$data['module'] = $arRes['module'];
-			$data['file'] = $arRes['file'];
-			/* Ищем справку по редактированию данного виджета */
-			$expl = explode("/", $sSubTemplate);
-			if (isset($expl[1]))
-			{
-				/* Имя модуля, к которому относится шаблон */
-				$wmodule = $expl[0];
-				/* Имя файла шаблона */
-				$wtemplate = $expl[1];
-				$arHelp=$KS_TEMPLATES->GetDescriptions($wmodule);
-				if(count($arHelp)>0)
-				{
-					// Ищем в массиве с описаниями виджетов подходящий для данного шаблона ключ
-					$corresponding_widget_key = false;
-					foreach ($arHelp as $widget_key => $widget_data)
-					{
-						if (preg_match("#^(" . $widget_key. ")(.*)(.tpl)$#", $wtemplate))
-						{
-							$corresponding_widget_key = $widget_key;
-						}
-					}
-					// Если ключ найдет, то смотрим, есть ли описание для шаблона виджета
-					if ($corresponding_widget_key)
-						if (isset($arHelp[$corresponding_widget_key]["help"]))
-						{
-							$data["widget_name"] = $arHelp[$corresponding_widget_key]["name"];
-							$data["help"] = $arHelp[$corresponding_widget_key]["help"];
-						}
-				}
-			}
-			/* Отправляем данные о шаблоне в Смарти */
-			$smarty->assign('data',$data);
-			$page = '_templates_edit';
-		break;
+		parent::__construct($module,$smarty,$parent);
+		if ($this->obUser->GetLevel('main') > 7)
+			throw new CAccessError("MAIN_ACCESS_MANAGEMENT_TEMPLATES_CLOSED",403);
+		/* Объект для работы с глобальными шаблонами */
+		$this->obGlobalTpl = new CGlobalTemplates();
+		/* Объект для работы с шаблонами */
+		$this->obTemplates = new CTemplates;
 	}
 
-	if($sAction=='savesub')
+	/**
+	 * Метод выполняет сохранение связей между шаблоном и адресом
+	 */
+	function SaveLinks()
 	{
-		if($_POST['copysub']==1)
-		{
-			try
-			{
-				$sSubTemplate=$_POST['file'];
-				$sTemplate=$_POST['template_file'];
-				$sModule=$_POST['s_module'];
-				$sPath=TEMPLATES_DIR.'/'.$_POST['id'].'/';
-				$sFile=$sModule.'/'.$sSubTemplate;
-				if(strlen($_POST['subid'])<3) throw new CError("MAIN_TEMPLATE_NAME_LENGHT_ERROR");
-				if(!preg_match('#^[a-zA-Z0-9\-_]+$#',$_POST['subid'])) throw new CError("MAIN_TEMPLATE_NAME_ERROR");
-				if(preg_match('#^([\w_\.]+)\.tpl#',$_POST['file'],$matches))
-				{
-					$_POST['file']=$matches[1].$_POST['subid'].'.tpl';
-					if(file_exists($sPath.$sModule.'/'.$_POST['file'])) throw new CError("MAIN_TEMPLATE_ALREADY_EXISTS");
-					$sName=$_POST['id'];
-					if ($KS_TEMPLATES->SaveSub($sName))
-					{
-						$KS_URL->Set('ACTION','edit');
-						$KS_URL->Set('id',$sName);
-						$KS_URL->redirect("/admin.php?".$KS_URL->GetUrl(Array('template')));
-					}
-					else
-					{
-						throw new CError("SYSTEM_UNKNOWN_ERROR");
-					}
-				}
-				else
-				{
-					throw new CError("SYSTEM_STRANGE_ERROR", 0, $_POST['file']);
-				}
-			}
-			catch(CError $e)
-			{
-				$sName=$_POST['id'];
-				$sSubTemplate=$_POST['s_module'].'/'.$sSubTemplate;
-				$arRes=$KS_TEMPLATES->SubTemplate($sName,$sSubTemplate);
-				$data['template']=htmlentities($_POST['template_file'],ENT_QUOTES,'UTF-8');
-				$data['modules']=$KS_TEMPLATES->GetSubTemplates($sName);
-				$data['is_sub']=1;
-				$data['sub_name']=$arRes['name'];
-				$data['new_name']=$_POST['subid'];
-				$data['name']=$sName;
-				$data['module']=$arRes['module'];
-				$data['file']=$arRes['file'];
-				$data['make_copy']=1;
-				$smarty->assign('data',$data);
-				$smarty->assign('last_error',$e);
-				$page='_templates_edit';
-			}
-		}
-		else
-		{
-			try
-			{
-				$sName=$_POST['id'];
-				if ($KS_TEMPLATES->SaveSub($sName))
-				{
-					if(!array_key_exists('update',$_REQUEST))
-					{
-				    	$KS_URL->Set('ACTION','edit');
-						$KS_URL->Set('id',$sName);
-						$KS_URL->redirect("/admin.php?".$KS_URL->GetUrl(Array('template')));
-		    		}
-		    		else
-		    		{
-		    			$KS_URL->Set('ACTION','editsub');
-		    			$KS_URL->Set('id',$sName);
-		    			$KS_URL->Set('template',$_POST['s_module'].'/'.$_POST['file']);
-		    			CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl());
-			    	}
-				}
-				else
-				{
-					throw new CError("SYSTEM_UNKNOWN_ERROR",2);
-				}
-			}
-			catch(CError $e)
-			{
-				$sName=$_GET['id'];
-				$sSubTemplate=$_GET['template'];
-				$arRes=$KS_TEMPLATES->SubTemplate($sName,$sSubTemplate);
-				$data['template']=htmlentities($_POST['template_file'],ENT_QUOTES,'UTF-8');
-				$data['modules']=$KS_TEMPLATES->GetSubTemplates($sName);
-				$data['is_sub']=1;
-				$data['sub_name']=$arRes['name'];
-				$data['name']=$sName;
-				$data['module']=$arRes['module'];
-				$data['file']=$arRes['file'];
-				$smarty->assign('data',$data);
-				$smarty->assign('last_error',$e);
-				$page='_templates_edit';
-			}
-		}
-	}
-	elseif($sAction=='clearCache')
-	{
-		$smarty->clear_all_cache();
-		$smarty->clear_compiled_tpl();
-		$page=_ShowList($KS_TEMPLATES);
-	}
-	elseif($sAction=='clearPicCache')
-	{
-		global $KS_FS;
-		if(!$KS_FS->cleardir(UPLOADS_DIR.'/PicCache'))
-		{
-			$this->AddNotify('MAIN_PICTURE_CACHE_CLEAN_FAIL');
-		}
-		$page=_ShowList($KS_TEMPLATES);
-	}
-	elseif($sAction=='delete')
-	{
-		if($_GET['id']!='.default')
-		{
-			if($KS_TEMPLATES->Delete($_GET['id']))
-			{
-				$obTpl->DeleteByTemplate($_GET['id']);
-			}
-			else
-			{
-				throw new CError("MAIN_ERROR_DELETE_TEMPLATE");
-			}
-		}
-		else
-		{
-			throw new CError("MAIN_ERROR_DELETE_DEFAULT_TEMPLATE");
-		}
-		$page=_ShowList($KS_TEMPLATES);
-	}
-	elseif($sAction=='deletesub')
-	{
-		$sName=$_GET['id'];
 		try
 		{
-			$KS_TEMPLATES->DeleteSub($sName,$_GET['template']);
-			CUrlParser::get_instance()->Redirect("/admin.php?module=main&modpage=templates&ACTION=edit&id=".$sName);
+			if(isset($_POST['links']) && is_array($_POST['links']))
+				foreach ($_POST['links'] as $id=>$arItem)
+					if($id>0)
+						$this->obGlobalTpl->Update($id,$arItem);
+			if (isset($_POST['newlinks']) && is_array($_POST['newlinks']))
+				foreach ($_POST['newlinks'] as $arItem)
+					if((isset($arItem['url_path']) && $arItem['url_path']!='')||
+						(isset($arItem['function1']) && $arItem['function1']!=''))
+						$this->obGlobalTpl->Save("",$arItem);
+			if(isset($_POST['delete']) && is_array($_POST['delete']))
+				$obTpl->DeleteByIds(array_keys($_POST['delete']));
+			$this->obModules->AddNotify('MAIN_TEMPLATES_LINKS_SAVED',0,NOTIFY_MESSAGE);
+			$KS_URL=CUrlParser::get_instance();
+			$KS_URL->Redirect($KS_URL->GetUrl());
 		}
-		catch(CError $e)
+		catch (CError $e)
 		{
-			$smarty->assign('last_error',$e);
-			$sName=$_GET['id'];
-			$data['template']=htmlentities($KS_TEMPLATES->GetTemplate($sName),ENT_QUOTES,'UTF-8');
-			$data['modules']=$KS_TEMPLATES->GetSubTemplates($sName);
-			$data['name']=$sName;
-			$smarty->assign('data',$data);
-			$page='_templates_edit';
+			$this->obModules->AddNotify($e->getMessage(),$e->getCode());
+			$page=$this->Table();
 		}
 	}
-	elseif($sAction=='getgroups')
+
+	function Table()
 	{
-		$obGroups=new CUserGroup();
+		$arResult=$this->obTemplates->GetList();
+		foreach($arResult as $value)
+		{
+			$arSubSchemes=$this->obTemplates->GetSchemeList($value);
+			if(is_array($arSubSchemes))
+				foreach($arSubSchemes as $scheme)
+					$arLinks['TEMPLATES'][]=$value.':'.$scheme;
+		}
+	  	$arLinks['LINKS']=$this->obGlobalTpl->GetList(array('orderation'=>'asc'));
+	  	$obGroups=new CUserGroup();
 		$arGroups=$obGroups->GetList();
-		$smarty->assign('groups',$arGroups);
-		$smarty->assign('mode','groupslist');
-		$smarty->assign('tdId',$_GET['tdId']);
-		$smarty->assign('id',$_GET['id']);
-		$result = array('tdId' => $_GET['tdId'],'id' => $_GET['id']);
-		$result['html'] = $smarty->fetch('admin/main_templates_ajax.tpl');
-		echo json_encode($result);
-		die();
+		$this->smarty->assign('groups',$arGroups);
+		$this->smarty->assign('dataList',$arResult);
+		$this->smarty->assign('linksList',$arLinks);
+	    return '';
 	}
-	elseif($sAction=='saveLinks')
+
+	function Run()
 	{
-		if(isset($_POST['links']) && is_array($_POST['links']))
+		$page='';
+		switch($this->sAction)
 		{
-			foreach ($_POST['links'] as $id=>$arItem)
-			{
-				if($id>0)
-				{
-					//print_r($arItem);
-					$obTpl->Update($id,$arItem);
-				}
-			}
+			case 'clearCache':
+				$this->smarty->clear_all_cache();
+				$this->smarty->clear_compiled_tpl();
+				$page=$this->Table();
+				$this->obModules->AddNotify('MAIN_CACHE_CLEAN_OK','',NOTIFY_MESSAGE);
+			break;
+			case 'clearPicCache':
+				global $KS_FS;
+				if(!$KS_FS->cleardir(UPLOADS_DIR.'/PicCache'))
+					$this->obModules->AddNotify('MAIN_PICTURE_CACHE_CLEAN_FAIL');
+				else
+					$this->obModules->AddNotify('MAIN_PICTURE_CACHE_CLEAN_OK','',NOTIFY_MESSAGE);
+				$page=$this->Table($KS_TEMPLATES);
+			break;
+			//@todo Переписать на использование Ajax запросов в json используя стандартный механизм
+			case 'getgroups':
+				$obGroups=new CUserGroup();
+				$arGroups=$obGroups->GetList();
+				$this->smarty->assign('groups',$arGroups);
+				$this->smarty->assign('mode','groupslist');
+				$this->smarty->assign('tdId',$_GET['tdId']);
+				$this->smarty->assign('id',$_GET['id']);
+				$result = array('tdId' => $_GET['tdId'],'id' => $_GET['id']);
+				$result['html'] = $smarty->fetch('admin/main_templates_ajax.tpl');
+				echo json_encode($result);
+				die();
+			break;
+			case 'saveLinks':
+				$page=$this->SaveLinks();
+			break;
+			default:
+				$page=$this->Table();
 		}
-		if (isset($_POST['newlinks']) && is_array($_POST['newlinks']))
-		{
-			foreach ($_POST['newlinks'] as $arItem)
-			{
-				if((isset($arItem['url_path']) && $arItem['url_path']!='')||
-					(isset($arItem['function1']) && $arItem['function1']!=''))
-					$obTpl->Save("",$arItem);
-			}
-		}
-		if(isset($_POST['delete']) && is_array($_POST['delete']))
-		{
-			$obTpl->DeleteByIds(array_keys($_POST['delete']));
-		}
-		$smarty->assign('tabLinks','1');
-		$smarty->assign('tabTempl',0);
-		$page=_ShowList($KS_TEMPLATES);
+		return '_templates'.$page;
 	}
-	elseif($page=='')
-	{
-		$page=_ShowList($KS_TEMPLATES);
-  	}
-
 }
-catch (CAccessError $e)
-{
-	$smarty->assign('last_error',$e);
-	throw $e;
-}
-catch (CDataError $e)
-{
-	$smarty->assign('last_error',$e);
-	if($page=='') $page=_ShowList($KS_TEMPLATES);
-}
-catch (CError $e)
-{
-	$smarty->assign('last_error',$e);
-	$page=_ShowList($KS_TEMPLATES);
-}
-
-function _ShowList($KS_TEMPLATES)
-{
-	global $smarty;
-	$arResult=$KS_TEMPLATES->GetList();
-	//$arLinks['TEMPLATES']=$arResult;
-	foreach($arResult as $value)
-	{
-		$arSubSchemes=$KS_TEMPLATES->GetSchemeList($value);
-		if(is_array($arSubSchemes))
-		{
-			foreach($arSubSchemes as $scheme)
-			{
-				$arLinks['TEMPLATES'][]=$value.':'.$scheme;
-			}
-		}
-	}
-	$obTpl=new CGlobalTemplates();
-
-  	$arLinks['LINKS']=$obTpl->GetList(array('orderation'=>'asc'));
-  	$obGroups=new CUserGroup();
-	$arGroups=$obGroups->GetList();
-	$smarty->assign('groups',$arGroups);
-	$smarty->assign('dataList',$arResult);
-	$smarty->assign('linksList',$arLinks);
-    return '_templates';
-}
-
-?>

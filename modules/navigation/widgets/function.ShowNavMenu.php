@@ -1,23 +1,22 @@
 <?php
-
 /**
  * Виджет производит вывод указанного меню, используются шаблоны и тип меню.
  *
- * Последняя модификация: 27.02.2009
+ * @filesource navigation/widgets/function.ShowNavMenu.php
+ * @since 1.0
+ * @author BlaDe39 <blade39@kolosstudio.ru>
+ * @version 2.7
  *
  * Доступные параметры:
  * type - тип меню;
- * tpl - шаблон виджета;
- * global_template - глобальный шаблон;
- * KS_IND_matches - массив с элементами URL, используется для определения id пункта меню текущей страницы
  */
-
-include_once MODULES_DIR.'/navigation/libs/class.CNav.php';
+/*Обязательно вставляем во все файлы для защиты от взлома*/
+if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 function smarty_function_ShowNavMenu($params, &$smarty)
 {
 	global $KS_MODULES;
-	try
+	if(isset($params['type']))
 	{
 		$menuItem = new CNavTypes;
 		$menu_arr = $menuItem->GetMenu($params['type']);		// получаем полный список элементов меню
@@ -27,15 +26,9 @@ function smarty_function_ShowNavMenu($params, &$smarty)
 			$smarty->assign("current_page", $current_page);		// устанавливаем массив с id выбранного элемента меню
 		$smarty->assign('menuType',$menuItem->GetLastMenuType());
 		$smarty->assign("menu", $menu_arr);
-		//Код для генерации пути к шаблону или вывод ошибки об отсутсвтии шаблона
-		/* Поиск шаблона для виджета и возвращение результата */
-		$sResult=$KS_MODULES->RenderTemplate($smarty,'/navigation/ShowNavMenu',$params['global_template'],$params['tpl']);
-		return $sResult;
+		return $KS_MODULES->RenderTemplate($smarty,'/navigation/ShowNavMenu',$params['global_template'],$params['tpl']);
 	}
-	catch (CError $e)
-	{
-		return $e;
-	}
+	throw new CDataError('NAVIGATION_MENU_TYPE_REQUIRED');
 }
 
 function widget_params_ShowNavMenu()
@@ -63,5 +56,3 @@ function widget_params_ShowNavMenu()
 		'fields' => $arFields,
 	);
 }
-
-?>
