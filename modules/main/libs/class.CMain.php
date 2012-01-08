@@ -696,7 +696,7 @@ class CObject extends CBaseList
 					else
 					{
 						if(!$noSafe) $value=$this->obDB->safesql($value);
-						if($operation=='!') $operation=" $myfield!=$value ";
+						if($operation=='!') $operation=" $myfield!='$value' ";
 						elseif($operation=='~') $operation=" $myfield LIKE '%".$value."%' ";
 						elseif($operation=='!~') $operation=" $myfield NOT LIKE '%".$value."%' ";
 						elseif($operation=='^~') $operation=" $myfield LIKE '".$value."%' ";

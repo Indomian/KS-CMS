@@ -25,7 +25,7 @@
     					<th width="30%">{#header_field#}</th>
     					<th width="70%">{#header_value#}</th>
     				</tr>
-    				<tr>
+    				<tr class="is_necessary_light">
     					<td>{Title field="anchor"}</td>
     					<td><input type="text" name="CSC_anchor" value="{$data.anchor|htmlspecialchars:2:"UTF-8":false}" style="width:95%" class="form_input"/></td>
     				</tr>

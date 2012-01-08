@@ -82,31 +82,31 @@ class CnavigationAIindex extends CModuleAdmin
 		global $KS_URL;
 		try
 		{
+			$bError=0;
 			if(!preg_match('#^[a-zA-Z0-9_-а-яА-Я ]{2,}$#',$_POST['CSC_name']))
-			{
-				throw new CError('NAVIGATION_MENU_TITLE_WRONG');
-			}
+				$bError+=$this->obModules->AddNotify('NAVIGATION_MENU_TITLE_WRONG');
 			if ($_POST['CSC_text_ident']=='')
 			{
 				$_POST['CSC_text_ident']=Translit($_POST['CSC_name']);
 				$_REQUEST['CSC_text_ident']=$_POST['CSC_text_ident'];
 			}
 			if(!IsTextIdent($_POST['CSC_text_ident']))
+				$bError+=$this->obModules->AddNotify('NAVIGATION_MENU_TEXT_IDENT_WRONG');
+			if($this->oType->GetRecord(array('text_ident'=>$_POST['CSC_text_ident'])))
+				$bError+=$this->obModules->AddNotify('NAVIGATION_MENU_TEXT_IDENT_ALREADY');
+			if($bError==0)
 			{
-				throw new CError('NAVIGATION_MENU_TEXT_IDENT_WRONG');
-			}
-			$this->oType->AddCheckField('text_ident');
-			$this->oType->AddAutoField('id');
-			$this->oType->AddFileField('img');
-			$id=$this->oType->Save('CSC_',$_POST);
-			$this->obModules->AddNotify('NAVIGATION_MENU_TYPE_SAVED','',NOTIFY_MESSAGE);
-			if(!array_key_exists('update',$_REQUEST))
-			{
-				CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','type')));
+				$this->oType->AddFileField('img');
+				$id=$this->oType->Save('CSC_',$_POST);
+				$this->obModules->AddNotify('NAVIGATION_MENU_TYPE_SAVED','',NOTIFY_MESSAGE);
+				if(!array_key_exists('update',$_REQUEST))
+					CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','type')));
+				else
+					CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(array('ACTION','CSC_catid')).'&ACTION=edit&CSC_catid='.$id);
 			}
 			else
 			{
-				CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(array('ACTION','CSC_catid')).'&ACTION=edit&CSC_catid='.$id);
+				throw new CDataError('NAVIGATION_FIELDS_ERROR');
 			}
 		}
 		catch(CError $e)
@@ -167,7 +167,7 @@ class CnavigationAIindex extends CModuleAdmin
 				$page=$this->EditForm($data);
 			break;
 			case "save":
-				$this->Save();
+				$page=$this->Save();
 			break;
 			case "delete":
 				if($arData=$this->oType->GetById($this->iId))
@@ -177,9 +177,7 @@ class CnavigationAIindex extends CModuleAdmin
 					CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl(Array('ACTION','CSC_catid')));
 				}
 				else
-				{
 					$this->obModules->AddNotify('NAVIGATION_MENU_TYPE_NOT_FOUND');
-				}
 			break;
 			default:
 				$page=$this->Table();
@@ -188,4 +186,3 @@ class CnavigationAIindex extends CModuleAdmin
 		return '_types'.$page;
 	}
 }
-?>

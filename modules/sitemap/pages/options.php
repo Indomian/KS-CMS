@@ -28,7 +28,7 @@ class CsitemapAIoptions extends CModuleAdmin
 
 	function Run()
 	{
-		global $KS_URL;
+		$KS_URL=CUrlParser::get_instance();
 		//Проверка прав доступа
 		if($this->obUser->GetLevel($this->module)>0) throw new CAccessError('SYSTEM_NOT_ACCESS_SETTINGS');
 		$obConfig=new CConfigParser($this->module);
@@ -45,9 +45,7 @@ class CsitemapAIoptions extends CModuleAdmin
 		unset($arAccess['levels'][$this->module]);
 		$arRes=array();
 		foreach($arAccess['levels'] as $key=>$item)
-		{
 			$arRes[$item['group_id']]=$item;
-		}
 		foreach($arAccess['groups'] as $arGroup)
 		{
 			if(!array_key_exists($arGroup['id'],$arRes))
@@ -64,18 +62,12 @@ class CsitemapAIoptions extends CModuleAdmin
 		$arModules = $this->obModules->GetList(array("URL_ident"=>'asc'), array("active" => 1,'!URL_ident'=>''));
 		if (is_array($arModules)&&count($arModules)>0)
 			foreach($arModules as $key=>$arRow)
-			{
 				if(!file_exists(MODULES_DIR.'/'.$arRow['directory'].'/.tree.php'))
-				{
 					$arModules[$key]['maxLevel']=0;
-				}
 				else
-				{
 					$arModules[$key]['maxLevel']=5;
-				}
-			}
 
-		if ($_POST['action']=='save')
+		if (isset($_POST['action']) && $_POST['action']=='save')
 		{
 			try
 			{

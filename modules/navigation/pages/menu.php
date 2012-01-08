@@ -43,13 +43,9 @@ class CnavigationAImenu extends CModuleAdmin
 				array(1),
 				array('orderation')
 			))
-			{
 				$arItem=array_pop($arData);
-			}
 			else
-			{
 				$arItem['orderation']=0;
-			}
 			$data=array();
 			$data['orderation']=intval($arItem['orderation'])+10;
 			$data['id']=-1;
@@ -149,6 +145,50 @@ class CnavigationAImenu extends CModuleAdmin
 		return '';
 	}
 
+	function Save()
+	{
+		$KS_URL=CUrlParser::get_instance();
+		try
+		{
+			$this->oElement->AddAutoField('id');
+			$this->oElement->AddFileField('img');
+
+			$bError=0;
+
+			if(isset($_POST['CSC_active']))
+				$_POST['CSC_active']=intval($_POST['CSC_active']);
+			else
+				$_POST['CSC_active']=0;
+
+			if(!isset($_POST['CSC_anchor']) || strlen($_POST['CSC_anchor'])==0)
+				$bError+=$this->obModules->AddNotify('NAVIGATION_MENU_ITEM_TITLE_REQUIRED');
+
+			if($bError==0)
+			{
+				if($id=$this->oElement->Save('CSC_',$_POST))
+				{
+					$iParentId = $this->oElement->GetByID($id);
+					$iParentId = intval($iParentId['parent_id']);
+					$this->obModules->AddNotify('NAVIGATION_MENU_ITEM_SAVED','',NOTIFY_MESSAGE);
+					if(!array_key_exists('update',$_REQUEST))
+						$KS_URL->Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','CSC_elmid')).'&CSC_parid='.$iParentId);
+					else
+						$KS_URL->Redirect("/admin.php?".$KS_URL->GetUrl(array('ACTION','CSC_elmid')).'&ACTION=edit&CSC_elmid='.$id);
+				}
+				else
+					throw new CError('SYSTEM_SAVE_ERROR');
+			}
+			else
+				throw new CDataError('NAVIGATION_FIELDS_ERROR');
+		}
+		catch(CError $e)
+		{
+			$this->smarty->assign('last_error',$e);
+			$data=$this->oElement->GetFromPost('CSC_',$_POST);
+			return $this->EditForm($data);
+		}
+	}
+
 	function Run()
 	{
 		global $KS_URL;
@@ -175,29 +215,7 @@ class CnavigationAImenu extends CModuleAdmin
 				$page=$this->EditForm($data);
 			break;
 			case "save":
-				$this->oElement->AddAutoField('id');
-				$this->oElement->AddFileField('img');
-
-				$_POST['CSC_active']=intval($_POST['CSC_active']);
-
-				if($id=$this->oElement->Save('CSC_',$_POST))
-				{
-					$iParentId = $this->oElement->GetByID($id);
-					$iParentId = intval($iParentId['parent_id']);
-					$this->obModules->AddNotify('NAVIGATION_MENU_ITEM_SAVED','',NOTIFY_MESSAGE);
-					if(!array_key_exists('update',$_REQUEST))
-					{
-						CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','CSC_elmid')).'&CSC_parid='.$iParentId);
-					}
-					else
-					{
-						CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(array('ACTION','CSC_elmid')).'&ACTION=edit&CSC_elmid='.$id);
-					}
-				}
-				else
-				{
-					throw new CError('SYSTEM_SAVE_ERROR');
-				}
+				$page=$this->Save();
 			break;
 			case "delete":
 				if($arData=$this->oElement->GetById($this->iId))

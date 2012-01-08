@@ -19,21 +19,12 @@
     					<th width="30%">{#header_field#}</th>
     					<th width="70%">{#header_value#}</th>
     				</tr>
-    				<tr>
-    					<td>
-    					<div id="hint_name"
-    						style="cursor: pointer;"
-    						onmouseover="floatMessage.showMessage(document.getElementById('hint_name'),
-    						'{#field_name_hint#}');">{#field_name#}</div>
-    					</td>
+    				<tr class="is_necessary_light">
+    					<td>{Title field="name"}</td>
     					<td><input type="text" name="CSC_name" value="{$data.name|htmlspecialchars:2:"UTF-8":false}" style="width:95%" class="form_input"/></td>
     				</tr>
-    				<tr>
-    					<td>
-    					<div id="hint_text_ident"
-    						style="cursor: pointer;"
-    						onmouseover="floatMessage.showMessage(document.getElementById('hint_text_ident'),
-    						'{#field_text_ident_hint#}');">{#field_text_ident#}</div>
+    				<tr class="is_necessary_light">
+    					<td>{Title field="text_ident"}
 							<br><font color=#FF0000>{#change_warning#}</font></td>
     					<td>{if $data.text_ident==''}<input type="text" name="CSC_text_ident" value="" style="width:95%" class="form_input"/>{else}
     						<input type="hidden" name="CSC_text_ident" value="{$data.text_ident}"/>
@@ -41,17 +32,11 @@
     					</td>
     				</tr>
     				<tr>
-    					<td><div id="hint_description"
-    						style="cursor: pointer;"
-    						onmouseover="floatMessage.showMessage(document.getElementById('hint_description'),
-    						'{#field_description_hint#}');">{#field_description#}</div></td>
+    					<td>{Title field="description"}</td>
     					<td><textarea name="CSC_description" style="width:95%;height:200px;" class="form_textarea">{$data.description}</textarea></td>
     				</tr>
     				<tr>
-    					<td><div id="hint_active"
-    						style="cursor: pointer;"
-    						onmouseover="floatMessage.showMessage(document.getElementById('hint_active'),
-    						'{#field_active_hint#}');">{#field_active#}</div></td>
+    					<td>{Title field="active"}</td>
     					<td><select name="CSC_active" style="width:95%" class="form_input">
     						<option value="0" {if $data.active==0}selected="selected"{/if}>{#inactive#}</option>
     						<option value="1" {if $data.active==1}selected="selected"{/if}>{#active#}</option>
@@ -59,10 +44,7 @@
     					</td>
     				</tr>
     				<tr>
-    					<td><div id="hint_script_name"
-    						style="cursor: pointer;"
-    						onmouseover="floatMessage.showMessage(document.getElementById('hint_script_name'),
-    						'{#field_script_name_hint#}');">{#field_script_name#}</div></td>
+    					<td>{Title field="script_name"}</td>
     					<td>
     						{foreach from=$groups_list item=oItem key=oKey}
     						<label><input type="radio" name="CSC_script_name" value="{$oItem.value}" {if $oItem.value eq $data.script_name}checked="checked"{/if}/>

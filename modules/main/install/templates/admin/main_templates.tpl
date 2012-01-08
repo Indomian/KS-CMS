@@ -48,11 +48,6 @@ function removeControls(e,data)
 		<tr>
 			<td>
 				<div>
-					<input type="button" class="add_div2" onclick="document.location='{get_url ACTION=new}';" value="{#add_template#}">
-				</div>
-			</td>
-			<td>
-				<div>
 					<form action="{get_url}" method="POST">
 						<input type="hidden" name="ACTION" value="clearCache"/>
 						<input type="hidden" name="module" value="main"/>
@@ -83,25 +78,14 @@ function removeControls(e,data)
 			<table class="layout">
     		<tr>
     			<th width="100%">{#header_title#}</th>
-    			<th></th>
     		</tr>
 			{foreach from=$dataList item=oItem key=oKey name=fList}
     		<tr {if $smarty.foreach.fList.iteration is even}class="odd"{/if}>
-	    		<td><a href="{get_url ACTION=edit id=$oItem}">{$oItem}</a></td>
-    			<td>
-    				<div style="width:90px;">
-    					<a href="{get_url ACTION=edit id=$oItem}" title="{#edit#}"><img src="{#images_path#}/icons2/edit.gif" alt="{#edit#}" /></a>
-    					<a href="{get_url ACTION=copyname id=$oItem}" title="{#copy#}" onclick="kstb_show('{#input_name#}','{get_url ACTION=copyname id=$oItem mode=small width=640 height=300}',null,removeControls);return false;"><img src="{#images_path#}/icons5/08.gif" alt="{#copy#}" /></a>
-    					{if $oItem!=".default"}
-    					<a href="{get_url ACTION=delete id=$oItem}" onclick="return confirm('{#delete_confirm#}');" title="{#delete#}"><img src="{#images_path#}/icons2/delete.gif" alt="{#delete#}" /></a>
-    					{/if}
-	    			</div>
-    			</td>
+	    		<td>{$oItem}</td>
 	    	</tr>
 			{/foreach}
     	</table>
 		</div>
-
 	{/ksTab}
 	{ksTab NAME=$smarty.config.tabs_template_links selected=$tabLinks}
     <form action="{get_url _CLEAR="ACTION"}" method="POST">
