@@ -18,14 +18,11 @@ class CmainAImodules extends CModuleAdmin
 {
 	function __construct($module='main',&$smarty,&$parent)
 	{
-		global $USER;
 		parent::__construct($module,$smarty,$parent);
-		$this->obUser=$USER;
 	}
 
 	function Run()
 	{
-		global $KS_URL;
 		/* Проверка прав доступа */
 		if ($this->obUser->GetLevel('main') > 0) throw new CAccessError("MAIN_ACCESS_SITE_PREFERENCES_CLOSED");
 
@@ -64,7 +61,7 @@ class CmainAImodules extends CModuleAdmin
 				$this->obModules->Update(intval($_REQUEST['CM_id']), $arActivate);
 				$this->obModules->RecountDBStructure();
 				$this->obModules->RecountTextStructure();
-				CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl(Array('CM_ACTION','CM_id','ac')));
+				$this->obUrl->Redirect("admin.php?".$this->obUrl->GetUrl(Array('CM_ACTION','CM_id','ac')));
 			break;
 			case "edit":
 				$data=$this->obModules->GetRecord(array('id'=>$_REQUEST['CM_id']));
@@ -81,54 +78,39 @@ class CmainAImodules extends CModuleAdmin
 						{
 							$arModules=$this->obModules->GetList(array('id'=>'asc'),array('URL_ident'=>'default','!id'=>intval($_POST['CM_id'])));
 							if(is_array($arModules))
-							{
 								throw new CError("MAIN_NOT_MAKE_TWO_MODULES_DEFAULT");
-							}
 						}
 						if($data=$this->obModules->GetRecord(array('id'=>$_REQUEST['CM_id'])))
 						{
 							$id = $this->obModules->Save('CM_');
 							if(!array_key_exists('update',$_REQUEST))
-							{
-								CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl(Array('ACTION','CM_id')));
-							}
+								$this->obUrl->Redirect("admin.php?".$this->obUrl->GetUrl(Array('ACTION','CM_id')));
 							else
-							{
-								CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl('ACTION','CM_id').'&ACTION=edit&CM_id='.$id);
-							}
+								$this->obUrl->Redirect("admin.php?".$this->obUrl->GetUrl('ACTION','CM_id').'&ACTION=edit&CM_id='.$id);
 						}
 						else
-						{
 							throw new CDataError("MAIN_SYSTEM_ERROR_PROCESSING_MODULE");
-						}
-
 					}
 					catch (CError $e)
 					{
 						$this->smarty->assign('last_error',$e->__toString());
 						$showList=false;
 						$data=$this->GetRecord(array('id'=>$_REQUEST['CM_id']));
-						//$data=array_merge($this->GetRecordFromPost('CM_',$_POST));
-						//print_r($data);
 						$this->smarty->assign('data',$data);
 						$page='_modules_edit';
 					}
 				}
 				else
-				{
 					throw new CAccessError("MAIN_ACCESS_SITE_PREFERENCES_CLOSED");
-				}
 			break;
 			case "install":
 				$sModuleName='';
 				foreach($_POST as $key=>$value)
-				{
 					if(preg_match('#install_([a-z0-9_\-]+)#i',$key,$matches))
 					{
 						$sModuleName=$matches[1];
 						break;
 					}
-				}
 				try
 				{
 					if($this->obModules->IsInstallable($sModuleName))
@@ -167,7 +149,7 @@ class CmainAImodules extends CModuleAdmin
 						$this->obModules->Update($arModule['id'],array('URL_ident'=>$arModule['directory']));
 					}
 					$this->obModules->Update(intval($_REQUEST['CM_id']),array('URL_ident'=>'default'));
-					CUrlParser::get_instance()->Redirect('/admin.php?module=main&modpage=modules');
+					$this->obUrl->Redirect('/admin.php?module=main&modpage=modules');
 				}
 				else
 				{

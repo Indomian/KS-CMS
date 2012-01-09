@@ -36,13 +36,9 @@ class CModuleAdmin extends CBaseAPI
 		$this->obUser=&$USER;
 		$this->obUrl=CUrlParser::get_instance();
 		if($this->obModules->IsActive('interfaces'))
-		{
 			$this->obModules->IncludeModule('interfaces');
-		}
 		else
-		{
 			throw new CError('MAIN_MODULE_NOT_FOUND','','interfaces');
-		}
 	}
 
 	/**
@@ -52,9 +48,17 @@ class CModuleAdmin extends CBaseAPI
 	 * @param $sortDir string - направление сортировки
 	 * @return array - массив, 0 элемент - поле сортировки, 1 - направление
 	 */
-	protected function InitSort($arSortFields,&$sortField,&$sortDir, $sOrderField = 'id', $sOrderDir = 'asc')
+	protected function InitSort($arSortFields,$sortField=false,$sortDir=false, $sOrderField = 'id', $sOrderDir = 'asc')
 	{
 		if(!array_key_exists($this->module,$_SESSION)) $_SESSION[$this->module]=array();
+		if($sortField==false && isset($_REQUEST['order']))
+			$sortField=$_REQUEST['order'];
+		else
+			$sortField='';
+		if($sortDir==false && isset($_REQUEST['dir']))
+			$sortDir=$_REQUEST['dir'];
+		else
+			$sortDir='';
 		// Обработка порядка вывода элементов
 		if($sortField!='')
 			$sOrderField=(in_array($sortField,$arSortFields))?$sortField:$arSortFields[0];
@@ -63,12 +67,11 @@ class CModuleAdmin extends CBaseAPI
 		else
 			$sOrderField=$this->obModules->GetConfigVar($this->module,'admin_sort_'.$this->page.'_by');
 		//Направление сортировки
+		$sOrderDir='desc';
 		if($sortDir!='')
 		{
 			if($sortDir=='asc')
 				$sOrderDir='asc';
-			else
-				$sOrderDir='desc';
 		}
 		elseif(array_key_exists('admin_sort_'.$this->page.'_dir',$_SESSION[$this->module]) && $_SESSION[$this->module]['admin_sort_'.$this->page.'_dir']!='')
 			$sOrderDir=$_SESSION[$this->module]['admin_sort_'.$this->page.'_dir'];
@@ -84,29 +87,26 @@ class CModuleAdmin extends CBaseAPI
 	/**
 	 * Метод выполняет инициализацию объекта постраничной навигации
 	 */
-	protected function InitPages($iDefault=20)
+	protected function InitPages($iCount=false)
 	{
-		$iCount=$iDefault;
+		if(!$iCount)
+			$iCount=$this->obModules->GetConfigVar('main','admin_items_count',10);
 		if(array_key_exists('n',$_REQUEST) && $_REQUEST['n']>0)
-		{
 			$iCount=intval($_REQUEST['n']);
-		}
 		return new CPages($iCount);
 	}
 
 	/**
 	 * Метод выполняет формирование кода операции
 	 */
-	protected function ParseAction($action)
+	protected function ParseAction($action='')
 	{
 		if($this->sAction=='')
 		{
 			if(($action=='') && array_key_exists('action',$_REQUEST))
 				$action=$_REQUEST['action'];
 			elseif($action=='')
-			{
 				$action='index';
-			}
 			$this->sAction=$action;
 		}
 	}

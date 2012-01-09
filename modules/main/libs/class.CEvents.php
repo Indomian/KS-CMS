@@ -1,10 +1,12 @@
 <?php
-/*
- * CMS-local
+/**
+ * @filesource main/libs/class.CEvents.php
  *
- * Created on 10.11.2008
+ * В файле содержится класс обеспечивающий управление очередью сообщений
  *
- * Developed by blade39
+ * @since 10.11.2008
+ * @version 2.6
+ * @author BlaDe39 <blade39@kolosstudio.ru>
  *
  */
 /*Обязательно вставляем во все файлы для защиты от взлома*/
@@ -12,29 +14,34 @@ if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 include_once MODULES_DIR.'/main/libs/class.CMessage.php';
 
+/**
+ * Класс обеспечивает управление очередью сообщений, её выполнение (рассылку) и переактивацию
+ * @author blade39
+ */
 class CEvents extends CObject
 {
-	var $arList;
-	var $step;
+	private $arList;
+	private $step;
 
 	function __construct($sTable='main_events')
 	{
 		parent::__construct($sTable);
 		$this->step=5;
 		$this->arList=array();
-		$this->arFields=array('id','title','address','status','type');
 	}
 
+	/**
+	 * Метод выполняет загрузку сообщений предназначенных к отправке
+	 */
 	function Init()
 	{
-		global $ks_db;
-		$res=$ks_db->query("SELECT * FROM ".PREFIX.$this->sTable." WHERE status='new' LIMIT ".$this->step);
-		while($arRow=$ks_db->get_row($res))
-		{
-			$this->arList[]=$arRow;
-		}
+		if($arList=$this->GetList(false,array('status'=>'new'),$this->step))
+			$this->arList=$arList;
 	}
 
+	/**
+	 * Метод выполняет рассылку сообщений
+	 */
 	function Run()
 	{
 		try
@@ -43,28 +50,23 @@ class CEvents extends CObject
 			{
 				$className='C'.$item['type'].'message';
 				if(class_exists($className))
-				{
 					$obj=new $className;
-				}
 				else
-				{
 					$obj=new CMessage();
-				}
 				$obj->Run($item);
 			}
 		}
 		catch (CError $e)
 		{
-			//echo $e;
 			return false;
 		}
 		return true;
 	}
 
-	function Done()
-	{
-
-	}
+	/**
+	 * Метод выполняется после отправки сообщений
+	 */
+	function Done(){}
 
 	/**
 	 * Функция возвращает запрошеное сообщение
@@ -81,13 +83,12 @@ class CEvents extends CObject
 	 * @param unknown_type $iId
 	 */
 	function Activate($iId){
-		$ob=new CEvents();
-		$arEvent=$this->GetEvents(array('id'=>$iId));
-		if(!empty($arEvent)&&$arEvent['status']=='error'){
-			return ($ob->Update($iId, array('status'=>'new'))!=-1);
-		}else{
-			throw new CError('','','Активировать можно только сообщения со статусом error');
-		}
+		if($arEvent=$this->GetEvents(array('id'=>$iId)))
+			if($arEvent['status']=='error')
+				return ($this->Update($iId, array('status'=>'new'))!=-1);
+			else
+				throw new CError('MAIN_EVENTS_MESSAGE_ACTIVATE_ERROR');
+		else
+			throw new CError('MAIN_EVENTS_MESSAGE_NOT_FOUND');
 	}
 }
-?>

@@ -32,7 +32,7 @@ class CmainAIusergroups extends CModuleAdmin
 	{
 		$arSortFields=$this->obGroups->GetFields();
 		// Обработка порядка вывода элементов
-		list($sOrderField,$sOrderDir)=$this->InitSort($arSortFields,$_REQUEST['order'],$_REQUEST['dir']);
+		list($sOrderField,$sOrderDir)=$this->InitSort($arSortFields);
 		$sNewDir=($sOrderDir=='desc')?'asc':'desc';
 
 		$obPages = $this->InitPages();
@@ -63,9 +63,7 @@ class CmainAIusergroups extends CModuleAdmin
 			}
 		}
 		else
-		{
 			$arGroup['id']=-1;
-		}
 		$obModule=new CUGModules();
 		$arGroup['MODULES']=$obModule->GetList();
 		//Добавляем в список главный модуль
@@ -80,7 +78,6 @@ class CmainAIusergroups extends CModuleAdmin
 
 	function Save()
 	{
-		$KS_URL=CUrlParser::get_instance();
 		try
 		{
 			$bError=0;
@@ -99,24 +96,15 @@ class CmainAIusergroups extends CModuleAdmin
 				$id=$this->obGroups->Save('',$arGroup);
 				$obAccess=new CModulesAccess();
 				foreach($_POST['CUG_level'] as $key=>$value)
-				{
 					$obAccess->Set($id,$key,min($value));
-				}
+				$this->obModules->AddNotify('MAIN_GROUP_SAVE_OK','',NOTIFY_MESSAGE);
 				if(!array_key_exists('update',$_REQUEST))
-				{
-					$this->obModules->AddNotify('MAIN_GROUP_SAVE_OK','',NOTIFY_MESSAGE);
-					CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','id')));
-				}
+					$this->obUrl->Redirect("/admin.php?".$this->obUrl->GetUrl(Array('ACTION','id')));
 				else
-				{
-					$this->obModules->AddNotify('MAIN_GROUP_SAVE_OK','',NOTIFY_MESSAGE);
-					CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(array('ACTION','id')).'&ACTION=edit&id='.$id);
-				}
+					$this->obUrl->Redirect("/admin.php?".$this->obUrl->GetUrl(array('ACTION','id')).'&ACTION=edit&id='.$id);
 			}
 			else
-			{
 				throw new CError('MAIN_GROUP_SAVE_ERROR');
-			}
 		}
 		catch (CError $e)
 		{
@@ -127,7 +115,6 @@ class CmainAIusergroups extends CModuleAdmin
 
 	function Run()
 	{
-		$KS_URL=CUrlParser::get_instance();
 		$action='';
 		if(array_key_exists('ACTION',$_REQUEST))
 			$action=$_REQUEST['ACTION'];
@@ -138,13 +125,9 @@ class CmainAIusergroups extends CModuleAdmin
 				if(array_key_exists('id',$_REQUEST))
 				{
 					if($arGroup=$this->obGroups->GetById(intval($_REQUEST['id'])))
-					{
 						$data=$arGroup;
-					}
 					else
-					{
 						$this->obModules->AddNotify('MAIN_GROUP_NOT_FOUND');
-					}
 				}
 				else
 				{
@@ -173,18 +156,14 @@ class CmainAIusergroups extends CModuleAdmin
 							$obAccess=new CModulesAccess();
 							$obAccess->DeleteItems(array('group_id'=>$arGroup['id']));
 							$this->obModules->AddNotify('MAIN_GROUP_DELETE_OK','',NOTIFY_MESSAGE);
-							CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION','id')));
+							$this->obUrl->Redirect("/admin.php?".$this->obUrl->GetUrl(Array('ACTION','id')));
 						}
 					}
 					else
-					{
 						$this->obModules->AddNotify('MAIN_GROUP_NOT_FOUND');
-					}
 				}
 				else
-				{
 					$this->obModules->AddNotify('MAIN_GROUP_ID_REQUIRED');
-				}
 			default:
 				$page=$this->Table();
 		}

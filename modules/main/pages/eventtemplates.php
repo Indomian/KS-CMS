@@ -34,17 +34,13 @@ class CmainAIeventtemplates extends CModuleAdmin
 		{
 			$arRealTemplates=array();
 			foreach($arModules as $arModule)
-			{
 				if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/install/templates/events') && is_dir(MODULES_DIR.'/'.$arModule['directory'].'/install/templates/events'))
 				{
 					$arTemplates=$KS_FS->GetDirList(MODULES_DIR.'/'.$arModule['directory'].'/install/templates/events');
 					foreach($arTemplates as $sFile)
-					{
 						if(!preg_match('#~$#',$sFile))
-						$arRealTemplates[str_replace(MODULES_DIR.'/'.$arModule['directory'].'/install/templates/events/','',$sFile)]=$arModule['directory'];
-					}
+							$arRealTemplates[str_replace(MODULES_DIR.'/'.$arModule['directory'].'/install/templates/events/','',$sFile)]=$arModule['directory'];
 				}
-			}
 			return $arRealTemplates;
 		}
 		return false;
@@ -55,10 +51,8 @@ class CmainAIeventtemplates extends CModuleAdmin
 		$ob=new _CEventTemplates();
 		$arRealTemplates=array();
 		if($arRealTemplates=$this->GetTemplatesFiles())
-		{
 			$arRealTemplates=array_keys($arRealTemplates);
-		}
-		$obPages=new CPageNavigation($ob);
+		$obPages = $this->InitPages();
 		$totalUsers=$ob->count();
 		if($data=$ob->GetList(array('id'=>'asc'),false,$obPages->GetLimits($totalUsers)))
 		{

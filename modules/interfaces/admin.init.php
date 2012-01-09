@@ -12,7 +12,7 @@
 include_once(MODULES_DIR.'/interfaces/libs/class.CTabs.php');
 include_once(MODULES_DIR.'/interfaces/libs/class.CAdminTextParser.php');
 include_once(MODULES_DIR.'/interfaces/libs/class.CFilterFrame.php');
-include_once (MODULES_DIR.'/interfaces/libs/class.CPages.php');
+include_once (MODULES_DIR.'/interfaces/libs/class.CAdminPages.php');
 
 $KS_TABS=new CTabs();
 $KS_TEXTPARSER=new CAdminTextParser();

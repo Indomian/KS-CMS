@@ -19,7 +19,7 @@
 {/literal}
 <ul class="nav">
 	<li><a href="/admin.php"><img src="{#images_path#}/icons_menu/home.gif" alt="icon_home" height="13" width="13" />&nbsp;<span>{#home#}</span></a></li>
-    <li><a href="{get_url}"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;<span>{#title#}</span></a></li>
+    <li><a href="{get_url _CLEAR="action id"}"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;<span>{#title#}</span></a></li>
 </ul>
 <h1>{#title#}</h1>
 <div class="manage">
@@ -28,8 +28,8 @@
 			<td>
 				{if $level<7}
 				<div>
-					<form action="{get_url ACTION=new}" method="post">
-					<input type="submit" class="add_div2" value="{#create#}"/>
+					<form action="{get_url action=new}" method="post">
+						<input type="submit" class="add_div2" value="{#create#}"/>
 					</form>
 				</div>
 				{/if}
@@ -42,7 +42,7 @@
 </div>
 {include file='admin/navigation_pagecounter.tpl' pages=$pages}
 <form action="{get_url}" method="POST" name="form1">
-<input type="hidden" name="ACTION" value="common"/>
+<input type="hidden" name="action" value="common"/>
 <div class="users">
 	<table class="layout">
 		<col width="0%"/>

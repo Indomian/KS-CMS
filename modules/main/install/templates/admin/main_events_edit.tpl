@@ -1,4 +1,3 @@
-{config_load file=admin.conf section=blog}
 <script type="text/javascript">
 {literal}
 $(document).ready(function(){
@@ -27,7 +26,7 @@ $(document).ready(function(){
 </script>
 <ul class="nav">
 	<li><a href="/admin.php"><img src="{#images_path#}/icons_menu/home.gif" alt="icon_home" height="13" width="13" />&nbsp;<span>{#home#}</span></a></li>      
-    <li><a href="{get_url _CLEAR="ACTION id"}"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;<span>Шаблоны почтовых событий</span></a></li>
+    <li><a href="{get_url _CLEAR="action id"}"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;<span>Шаблоны почтовых событий</span></a></li>
     <li><a href="{get_url}"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;<span>{if $data.title==""}Создание нового шаблона сообщения{else}Управление шаблоном сообщений "{$data.title}"{/if}</span></a></li>
 </ul>
 <h1>Создание нового сообщения</h1>

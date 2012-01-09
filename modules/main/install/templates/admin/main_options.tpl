@@ -45,16 +45,6 @@
 						<td>{Title field=time_format}</td>
 						<td><input type="text" name="sc_time_format" value="{$data.time_format}" style="width:95%" class="form_input"/></td>
 					</tr>
-					{*
-					<tr>
-						<td>{Title field=debugmode}</td>
-						<td>
-							<select name="sc_debugmode" class="form_input">
-								<option value="1" {if $data.debugmode==1} selected="selected"{/if}>{#short_error_mode#}</option>
-								<option value="0" {if $data.debugmode==0} selected="selected"{/if}>{#full_error_mode#}</option>
-							</select>
-						</td>
-					</tr>*}
 					<tr>
 						<td>{Title field=start_adminpage}</td>
 						<td>
@@ -113,7 +103,7 @@
 			</table>
 		</div>
 		{/strip}{/ksTab}
-		{ksTab NAME=$smarty.config.tabs_language|default:"Lang"}{strip}
+		{ksTab NAME=$smarty.config.tabs_admin|default:"Admin panel"}{strip}
 		<div class="form">
 			<table class="layout">
 				<tr>
@@ -123,6 +113,17 @@
 				<tr>
 					<td>{Title field="admin_lang"}</td>
 					<td><input type="text" name="admin_lang" value="{$data.admin_lang}" size="2" class="form_input"/></td>
+				</tr>
+				<tr>
+					<td>{Title field="admin_items_count"}</td>
+					<td>
+						<select class="form_input" name="items_count">
+							<option value="10"{if $data.admin_items_count==10} selected="selected"{/if}>10</option>
+							<option value="20"{if $data.admin_items_count==20} selected="selected"{/if}>20</option>
+							<option value="50"{if $data.admin_items_count==50} selected="selected"{/if}>50</option>
+							<option value="100"{if $data.admin_items_count==100} selected="selected"{/if}>100</option>
+						</select>
+					</td>
 				</tr>
 			</table>
 		</div>

@@ -7,7 +7,7 @@
  * Изменен 13.01.2011
  *
  * @author blade39 <blade39@kolosstudio.ru>
- * @version 2.5.5
+ * @version 2.6
  */
 /*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
@@ -24,15 +24,23 @@ class CmainAIoptions extends CModuleAdmin
 		parent::__construct($module,$smarty,$parent);
 	}
 
+	/**
+	 * Метод выполняет пересчёт структуры текстовых сообщений
+	 */
 	function UpdateLanguages()
 	{
 		$this->obModules->RecountTextStructure();
+		$this->obModules->AddNotify('MAIN_OPTIONS_LANGUAGE_UPDATED','',NOTIFY_MESSAGE);
 	}
 
+	/**
+	 * Метод выполняет очистку кэша шаблонов
+	 */
 	function DropCache()
 	{
 		$this->smarty->clear_all_cache();
 		$this->smarty->clear_compiled_tpl();
+		$this->obModules->AddNotify('MAIN_OPTIONS_CACHE_CLEARED','',NOTIFY_MESSAGE);
 	}
 
 	/**
@@ -42,37 +50,42 @@ class CmainAIoptions extends CModuleAdmin
 	{
 		global $KS_FS;
 		if(defined('KS_CACHE_HTML_DIR'))
-		{
 			$sCachePath=KS_CACHE_DIR;
-		}
 		else
-		{
 			$sCacheDir=MODULES_DIR.'/main/cache/';
-		}
-		return $KS_FS->cleardir($sCacheDir);
+		if($KS_FS->cleardir($sCacheDir))
+			$this->obModules->AddNotify('MAIN_OPTIONS_SYSTEM_CACHE_CLEARED','',NOTIFY_MESSAGE);
+		else
+			$this->obModules->AddNotify('MAIN_OPTIONS_SYSTEM_CACHE_CLEAR_ERROR');
 	}
 
+	/**
+	 * Метод производит полную очистку кэша уменьшенных изображений
+	 */
 	function DropImagesCache()
 	{
 		global $KS_FS;
 		if(!$KS_FS->cleardir(UPLOADS_DIR.'/PicCache'))
-		{
 			$this->obModules->AddNotify('MAIN_PICTURE_CACHE_CLEAN_FAIL');
-		}
+		else
+			$this->obModules->AddNotify('MAIN_OPTIONS_IMAGES_CACHE_CLEARED','',NOTIFY_MESSAGE);
 	}
 
+	/**
+	 * Метод производит установку шаблонов модулей
+	 */
 	function CopyTemplates()
 	{
 		$this->obModules->CopyModuleTemplates('main');
 		if($arModules=$this->obModules->GetList(false,array('active'=>1)))
-		{
 			foreach($arModules as $arModule)
-			{
 				$this->obModules->CopyModuleTemplates($arModule['directory']);
-			}
-		}
+		$this->obModules->AddNotify('MAIN_OPTIONS_TEMPLATES_COPIED','',NOTIFY_MESSAGE);
 	}
 
+	/**
+	 * Метод выполняет проверку структуры таблиц базы данных
+	 */
 	function CheckTables()
 	{
 		$this->obModules->RecountDBStructure();
@@ -100,46 +113,21 @@ class CmainAIoptions extends CModuleAdmin
 		unset($arAccess['levels']['main']);
 		$arRes=array();
 		foreach($arAccess['levels'] as $key=>$item)
-		{
 			$arRes[$item['group_id']]=$item;
-		}
 		$arAccess['levels']=$arRes;
 
 		if(array_key_exists('act_update_lng',$_POST))
-		{
 			$this->UpdateLanguages();
-			$this->obModules->AddNotify('MAIN_OPTIONS_LANGUAGE_UPDATED','',NOTIFY_MESSAGE);
-		}
 		elseif(array_key_exists('act_drop_cache',$_POST))
-		{
 			$this->DropCache();
-			$this->obModules->AddNotify('MAIN_OPTIONS_CACHE_CLEARED','',NOTIFY_MESSAGE);
-		}
 		elseif(array_key_exists('act_check_tables',$_POST))
-		{
 			$this->CheckTables();
-		}
 		elseif(array_key_exists('act_drop_images_cache',$_POST))
-		{
 			$this->DropImagesCache();
-			$this->obModules->AddNotify('MAIN_OPTIONS_IMAGES_CACHE_CLEARED','',NOTIFY_MESSAGE);
-		}
 		elseif(array_key_exists('act_update_templates',$_POST))
-		{
 			$this->CopyTemplates();
-			$this->obModules->AddNotify('MAIN_OPTIONS_TEMPLATES_COPIED','',NOTIFY_MESSAGE);
-		}
 		elseif(array_key_exists('act_drop_system_cache',$_POST))
-		{
-			if($this->DropSystemCache())
-			{
-				$this->obModules->AddNotify('MAIN_OPTIONS_SYSTEM_CACHE_CLEARED','',NOTIFY_MESSAGE);
-			}
-			else
-			{
-				$this->obModules->AddNotify('MAIN_OPTIONS_SYSTEM_CACHE_CLEAR_ERROR');
-			}
-		}
+			$this->DropSystemCache();
 		elseif($_SERVER['REQUEST_METHOD']=='POST' && isset($_POST['action']) && $_POST['action']=='save')
 		{
 			try
@@ -162,6 +150,10 @@ class CmainAIoptions extends CModuleAdmin
 				$obConfig->Set('lifetime',(intval($_POST['sc_lifetime'])>0?intval($_POST['sc_lifetime']):864000));
 				$obConfig->Set('highlight_color','fff74b');
 				$obConfig->Set('highlight_odd_row_color','70808D');
+				if(in_array($_POST['items_count'],array(10,20,50,100)))
+					$obConfig->Set('admin_items_count',$_POST['items_count']);
+				else
+					$obConfig->Set('admin_items_count',10);
 				//Auth
 				$obConfig->Set('user_inactive_time',(intval($_POST['sc_user_inactive_time'])>150?intval($_POST['sc_user_inactive_time']):150));
 				if(isset($_POST['sc_user_inactive_check']))
@@ -174,9 +166,7 @@ class CmainAIoptions extends CModuleAdmin
 					$obConfig->Set('enable_auth_save',0);
 				//Проверка валидности ключа обновлений
 				if(strlen($_POST['sc_pkey'])==0)
-				{
 					$error+=$this->obModules->AddNotify('MAIN_OPTIONS_NO_KEY');
-				}
 				else
 				{
 					if(preg_match('#^KS[A-Z]-[0-9]{10,10}-[0-9]{4,4}-[0-9]{8,8}$#',$_POST['sc_pkey']))
@@ -201,30 +191,19 @@ class CmainAIoptions extends CModuleAdmin
 					$error+=$this->obModules->AddNotify('MAIN_ERROR_FROM_EMAIL');
 				$obConfig->Set('time_format',htmlentities($_POST['sc_time_format'],ENT_QUOTES,'UTF-8'));
 				if(preg_match('#[a-z]{2,2}#',$_POST['admin_lang']))
-				{
 					$obConfig->Set('admin_lang',$_POST['admin_lang']);
-				}
 				else
-				{
 					//Язык по умолчанию - русский
 					$obConfig->Set('admin_lang','ru');
-				}
 				$this->obModules->RecountTextStructure();
 				if($error>0) throw new CDataError('MAIN_OPTIONS_ERRORS');
 				$obConfig->WriteConfig();
 
 				//Выполняем сохранение прав доступа
 				if(is_array($_POST['sc_groupLevel']))
-				{
 					foreach($_POST['sc_groupLevel'] as $key=>$value)
-					{
-						//echo min($value);
 						$obAccess->Set($key,'main',min($value));
-					}
-				}
-				/**
-				 * @todo изменить строку о сохранении настроек на константу
-				 */
+
 				$this->obModules->AddNotify('MAIN_OPTIONS_UPDATE_OK','',NOTIFY_MESSAGE);
 				CUrlParser::get_instance()->Redirect("admin.php?module=main&modpage=options");
 			}

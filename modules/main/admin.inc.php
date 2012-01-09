@@ -171,10 +171,8 @@ else
 	}
 	if (file_exists(MODULES_DIR . "/main/pages/" . $start_adminpage . ".php"))
 	{
-		if($start_adminpage=='options' || $start_adminpage=='eventtemplates' || $start_adminpage=='modules' || $start_adminpage=='geography' || $start_adminpage=='contribution' || $start_adminpage=='users' || $start_adminpage=='usergroups' || $start_adminpage=='password' || $start_adminpage=='fields')
-		{
+		if($start_adminpage!='main' && $start_adminpage!='lite')
 			$page=$this->LoadModulePage('main',$start_adminpage);
-		}
 		else
 		{
 			$smarty->assign("modpage", $start_adminpage);
@@ -183,16 +181,5 @@ else
 		$bInclude = true;
 	}
 	else
-	{
 		throw new CError("SYSTEM_WRONG_ADMIN_PATH", 1003);
-	}
-
-	/* Подключение главной страницы администрирования
-	 Не знаю зачем оставлено по идее не надо* /
-	/*if ((file_exists(MODULES_DIR."/main/pages/" . $start_adminpage . ".php") && !$bInclude))
-	{
-		$smarty->assign("modpage", $start_adminpage);
-		include("pages/" . $start_adminpage . ".php");
-	}*/
-	//$page=$start_adminpage;
 }

@@ -1,116 +1,142 @@
 <?php
-/*
- * CMS-local
- * 
- * Created on 10.11.2008
+/**
+ * @file main/pages/events
+ * Административный интерфейс управления отправленными сообщениями
+ * Файл проекта kolos-cms.
  *
- * Developed by blade39
- * 
+ * @author blade39 <blade39@kolosstudio.ru>
+ * @version 2.6
  */
+
 if( !defined('KS_ENGINE') )die("Hacking attempt!");
 
 include_once MODULES_DIR.'/main/libs/class.CEvents.php';
 include_once MODULES_DIR.'/main/libs/class.CEventTemplates.php';
+require_once MODULES_DIR.'/main/libs/class.CModuleAdmin.php';
 
-//Проверка прав доступа
-if($USER->GetLevel('main')>6) throw new CAccessError("MAIN_NOT_RIGHTS_MANAGE_MAIL_TEMPLATES");
-
-$action='';
-if(isset($_REQUEST['ACTION']))
-	$action=$_REQUEST['ACTION'];
-
-$KS_EVENTS=new CEvents();
-
-global $KS_URL;
-
-try{
-	switch ($action){
-		case 'new':
-			$data=array('id'=>'-1');
-			$KS_ETEMPLATES=new _CEventTemplates();
-			$data['templates']=$KS_ETEMPLATES->GetList(array('id'=>'asc'),false);
-			$page='_events_edit';
-		break;
-		case 'delete':
-			$KS_EVENTS->Delete($_REQUEST['id']);
-			$KS_URL->redirect('/admin.php?module=main&modpage=events');
-		break;
-		case 'save':
-			$KS_EVENTS->SaveTemplate();
-		break;
-		case 'activate':
-			$KS_EVENTS->Activate($_REQUEST['id']);
-		break;
-		case 'tpl_selected':
-			$tpl = $_REQUEST['tpl'];
-			$KS_ETEMPLATES=new CEventTemplates();
-			$data=$KS_ETEMPLATES->GetTemplateVarNames($tpl);
-			if(!empty($data)){
-				echo json_encode(array('tpl_fields'=>$data, 'error'=>'no'));
-			}
-			die;
-		break;
-		case 'common':
-			if(array_key_exists('comdel', $_REQUEST)){
-				$arElements = $_REQUEST['sel']['elm'];
-				foreach($arElements as $iId){
-					$KS_EVENTS->Delete($iId);
-				}
-				$KS_URL->redirect('/admin.php?module=main&modpage=events');
-			}elseif(array_key_exists('comact', $_REQUEST)){
-				$arElements = $_REQUEST['sel']['elm'];
-				foreach($arElements as $iId){
-					$KS_EVENTS->Activate($iId);
-				}
-				$KS_URL->redirect('/admin.php?module=main&modpage=events');
-			}
-		break;
-	}
-}catch(CError $e){
-	$smarty->assign('last_error',$e);
-}
-
-if($page=='')
+class CmainAIevents extends CModuleAdmin
 {
-	$ob=new CEvents();
-	//Обработка вывода элементов
-	/** @todo Переделать в новый стиль кода!*/
-	$arSortFields=$ob->arFields;
-	// Обработка порядка вывода элементов
-	$sortField='';
-	if(isset($_REQUEST['order'])) $sortField=$_REQUEST['order'];
-	$sortDir='';
-	if(isset($_REQUEST['dir'])) $sortDir=$_REQUEST['dir'];
-	if($sortField!='')
-		$sOrderField=(in_array($sortField,$arSortFields))?$sortField:$arSortFields[0];
-	elseif($_SESSION['main']['admin_sort_main_events_by']!='')
-		$sOrderField=$_SESSION['main']['admin_sort_main_events_by'];
-	else
-		$sOrderField=$KS_MODULES->GetConfigVar('main','admin_sort_main_events_by');
-	//Направление сортировки
-	if($sortDir!='')
-		if($sortDir=='asc')	$sOrderDir='asc';
-		else $sOrderDir='desc';
-	else
-		if($_SESSION['main']['admin_sort_main_events_dir']!='')	$sOrderDir=$_SESSION['main']['admin_sort_main_events_dir'];
-		else $sOrderDir=$KS_MODULES->GetConfigVar('main','admin_sort_main_events_dir');
-	$sOrderField=(in_array($sOrderField,$arSortFields))?$sOrderField:$arSortFields[0];
-	//Сохраняем сортировку в сессию
-	$_SESSION['main']['admin_sort_main_events_by']=$sOrderField;
-	$_SESSION['main']['admin_sort_main_events_dir']=$sOrderDir;
-	$sNewDir=($sOrderDir=='desc')?'asc':'desc';
-	/*Обрабатываем входные данные (постраничный вывод)*/
-	$obPages=new CPageNavigation($ob);
-	$totalUsers=$ob->count();
-	$data=$ob->GetList(array($sOrderField=>$sOrderDir),false,$obPages->GetLimits($totalUsers));
-	if(!empty($data))
-		foreach($data as $key => $message)
-			$data[$key]['content'] = nl2br(trim($data[$key]['content'],"\x00..\x1F"));
-	$smarty->assign('pages',$obPages->GetPages($totalUsers));
-	$smarty->assign('order',Array('newdir'=>$sNewDir,'curdir'=>$sOrderDir,'field'=>$sOrderField));
-	$page='_events';
+	private $obEvents;
+
+	function __construct($module='main',&$smarty,&$parent)
+	{
+		parent::__construct($module,$smarty,$parent);
+		if($this->obUser->GetLevel('main')>6)
+			throw new CAccessError("MAIN_NOT_RIGHTS_MANAGE_MAIL");
+		$this->obEvents=new CEvents();
+	}
+
+	function NewEvent()
+	{
+		$data=array('id'=>'-1');
+		$obETemplates=new _CEventTemplates();
+		$data['templates']=$obETemplates->GetList(array('id'=>'asc'),false);
+		$this->smarty->assign('data',$data);
+		return '_edit';
+	}
+
+	function Table()
+	{
+		$arSortFields=$this->obEvents->GetFields();
+		// Обработка порядка вывода элементов
+		list($sOrderField,$sOrderDir)=$this->InitSort($arSortFields);
+		$sNewDir=($sOrderDir=='desc')?'asc':'desc';
+
+		/*Обрабатываем входные данные (постраничный вывод)*/
+		$obPages=$this->InitPages();
+		$totalEvents=$this->obEvents->count();
+		if($data=$this->obEvents->GetList(array($sOrderField=>$sOrderDir),false,$obPages->GetLimits($totalEvents)))
+			foreach($data as $key => $message)
+				$data[$key]['content'] = nl2br(trim($data[$key]['content'],"\x00..\x1F"));
+		$this->smarty->assign('data',$data);
+		$this->smarty->assign('pages',$obPages->GetPages($totalEvents));
+		$this->smarty->assign('order',Array('newdir'=>$sNewDir,'curdir'=>$sOrderDir,'field'=>$sOrderField));
+		return '';
+	}
+
+	function Run()
+	{
+		$this->ParseAction();
+		$id=0;
+		$page='';
+		if(isset($_REQUEST['id']) && intval($_REQUEST['id'])>0)
+			$id=intval($_REQUEST['id']);
+		try
+		{
+			switch ($this->sAction)
+			{
+				case 'new':
+					$page=$this->NewEvent();
+				break;
+				case 'delete':
+					if($id>0)
+					{
+						$this->obEvents->Delete($id);
+						$this->obModules->AddNotify('MAIN_EVENTS_DELETE_OK','',NOTIFY_MESSAGE);
+						$this->obUrl->redirect('/admin.php?module=main&modpage=events');
+					}
+					else
+						throw new CError('MAIN_EVENTS_DELETE_ERROR');
+				break;
+				case 'save':
+					///@todo Такого метода нет в классе, выяснить что за операция и удалить по необходимости
+					$this->obEvents->SaveTemplate();
+				break;
+				case 'activate':
+					if($id>0)
+					{
+						if($this->obEvents->Activate($id))
+						{
+							$this->obModules->AddNotify('MAIN_EVENTS_MESSAGE_ACTIVATE_OK','',NOTIFY_MESSAGE);
+							$this->obUrl->redirect('/admin.php?module=main&modpage=events');
+						}
+						else
+							throw new CError('MAIN_EVENTS_MESSAGE_ACTIVATE_ERROR');
+					}
+					else
+						throw new CError('MAIN_EVENTS_MESSAGE_ACTIVATE_ERROR');
+				break;
+				case 'tpl_selected':
+					if(isset($_REQUEST['tpl']) && $_REQUEST['tpl']!='' && IsTextIdent($_REQUEST['tpl']))
+					{
+						$obETemplates=new CEventTemplates();
+						if($data=$obETemplates->GetTemplateVarNames($_REQUEST['tpl']))
+							echo json_encode(array('tpl_fields'=>$data, 'error'=>'no'));
+						else
+							echo json_encode(array('error'=>'yes'));
+					}
+					else
+						echo json_encode(array('error'=>'yes'));
+					die;
+				break;
+				case 'common':
+					if(array_key_exists('comdel', $_REQUEST) && isset($_REQUEST['sel']['elm']) && is_array($_REQUEST['sel']['elm']))
+					{
+						$arElements = $_REQUEST['sel']['elm'];
+						foreach($arElements as $iId)
+							$this->obEvents->Delete($iId);
+						$this->obModules->AddNotify('MAIN_EVENTS_DELETE_OK','',NOTIFY_MESSAGE);
+						$this->obUrl->redirect('/admin.php?module=main&modpage=events');
+					}
+					elseif(array_key_exists('comact', $_REQUEST) && isset($_REQUEST['sel']['elm']) && is_array($_REQUEST['sel']['elm']))
+					{
+						$arElements = $_REQUEST['sel']['elm'];
+						foreach($arElements as $iId)
+							$this->obEvents->Activate($iId);
+						$this->obModules->AddNotify('MAIN_EVENTS_MESSAGE_ACTIVATE_OK','',NOTIFY_MESSAGE);
+						$this->obUrl->redirect('/admin.php?module=main&modpage=events');
+					}
+				break;
+				default:
+					$page=$this->Table();
+			}
+		}
+		catch(CError $e)
+		{
+			$this->smarty->assign('last_error',$e->__toString());
+			$page=$this->Table();
+		}
+
+		return '_events'.$page;
+	}
 }
-
-$smarty->assign('data',$data);
-
-?>

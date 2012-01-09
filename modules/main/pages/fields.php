@@ -93,13 +93,9 @@ class CmainAIfields extends CModuleAdmin
 			$id=$this->obFields->Save('CM_',$_POST);
 			$this->obModules->AddNotify('MAIN_FIELDS_SAVE_OK','',NOTIFY_MESSAGE);
 			if(!array_key_exists('update',$_REQUEST))
-			{
 				$this->obUrl->Redirect("/admin.php?".$this->obUrl->GetUrl(Array('ACTION','id')));
-			}
 			else
-			{
 				$this->obUrl->Redirect("/admin.php?".$this->obUrl->GetUrl('ACTION','id').'&ACTION=edit&id='.$id);
-			}
 		}
 		catch (CError $e)
 		{
@@ -114,16 +110,14 @@ class CmainAIfields extends CModuleAdmin
 	 */
 	function Table()
 	{
-		$obPages=new CPages(20);
+		$obPages = $this->InitPages();
 		$totalUsers=$this->obFields->count();
 		if($list=$this->obFields->GetList(array('id'=>'asc'),false,$obPages->GetLimits($totalUsers)))
-		{
 			foreach($list as $key=>$arRow)
 			{
 				$list[$key]['module_title']=$this->obModules->GetTitle($arRow['module']);
 				$list[$key]['type_title']=$this->obModules->GetText($arRow['type']);
 			}
-		}
 		$this->smarty->assign('list',$list);
 		$this->smarty->assign('pages',$obPages->GetPages($totalUsers));
 		return '';
@@ -143,13 +137,9 @@ class CmainAIfields extends CModuleAdmin
 			case "edit":
 				if(!isset($_REQUEST['id'])) throw new CDataError('MAIN_FIELDS_ID_REQUIRED');
 				if($data=$this->obFields->GetById(intval($_REQUEST['id'])))
-				{
 					$page=$this->EditForm($data);
-				}
 				else
-				{
 					throw new CError('MAIN_FIELDS_NOT_FOUND');
-				}
 			break;
 			case "delete":
 				if(!isset($_REQUEST['id'])) throw new CDataError('MAIN_FIELDS_ID_REQUIRED');
@@ -160,9 +150,7 @@ class CmainAIfields extends CModuleAdmin
 					$this->obUrl->Redirect("admin.php?".$this->obUrl->GetUrl(Array('ACTION','id')));
 				}
 				else
-				{
 					throw new CError('MAIN_FIELDS_NOT_FOUND');
-				}
 			break;
 			case "onmodulechange":
 				try

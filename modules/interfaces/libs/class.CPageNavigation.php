@@ -32,56 +32,44 @@ class CPageNavigation extends CInterface
 		CPageNavigation::$pageNavNum++;
 		$this->iPageNavNum=CPageNavigation::$pageNavNum;
 		if($General!=NULL)
-		{
 			$this->obGeneral=$General;
-		}
 		if($Items!=false)
-		{
 			$this->iItems=$Items;
-		}
 		if($Visible!=false)
-		{
 			$this->iVisible=$Visible;
-		}
 		elseif(array_key_exists('n',$_REQUEST))
-		{
 			$this->iVisible=$_REQUEST['n'];
-		}
 		if($this->iVisible<1) $this->iVisible=20;
 		if($Current!=false)
-		{
 			$this->iCurrent=$Current-1;
-		}
 		elseif(array_key_exists('p'.$this->iPageNavNum,$_REQUEST))
-		{
 			$this->iCurrent=$_REQUEST['p'.$this->iPageNavNum]-1;
-		}
-		if($this->iVisible>0){
+		if($this->iVisible>0)
 			$this->iPages=ceil($this->iItems/$this->iVisible);
-		}
 	}
 
-	/*!Возвращает массив для ограничения выборки.*/
+	/**
+	 * Метод возвращает массив для ограничения выборки.
+	 * @param $items - количество элементов в выборке или false для автоматического определения
+	 * @return array - массив ограничения записей в выборке
+	 */
 	function GetLimits($items=false)
 	{
 		if(($items==false)&&($this->obGeneral!=NULL))
-		{
 			$this->iItems=$this->obGeneral->items;
-		}
 		else
-		{
 			$this->iItems=$items;
-		}
 		$this->iPages=ceil($this->iItems/$this->iVisible);
 		if($this->iCurrent*$this->iVisible>$this->iItems)
-		{
 			$this->iCurrent=0;
-		}
 		$arResult=array($this->iCurrent*$this->iVisible,$this->iVisible);
 		return $arResult;
 	}
 
-	/*!Возвращает количество видимых элементов.*/
+	/**
+	 * Возвращает количество видимых элементов.
+	 * @return integer - количество видимых элементов
+	 */
 	function GetVisible()
 	{
 		return $this->iVisible;
@@ -91,13 +79,9 @@ class CPageNavigation extends CInterface
 	function GetPages($items=false)
 	{
 		if(($items==false)&&($this->obGeneral!=NULL))
-		{
 			$this->iItems=$this->obGeneral->items;
-		}
 		elseif($items!=false)
-		{
 			$this->iItems=$items;
-		}
 		$this->iPages=ceil($this->iItems/$this->iVisible);
 		$pages=array();
 		$pages['num']=$this->iPages;
@@ -107,9 +91,7 @@ class CPageNavigation extends CInterface
 		$pages['index']=$this->iPageNavNum;
 		if ($pages['active']==0) $pages['active']=1;
 		for($i=1;$i<=$pages['num'];$i++)
-		{
 			$pages['pages'][$i]=$i;
-		}
 		return $pages;
 	}
 
@@ -138,9 +120,7 @@ class CPageNavigation extends CInterface
 			}
 		}
 		for($i=1;$i<=$pages['num'];$i++)
-		{
 			$pages['pages'][$i]=$i;
-		}
 		return $pages;
 	}
 }

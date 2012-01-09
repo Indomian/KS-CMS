@@ -35,13 +35,9 @@ class CmainAIpassword extends CModuleAdmin
 			if(array_key_exists('step',$_POST))
 				$iStep=intval($_POST);
 			if ($iStep == 2)
-			{
 				$this->arResult['step']=$this->LostPasswordStep2();
-			}
 			elseif ($iStep == 3)
-			{
 				$this->arResult['step']=$this->LostPasswordStep3();
-			}
 		}
 		else
 		{
@@ -51,18 +47,11 @@ class CmainAIpassword extends CModuleAdmin
 			if($this->obUser->IsLogin())
 			{
 				if($this->obModules->GetConfigVar('main','user_inactive_check')==1 && $this->obModules->GetConfigVar('main','user_inactive_time')>0)
-				{
-					//Если включена проверка авторизации, то делаем проверку на хиты
 					if($this->arResult['lastHit']<time())
-					{
 						$this->arResult['action']='relog';
-					}
-				}
 			}
 			else
-			{
 				$this->arResult['action']='relog';
-			}
 		}
 		$this->smarty->assign('data',$this->arResult);
 	}
@@ -124,9 +113,7 @@ class CmainAIpassword extends CModuleAdmin
 							$this->arResult['message']=$this->obModules->GetText('MAIN_MAIL_NOT_SEND'). " <b>".$email."</b>";
 					}
 					else
-					{
 						$this->arResult['message']=$this->obModules->GetText('MAIN_PASSWORD_RESTORE_ERROR');
-					}
 				}
 				else
 				{

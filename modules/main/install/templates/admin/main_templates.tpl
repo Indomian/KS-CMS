@@ -73,7 +73,7 @@ function removeControls(e,data)
 	</table>
 </div>
 {ksTabs NAME=main_templates head_class=tabs2 title_class=bold}
-	{ksTab NAME=$smarty.config.tabs_templates selected=$tabTempl}
+	{ksTab NAME=$smarty.config.tabs_templates}
 		<div class="users">
 			<table class="layout">
     		<tr>
@@ -87,7 +87,7 @@ function removeControls(e,data)
     	</table>
 		</div>
 	{/ksTab}
-	{ksTab NAME=$smarty.config.tabs_template_links selected=$tabLinks}
+	{ksTab NAME=$smarty.config.tabs_template_links selected=1}
     <form action="{get_url _CLEAR="ACTION"}" method="POST">
     <div class="form">
     <input type="hidden" name="ACTION" value="saveLinks">
