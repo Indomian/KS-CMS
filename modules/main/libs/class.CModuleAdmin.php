@@ -26,7 +26,7 @@ class CModuleAdmin extends CBaseAPI
 	protected $sAction;
 	protected $obUrl;
 
-	function __construct($module_name,&$smarty,&$parent)
+	function __construct($module_name,&$smarty,CModuleManagment &$parent)
 	{
 		global $USER;
 		$this->module=$module_name;

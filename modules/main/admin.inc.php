@@ -123,12 +123,8 @@ if (!defined("KS_MAIN_INIT"))
 	require_once "libs/class.CUser.php";
 	$USER = new CUser();
 	if($_SERVER['REQUEST_METHOD']=='POST')
-	{
 		if(array_key_exists('CU_ACTION',$_POST) && $_POST['CU_ACTION']=='login')
-		{
 			$USER->login();
-		}
-	}
 
 	$KS_MODULES->SetUser($USER);
 
@@ -141,10 +137,7 @@ if (!defined("KS_MAIN_INIT"))
 	define("KS_MAIN_INIT",1);
 
 	if($USER->GetLevel('main')> 9)
-	{
 		throw new CAccessError("MAIN_ACCESS_ADMINISTRATIVE_PART_CLOSED", 403);
-	}
-
 	/* Список модулей, поддерживающик связь между элементами полей */
 	$_ks_modules_linkable = array("catsubcat","blog","photogallery",'production');
 }
@@ -153,9 +146,7 @@ else
 	$bInclude = false;
 	$iLevel=$USER->GetLevel('main');
 	if ($iLevel>9)
-	{
 		throw new CAccessError("MAIN_ACCESS_ADMINISTRATIVE_PART_CLOSED", 403);
-	}
 	elseif($iLevel==9)
 	{
 		$smarty->assign('bShowOnlyUsers','Y');
@@ -164,14 +155,16 @@ else
 	else
 	{
 		/* Определение страницы администрирования (если не указана, берётся по умолчанию из настроек сайта) */
-		if (array_key_exists("modpage", $_GET))
+		if (array_key_exists("page", $_GET))
+			$start_adminpage = $_GET['page'];
+		elseif (array_key_exists("modpage", $_GET))
 			$start_adminpage = $_GET["modpage"];
 		else
 			$start_adminpage = $this->GetConfigVar("main", "start_adminpage");
 	}
 	if (file_exists(MODULES_DIR . "/main/pages/" . $start_adminpage . ".php"))
 	{
-		if($start_adminpage!='main' && $start_adminpage!='lite')
+		if($start_adminpage!='lite')
 			$page=$this->LoadModulePage('main',$start_adminpage);
 		else
 		{

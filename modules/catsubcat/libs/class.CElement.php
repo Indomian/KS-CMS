@@ -84,7 +84,7 @@ class CElement extends CCommonElement
 	 */
 	function GetList($arOrder=false,$arFilter=false,$arLimit=false,$arSelect=false,$arGroup=false)
 	{
-		if(array_key_exists('parent_id',$arFilter))
+		if($arFilter && array_key_exists('parent_id',$arFilter))
 		{
 			$parent_id=$arFilter['parent_id'];
 			unset($arFilter['parent_id']);

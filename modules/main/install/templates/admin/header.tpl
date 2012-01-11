@@ -6,10 +6,8 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<title>{#control_panel#} {$VERSION.TITLE}</title>
 		<link rel="stylesheet" href="/uploads/templates/admin/css/adminmain.css" type="text/css" />
-		<link rel="stylesheet" href="/uploads/templates/admin/css/interface.css" type="text/css" />
 		<link rel="stylesheet" href="/uploads/templates/admin/css/thickbox.css" type="text/css" />
 		<link rel="stylesheet" href="/uploads/templates/admin/css/ui.all.css" type="text/css" />
-		<link rel="stylesheet" href="/uploads/templates/admin/css/imgareaselect-animated.css" type="text/css" />
 		<script type="text/javascript" src="/js/jquery/jquery.js"></script>
 		<script type="text/javascript" src="/js/main/floatmessage.js"></script>
 		<script type="text/javascript" src="/js/main/admin.js"></script>
@@ -24,6 +22,7 @@
 	</head>
 	<body>
 		<div id="Ruler">&nbsp;</div>
+		<div id="topError"></div>
 		<div class="wrap">
 			<table class="layout_nw" width="100%">
 				<tr>

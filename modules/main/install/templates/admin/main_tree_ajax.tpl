@@ -1,6 +1,4 @@
 {strip}
-{math equation="rand()" var=1 assign="randid"}
-{if !$smarty.request.curid}<span id="root">{/if}
 <ul>
 	{foreach from=$tree.list item=oItem}
 		{math equation="rand()" var=1 assign="liid"}
@@ -42,7 +40,6 @@
 	   	</li>
 	{/foreach}
 
-<img src="{#images_path#}/transparent.gif" onLoad="kstb_init('a.thickbox{$randid}');" width="1" height="1" style="display: none;" />
 
 	<!-- Ссылки на добавление новых разделов и элементов -->
 	{if ($tree.ui.add_cat_url!='') || ($tree.ui.add_elm_url!='')}
@@ -72,9 +69,4 @@
 	</li>
 	{/if}
 </ul>
-{if !$smarty.request.curid}</span>{/if}
 {/strip}
-<script type="text/javascript"><!--
-$(document).ready(function(){ldelim}$('a.delete').click(liteDeleteItem);{rdelim});
-//-->
-</script>

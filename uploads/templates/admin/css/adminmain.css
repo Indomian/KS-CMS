@@ -1402,35 +1402,27 @@ old one*/
 
 }
 
-.fixmess {
-	/* Netscape 4, IE 4.x-5.0/Win and other lesser browsers will use this */
-	position: absolute;
-	right: 20px;
-	top: 50px;
-}
-
-body>.fixmess {
-	/* used by Opera 5+, Netscape6+/Mozilla, Konqueror, Safari, OmniWeb 4.5+, iCab, ICEbrowser */
-	position: fixed;
-}
-
-#fixme {
-	/* Netscape 4, IE 4.x-5.0/Win and other lesser browsers will use this */
-	position: absolute;
-	right: 20px;
-	top: 50px;
-}
-
-body>div#fixme {
-	/* used by Opera 5+, Netscape6+/Mozilla, Konqueror, Safari, OmniWeb 4.5+, iCab, ICEbrowser */
-	position: fixed;
-}
-
-.loadingBar {
+#loadingBar {
+	position:fixed;
+	right:100px;
+	top:50px;
 	border: 1px solid #B9BFB3;
 	background-color: #FBF4E4;
 	padding: 4px;
 	display: none;
+}
+
+#topError {
+	position:fixed;
+	left:50%;
+	top:0px;
+	border:1px solid red;
+	background-color:#aa5555;
+	color:red;
+	width:800px;
+	margin-left:-400px;
+	z-index:9999;
+	display:none;
 }
 
 /*?=new css

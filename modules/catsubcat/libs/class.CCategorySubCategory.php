@@ -64,27 +64,30 @@ class CCategorySubCategory extends CRestorable
 	 * Метод проверяет наличие поля deleted в запросе и в случае его отсутствия
 	 * добавляет туда значение отображения только существующих элементов
 	 */
-	protected function _GenWhere($arFilter,$method='AND',$step=0)
+	protected function _GenWhere($arFilter=false,$method='AND',$step=0)
 	{
 		if($step==0)
 		{
 			$bAddField=true;
-			foreach($arFilter as $key=>$item)
+			if($arFilter)
 			{
-				if(preg_match('#^([><!~=]|>=|<=|->|)?([\w_\.\-]+)#i',$key,$matches))
+				foreach($arFilter as $key=>$item)
 				{
-					if(strpos($key,'\.')>0)
+					if(preg_match('#^([><!~=]|>=|<=|->|)?([\w_\.\-]+)#i',$key,$matches))
 					{
-						$field=substr($key,strpos($matches[2],'\.'));
-					}
-					else
-					{
-						$field=$matches[2];
-					}
-					if($field=='deleted')
-					{
-						$bAddField=false;
-						break;
+						if(strpos($key,'\.')>0)
+						{
+							$field=substr($key,strpos($matches[2],'\.'));
+						}
+						else
+						{
+							$field=$matches[2];
+						}
+						if($field=='deleted')
+						{
+							$bAddField=false;
+							break;
+						}
 					}
 				}
 			}

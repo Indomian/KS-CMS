@@ -1,6 +1,53 @@
 /**
  * В этом файле размещаются функции которые наобходимы на всех страницах системы
  */
+
+var _KS_CMS_ADMIN={
+	"menu":{
+		"toggleMenu":function(e){
+			e.preventDefault();
+			if($(this).hasClass('menu_arrow_up'))
+				$(this).removeClass('menu_arrow_up').addClass('menu_arrow_down').prev().slideUp(300);
+			else
+				$(this).addClass('menu_arrow_up').removeClass('menu_arrow_down').prev().slideDown(300);
+		}
+	},
+	"content":{
+		"toggelHint":function(e){
+			e.preventDefault();
+			var obPrev=$(this).prev();
+			var cookieTime=new Date();
+			cookieTime.setTime(cookieTime.getTime()+360000000);
+			if($(this).hasClass('content_arrow_up'))
+			{
+				obPrev.slideUp(300);
+				$(this).removeClass('content_arrow_up').addClass('content_arrow_down');
+				_KS_CMS_ADMIN.setCookie('showHelpBar',0,cookieTime.toGMTString());
+			}
+			else
+			{
+				obPrev.slideDown(300);
+				$(this).addClass('content_arrow_up').removeClass('content_arrow_down');
+				_KS_CMS_ADMIN.setCookie('showHelpBar',1,cookieTime.toGMTString());
+				
+			}
+		}
+	},
+	/**
+	 * Метод позволяет установить печеньку на указанные параметры
+	 * взято http://www.codenet.ru/webmast/js/Cookies.php
+	 */
+	"setCookie":function (name, value, expires, path, domain, secure)
+	{
+	      document.cookie = name + "=" + escape(value) +
+	        ((expires) ? "; expires=" + expires : "") +
+	        ((path) ? "; path=" + path : "") +
+	        ((domain) ? "; domain=" + domain : "") +
+	        ((secure) ? "; secure" : "");
+	}
+}
+
+
 var adminDate=new Date();
 /**
  * Метод позволяет установить печеньку на указанные параметры
@@ -59,33 +106,6 @@ function getCookie(name)
 		}
 	}
 	return(setStr);
-}
-
-/**
- * Функция выполняет переключение статуса отображения блока подсказок к модулю
- * @param div - объект переключатель
- * @return
- */
-function ToggleHelpBar(div)
-{
-	if(typeof(div)!='object') return false;
-	if(typeof(div.previousSibling)=='object')
-	{
-		var cookieTime=new Date();
-		cookieTime.setTime(cookieTime.getTime()+360000000);
-		if(div.previousSibling.style.display=='none')
-		{
-			div.previousSibling.style.display='';
-			if(typeof(div)=='object') div.className='content_arrow_up';
-			setCookie('showHelpBar',0,cookieTime.toGMTString());
-		}
-		else
-		{
-			div.previousSibling.style.display='none';
-			if(typeof(div)=='object') div.className='content_arrow_down';
-			setCookie('showHelpBar',1,cookieTime.toGMTString());
-		}
-    }
 }
 
 /**
@@ -230,23 +250,24 @@ function togglePanel(elm)
 	}
 }
 
+/**
+ * Функция отображает окно загрузки в случае ajax запроса
+ * @return
+ */
 function ShowLoading()
 {
-	var oFrame=document.createElement('div');
-	oFrame.id='fixme';
-	oFrame.className='loadingBar';
-	oFrame.innerHTML='<img src="/uploads/templates/admin/images/loading.gif" border="0"> Обновление';
-	oFrame.style.display='block';
-	document.body.appendChild(oFrame);
-	return oFrame;
+	if($('#loadingBar').length==0)
+		$('body').append('<div id="loadingBar"><img src="/uploads/templates/admin/images/loading.gif" border="0"> Обновление</div>');
+	$('#loadingBar').show();
 }
 
-function HideLoading(sender)
+/**
+ * Функция скрывает окно загрузки
+ * @return
+ */
+function HideLoading()
 {
-	if(sender)
-	{
-		document.body.removeChild(sender);
-	}
+	$('#loadingBar').hide();
 }
 
 /**
@@ -396,427 +417,6 @@ CAccessLevels.prototype.onClickForum=function(ob)
 
 document.obAccessLevels=new CAccessLevels();
 
-CTemplates.prototype=new Object();
-function CTemplates(){};
-
-CTemplates.prototype.collapseSub=function(key, to_collapse)
-{
-	var src = $('#sub_list_img_'+key);
-	if(!src.attr('src')) return '';
-	var src_arr = src.attr('src').split("/");
-
-	if (to_collapse == undefined)
-	{
-		if (src_arr[src_arr.length-1] == "plus.gif")to_collapse = true;	else to_collapse = false;
-	}
-
-	if (to_collapse)
-	{
-		src_arr[src_arr.length-1] = "minus.gif";
-		$('#sub_list_' + key).css('display','block');
-	}
-	else
-	{
-		src_arr[src_arr.length-1] = "plus.gif";
-		$('#sub_list_' + key).css('display','none');
-	}
-	src.attr('src',src_arr.join("/"));
-};
-
-CTemplates.prototype.collapseAll=function(to_collapse)
-{
-	var sub_lists = $('[name=sub_list]');
-	if (sub_lists.length > 0)
-	{
-		for (var i = 0; i < sub_lists.length; i++)
-		{
-			var arData=/^[a-z_]+_([0-9]+)$/.exec(sub_lists.eq(i).attr('id'));
-			if((arData!=0)&&(arData.length>1))
-			{
-				this.collapseSub(arData[1], to_collapse);
-			}
-		}
-	}
-};
-
-window.obTemplates=new CTemplates();
-
-var ksUtils =
-{
-	arEvents: Array(),
-
-	addEvent: function(el, evname, func, capture)
-	{
-		if(el.attachEvent) // IE
-			//Добавлена поддержка сложного вызова
-			el.attachEvent("on" + evname,  function() { func.call(el) });
-		else if(el.addEventListener) // Gecko / W3C
-			el.addEventListener(evname, func, false);
-		else
-			el["on" + evname] = func;
-		this.arEvents[this.arEvents.length] = {'element': el, 'event': evname, 'fn': func};
-	},
-
-	removeEvent: function(el, evname, func)
-	{
-		if(el.detachEvent) // IE
-			el.detachEvent("on" + evname, func);
-		else if(el.removeEventListener) // Gecko / W3C
-			el.removeEventListener(evname, func, false);
-		else
-			el["on" + evname] = null;
-	},
-
-	removeAllEvents: function(el)
-	{
-		for(var i in this.arEvents) // possible unnecessary iterations using prototype.js
-		{
-			if(this.arEvents[i] && (el==false || el==this.arEvents[i].element))
-			{
-				jsUtils.removeEvent(this.arEvents[i].element, this.arEvents[i].event, this.arEvents[i].fn);
-				this.arEvents[i] = null;
-			}
-		}
-		if(el==false)
-			this.arEvents.length = 0;
-	},
-
-	//Исправляем обработку событий
-	FixEvent:function(event)
-	{
-	  // получить объект события
-	  event = event || window.event
-
-	  // один объект события может передаваться по цепочке разным обработчикам
-	  // при этом кроссбраузерная обработка будет вызвана только 1 раз
-	  if ( event.isFixed ) {
-	    return event
-	  }
-	  event.isFixed = true // пометить событие как обработанное
-
-	  // добавить preventDefault/stopPropagation для IE
-	  event.preventDefault = event.preventDefault || function(){this.returnValue = false}
-	  event.stopPropagation = event.stopPropagaton || function(){this.cancelBubble = true}
-
-	  // добавить target для IE
-	  if (!event.target) {
-	      event.target = event.srcElement
-	  }
-
-	  // добавить relatedTarget в IE, если это нужно
-	  if (!event.relatedTarget && event.fromElement) {
-	      event.relatedTarget = event.fromElement == event.target ? event.toElement : event.fromElement;
-	  }
-
-	  // вычислить pageX/pageY для IE
-	  if ( event.pageX == null && event.clientX != null ) {
-	      var html = document.documentElement, body = document.body;
-	      event.pageX = event.clientX + (html && html.scrollLeft || body && body.scrollLeft || 0) - (html.clientLeft || 0);
-	      event.pageY = event.clientY + (html && html.scrollTop || body && body.scrollTop || 0) - (html.clientTop || 0);
-	  }
-
-	  // записать нажатую кнопку мыши в which для IE
-	  // 1 == левая; 2 == средняя; 3 == правая
-	  if ( !event.which && event.button ) {
-	      event.which = (event.button & 1 ? 1 : ( event.button & 2 ? 3 : ( event.button & 4 ? 2 : 0 ) ));
-	  }
-
-	  return event
-	},
-
-	GetWindowInnerSize:function(pDoc)
-	{
-		var width, height,stop,sleft;
-		if (!pDoc)
-			pDoc = document;
-
-		if (self.innerHeight) // all except Explorer
-		{
-			width = self.innerWidth;
-			height = self.innerHeight;
-		}
-		else if (pDoc.documentElement && pDoc.documentElement.clientHeight) // Explorer 6 Strict Mode
-		{
-			width = pDoc.documentElement.clientWidth;
-			height = pDoc.documentElement.clientHeight;
-		}
-		else if (pDoc.body) // other Explorers
-		{
-			width = pDoc.body.clientWidth;
-			height = pDoc.body.clientHeight;
-		}
-		//смешение по высоте
-		stop=self.pageYOffset || (document.documentElement && document.documentElement.scrollTop) || (document.body && document.body.scrollTop);
-		sleft=self.pageXOffset || (document.documentElement && document.documentElement.scrollLeft) || (document.body && document.body.scrollLeft);
-		return {sTop:stop, sLeft:sleft,innerWidth : width, innerHeight : height};
-	},
-
-	showShadow:function()
-	{
-	},
-
-	hideShadow:function()
-	{
-	},
-
-	IsIE: function()
-	{
-		return (document.attachEvent && !this.IsOpera());
-	},
-
-	IsOpera: function()
-	{
-		return (navigator.userAgent.toLowerCase().indexOf('opera') != -1);
-	},
-
-	IsSafari: function()
-	{
-		var userAgent = navigator.userAgent.toLowerCase();
-		return (/webkit/.test(userAgent));
-	},
-
-	urlencode: function(s)
-	{
-		return escape(s).replace(new RegExp('\\+','g'), '%2B');
-	},
-
-	/**
-	 * Функция для получения абсолютных координат элемента
-	 * @param obj - объект
-	 * @return
-	 */
-	ksbAbsPosition:function (obj){
-	    var x = y = 0;
-	    while(obj) {
-	          x += obj.offsetLeft;
-	          y += obj.offsetTop;
-	          obj = obj.offsetParent;
-	    }
-	    return {x:x, y:y};
-	},
-
-	setElementOpacity:function (nOpacity,elem)
-	{
-	  var opacityProp = this.getOpacityProperty();
-
-	  if (!elem || !opacityProp) return;
-
-	  if (opacityProp=="filter")  // Internet Exploder 5.5+
-	  {
-	    nOpacity *= 100;
-
-	    var oAlpha = elem.filters['DXImageTransform.Microsoft.alpha'] || elem.filters.alpha;
-	    if (oAlpha) oAlpha.opacity = nOpacity;
-	    else elem.style.filter += "progid:DXImageTransform.Microsoft.Alpha(opacity="+nOpacity+")";
-	  }
-	  else
-	    	elem.style[opacityProp] = nOpacity;
-	},
-
-	getOpacityProperty:function()
-	{
-	  if (typeof document.body.style.opacity == 'string') // CSS3 compliant (Moz 1.7+, Safari 1.2+, Opera 9)
-	    return 'opacity';
-	  else if (typeof document.body.style.MozOpacity == 'string') // Mozilla 1.6 Х ЛКЮДЬЕ, Firefox 0.8
-	    return 'MozOpacity';
-	  else if (typeof document.body.style.KhtmlOpacity == 'string') // Konqueror 3.1, Safari 1.1
-	    return 'KhtmlOpacity';
-	  else if (document.body.filters && navigator.appVersion.match(/MSIE ([\d.]+);/)[1]>=5.5) // Internet Exploder 5.5+
-	    return 'filter';
-	     return false; //МЕР ОПНГПЮВМНЯРХ
-	},
-
-	ksbAddDocumentDragEventHandlers:function() {
-		document.ondragstart = document.body.onselectstart = function() {return false}
-	},
-	ksbRemoveDocumentDragEventHandlers:function () {
-		document.onmousemove = document.onmouseup = document.ondragstart = document.body.onselectstart = null
-	},
-
-	searchStyle:function(style)
-	{
-		for(var i=0,ii=document.styleSheets.length;i<ii;i++)
-		{
-			if(document.styleSheets[i].rules.length>0)
-			{
-				for(var j=0;j<document.styleSheets[i].rules.length;j++)
-				{
-					if(document.styleSheets[i].rules[j].selectorText==style)
-					{
-						return document.styleSheets[i].rules[j].style;
-					}
-				}
-			}
-		}
-		return null;
-	}
-
-};
-
-var boxPrev;
-var pHover;
-
-function LineHover(id,action)
-{
-	myP = document.getElementById('line'+id);
-	if(!myP) return;
-	if(typeof(myP)!='object') return;
-	if(action == 'hover' && pHover!=myP)
-	{
-		myP.className='tree_line_hover';
-	}
-	if(action == 'normal' && pHover!=myP)
-	{
-		myP.className='tree_line_normal';
-	}
-	if(action == 'hoverBlock')
-	{
-		if(myP != pHover)
-		{
-			myP.className='tree_line_hover_block';
-			if(pHover != null) { pHover.className='tree_line_normal'; }
-			pHover=myP;
-		}
-		else
-		{
-			myP.className='tree_line_normal';
-			pHover=null;
-		}
-	}
-}
-
-function AddBox(id)
-{
-	var box = document.getElementById(id);
-	if(box.style.display=='none')
-	{
-		//alert(boxPrev);
-		box.style.display = '';
-		if(box != boxPrev)
-		{
-			if(boxPrev==null)
-			{
-				boxPrev = box;
-			}
-			else
-			{
-				boxPrev.style.display='none';
-				boxPrev = box;
-			}
-		}
-	}
-	else
-	{
-		box.style.display='none';
-	}
-	return false;
-}
-
-function thisnode(param)
-{
-	MyNode = param;
-	//alert(MyNode);
-}
-
-function dis(sender,obj)
-{
-	if (document.getElementById(obj).style.display == 'none')
-	{
-		document.getElementById(obj).style.display = 'block';
-		document.getElementById(sender).className = 'menu_arrow_up';
-	}
-	else
-	{
-		document.getElementById(obj).style.display = 'none';
-		document.getElementById(sender).className = 'menu_arrow_down';
-	}
-}
-
-/**
- * Функция устанавливает обработчик кнопки Отмена в лайт версии
- * @param e - событие
- * @param data - дом элемент полученный в ответ на запрос
- * @return
- */
-function liteData(e,data)
-{
-	$("#navChain",data).hide();
-	$("a.cancel_button",data).unbind('click').click(function(e){self.parent.kstb_remove();e.preventDefault();});
-	$("input[name=update]",data).hide();
-}
-
-/**
- *
- */
-function liteDeleteItem(e)
-{
-	if(confirm('Вы действительно хотите удалить эту запись?'))
-	{
-		var ksRef=this.href;
-		$.get(this.href,null,function(data){
-			var arParams=kstb_parseQuery(ksRef);
-			if(arParams)
-			{
-				nextStep(arParams.module,arParams.ajaxreq,arParams.liid,true);
-			}
-		})
-	}
-	e.preventDefault();
-}
-
-/**
- * Функция отображает панель виджетов
- * @return
- */
-function showWidgetPanel()
-{
-	$('#widgetCont').show();
-	document.getElementById('widgetCont').style.width="220px";
-	document.getElementById('widgetCont').firstChild.style.width="220px";
-	document.getElementById('rarrow').style.display='';
-	document.getElementById('larrow').style.display='none';
-}
-
-/**
- * Функция скрывает панель виджетов
- * @return
- */
-function hideWidgetPanel()
-{
-	$('#widgetCont').hide();
-	document.getElementById('widgetCont').style.width="0px";
-	document.getElementById('widgetCont').firstChild.style.width="0px";
-	document.getElementById('rarrow').style.display='none';
-	document.getElementById('larrow').style.display='';
-}
-
-//Определение поддержки браузеров положения окна FIXED
-function isPositionFixed()
-{
-	var isSupported = null;
-	if (document.createElement)
-	{
-	    var el = document.createElement('div');
-	    if (el && el.style)
-	    {
-	      el.style.width = '1px';
-	      el.style.height = '1px';
-	      el.style.position = 'fixed';
-	      el.style.top = '10px';
-	      var root = document.body;
-	      if (root &&
-	          root.appendChild &&
-	          root.removeChild) {
-	        root.appendChild(el);
-	        isSupported = (el.offsetTop === 10);
-	        root.removeChild(el);
-	      }
-	      el = null;
-	    }
-	}
-	return isSupported;
-}
-
 /**
  * Функция производит опрос сервера наличие новых уведомлений,и выполняет различные операции
  * в случае необходимости
@@ -916,7 +516,6 @@ $(document).ready(function()
 
 	$('input.check_depend').attr('disabled',true);
 
-	$.support.positionFixed=isPositionFixed()
 	//Прикольные навигационные цепочки
 	$('a.hasDropDown').mouseover(
 		function(e)
@@ -933,5 +532,11 @@ $(document).ready(function()
 		}
 	);
 	setTimeout("adminAskServer()",10000);
+	$('a.menu_toggle').click(_KS_CMS_ADMIN.menu.toggleMenu);
+	$('div.helpbar').click(_KS_CMS_ADMIN.content.toggelHint);
+	$('#topError').ajaxError(function(event, jqXHR, ajaxSettings, thrownError){
+		$(this).html('Ошибка при выполнении Ajax запроса<br/>'+jqXHR.responseText).show();
+		HideLoading();
+	});
 });
 

@@ -1,45 +1,34 @@
 <?php
 /*
- * Используется в качестве заготовки для внутренней файловой системы. На данный момент просто содержит ряд полезных функций.
- * @project ks-cms
- * @version 2.6
- * @since 17.10.2008
- * @author blade39
+ * CMS-remote
+ *
+ * Created on 17.10.2008
+ *
+ * Developed by blade39
+ *
+ * Используется в качестве заготовки для внутренней файловой системы. На данный момент просто содержит ряд полезных
+ * функций.
  */
 
 abstract class CFileSystem extends CBaseObject
 {
-	abstract function MakeDir($path);
-	abstract function Remove($path);
-	abstract function Rename($old, $new);
-	abstract function RemDir($path);
-	abstract function DirCopy($srcdir, $dstdir, $offset=0, $verbose = false);
-	abstract function CopyFile($from,$to,$absolute='');
-	abstract function CmpPath($old,$new);
-	abstract function ChangePath($old,$new);
-	abstract function GetDirItems($dir);
-	abstract function CountDirFiles($dir);
-	abstract function GetDirList($dir);
-	abstract function ClearDir($path);
+
 }
 
-/*
- * Класс CSimpleFs выполняет работу, со стандартной файловой системой. Является оберткой для функций пхп связанных с работой с СФ.
- * @project ks-cms
- * @version 2.6
- * @since 17.10.2008
- * @author blade39
- */
+/*!Класс CSimpleFs выполняет работу, со стандартной файловой системой. Является оберткой для
+ * функций пхп связанных с работой с СФ.*/
 class CSimpleFs extends CFileSystem
 {
 	/**
-	 * Функция makedir создает указанную папки или весь путь. В зависимости от существования на диске указанного пути происходит создание папок.
+	 * Функция makedir создает указанную папки или весь путь. В зависимости от существования на
+	 * диске указанного пути происходит создание папок. Если создать папку не удалось возвращается
+	 * false. Если все ок - true.
+	 * @param $path -- путь который требуется создать.
+	 * @return true -- в случае успеха
 	 * Если каталог создать не удалось выбрасывает исключение CFileRror
-	 * @param string - путь который требуется создать.
-	 * @return bool
-	 * @todo Сделать нормальный возврат достоверных результатов из функции(и наверное обработку в случае ошибки)
+	 * TODO: Сделать нормальный возврат достоверных результатов из функции(и наверное обработку в случае ошибки)
 	 */
-	function MakeDir($path)
+	function makedir($path)
 	{
 		if(!@mkdir($path,0755,true))
 		{
@@ -50,8 +39,6 @@ class CSimpleFs extends CFileSystem
 
 	/**
 	 * Метод удаляет файл или папку по указанному пути
-	 * @param string - путь, согласно которому происходит удаление
-	 * @return bool
 	 */
 	function Remove($path)
 	{
@@ -59,7 +46,7 @@ class CSimpleFs extends CFileSystem
 		{
 			if(is_dir($path))
 			{
-				$this->ClearDir($path);
+				$this->cleardir($path);
 				return @rmdir($path);
 			}
 			else
@@ -71,12 +58,14 @@ class CSimpleFs extends CFileSystem
 	}
 
 	/**
-	 * Функция переименовывает указанную папку. В зависимости от существования на диске указанного пути происходит создание папок.
+	 * Функция переименовывает указанную папку. В зависимости от существования на
+	 * диске указанного пути происходит создание папок. Если создать папку не удалось возвращается
+	 * false. Если все ок - true.
+	 * @param $path -- путь который требуется создать.
+	 * @return true
 	 * Если не удалось - выбрасывает исключение CFileError
-	 * @param string - путь который требуется создать.
-	 * @return bool
 	 */
-	function Rename($old, $new)
+	function renamedir($old, $new)
 	{
 		$old = str_replace('//','/',$old);
 		$new = str_replace('//','/',$new);
@@ -88,34 +77,62 @@ class CSimpleFs extends CFileSystem
 	}
 
 
-	/*
-	 * Это есть алиас для Remove. Оставлен ввиду того, что система очень зависима от методов данного класса
-	 * @param string - удаляемый каталог
-	 * @see Remove
-	 */
-	function RemDir($path)
+	/*!Функция рекурсивно удаляет подкаталоги указанного пути.
+	 * \param $path -- удаляемый каталог.*/
+	function remdir($path)
 	{
-		return $this->Remove($path);
+		$origipath = $path;
+		$handler = @opendir($path);
+		if(!$handler) throw new CFileError("SYSTEM_FOLDER_NOT_EXIST", 0);
+		while (true)
+		{
+			$item = readdir($handler);
+			if ($item == "." or $item == "..")
+			{
+				continue;
+			}
+			elseif (gettype($item) == "boolean")
+			{
+				closedir($handler);
+				if (!@rmdir($path))
+				{
+					throw new CFileError('SYSTEM_FILE_DELETE_ERROR',0,$path);
+				}
+				if ($path == $origipath)
+				{
+					break;
+				}
+				$path = substr($path, 0, strrpos($path, "/"));
+				$handler = opendir($path);
+			}
+			elseif (is_dir($path."/".$item))
+			{
+				closedir($handler);
+				$path = $path."/".$item;
+				$handler = opendir($path);
+			}
+			else
+			{
+				if(!@unlink($path."/".$item)) throw new CFileError('SYSTEM_FILE_DELETE_ERROR',0,$path.'/'.$item);
+			}
+		}
+		return true;
 	}
 
-	/* Выполняет копирование всех файлов из одной папки в другую.
-	 * @param string - исходная папка;
-	 * @param string - папка назначения;
-	 * @param int - с какого по счету файла выполнять копирование;
-	 * @param bool - выводить сообщения о работе.
-	 * @return string - данные о скопированных элементах
-	 */
-	function DirCopy($srcdir, $dstdir, $offset=0, $verbose = false)
+	/*!Выполняет копирование всех файлов из одной папки в другую.
+	 * \param $srcdir -- исходная папка;
+	 * \param $dstdir -- папка назначения;
+	 * \param $offset -- с какого по счету файла выполнять копирование;
+	 * \param $verbose -- выводить сообщения о работе.*/
+	function dircopy($srcdir, $dstdir, $offset=0, $verbose = false)
 	{
-		if(!isset($offset)) 
-			$offset=0;
+		if(!isset($offset)) $offset=0;
 		$num = 0;
 		$fail = 0;
 		$sizetotal = 0;
 		$fifail = '';
 		$ret='0,0,0,0';
-		if(!is_dir($dstdir)) 
-			$this->MakeDir($dstdir);
+		if(!is_dir($dstdir)) self::makedir($dstdir);
 		if($curdir = opendir($srcdir))
 		{
 			while($file = readdir($curdir))
@@ -159,22 +176,22 @@ class CSimpleFs extends CFileSystem
 		}
 		$red = explode(",",$ret);
 		if(is_array($red) && count($red)>2)
+		{
 			$ret = ($num + $red[0]).",".(($fail-$offset) + $red[1]).",".($sizetotal + $red[2]).",".$fifail.$red[3];
+		}
 		else
+		{
 			$ret = ($num).",".(($fail-$offset)).",".($sizetotal).",".$fifail;
+		}
 		return $ret;
 	}
 
 	/**
 	 * Метод осуществляет копирование двух файлов
-	 * @param string - путь до файла, который копируется
-	 * @param string - путь, куда осуществляется копирование
-	 * @param string - абсолютный путь
-	 * @return bool
 	 */
-	function CopyFile($from,$to,$absolute='')
+	function CopyFile($from,$to,$absolute=false)
 	{
-		if($absolute==='')
+		if($absolute===false)
 		{
 			$from=ROOT_DIR.$from;
 			$to=ROOT_DIR.$to;
@@ -185,17 +202,17 @@ class CSimpleFs extends CFileSystem
 			$to=$absolute.$to;
 		}
 		if(is_dir($from))
+		{
 			$this->dircopy($from,$to);
+		}
 		else
+		{
 			return @copy($from, $to);
+		}
 	}
 
-	/*
-	 * Функция CmpPath выполняет сравнение двух путей 
-	 * @param string - один из путей, которые сравниваются
-	 * @param string - другой путь
-	 * @return string - расхождение путей
-	 */
+	/*!Функция CmpPath выполняет сравнение двух путей и возвращает их расходение в виде массив начиная
+	 * с первого элемента пути, где встречается расхождение.*/
 	function CmpPath($old,$new)
 	{
 		$oldpath=explode('/',$old);
@@ -205,35 +222,35 @@ class CSimpleFs extends CFileSystem
 		for($i=1;$i<$num;$i++)
 		{
 			if($oldpath[$i]!=$newpath[$i])
+			{
 				return $path.='/'.$oldpath[$i];
+			}
 			else
+			{
 				$path.='/'.$oldpath[$i];
+			}
 		}
 		return $path;
 	}
 
-	/*
-	 * Функция ChangePath выполняет полный перенос файлов из одного пути в другой. При работе этой
+	/*!Функция ChangePath выполняет полный перенос файлов из одного пути в другой. При работе этой
 	 * функции происходит создание нового пути (указанного в параметре $new) и перенос всех файлов
 	 * из папки $old в папку $new. Путь $new создается полностью, все расхождения между, $old и $new,
-	 * удаляются. Внешне это выглядит как простая замена пути к файлу.
-	 * @param string - старый путь
-	 * @param string - новый путь
-	 * @return bool
-	 */
+	 * удаляются. Внешне это выглядит как простая замена пути к файлу.*/
 	function ChangePath($old,$new)
 	{
 		$oldpath=explode('/',$old);
 		$newpath=explode('/',$new);
 		try
 		{
-			$this->MakeDir($new);
-			$this->DirCopy($old,$new);
-			$delpath=$this->CmpPath($old,$new);
+			self::makedir($new);
+			self::dircopy($old,$new);
+			$delpath=self::CmpPath($old,$new);
 			if($delpath!=$old)
-				$this->RemDir($delpath);
-		} 
-		catch (CError $e)
+			{
+				self::remdir($delpath);
+			}
+		} catch (CError $e)
 		{
 			throw $e;
 		}
@@ -246,7 +263,8 @@ class CSimpleFs extends CFileSystem
 
 	/**
 	 * Метод возвращает список файлов директории
-	 * @param string - абсолютный путь к директории
+	 *
+	 * @param string $dir Абсолютный путь к директории
 	 * @return array
 	 */
 	function GetDirItems($dir)
@@ -262,8 +280,7 @@ class CSimpleFs extends CFileSystem
 						$dir_items[] = $dir_item;
 				}
 				closedir($dh);
-				if(count($dir_items)==0) 
-					return false;
+				if(count($dir_items)==0) return false;
 				return $dir_items;
 			}
 			else
@@ -274,68 +291,75 @@ class CSimpleFs extends CFileSystem
 
 	/**
 	 * Метод выполняет подсчет всех файлов в дериктории с учетом вложенных
-	 * @param string - абсолютный путь к директории
-	 * @return int - число файлов в директории
 	 */
 	function CountDirFiles($dir)
 	{
 		$total=0;
-		$list=$this->GetDirItems($dir);
+		$list=self::GetDirItems($dir);
 		foreach($list as $file)
 		{
 			if(is_dir($dir.'/'.$file))
-				$total+=$this->CountDirFiles($dir.'/'.$file);
+			{
+				$total+=self::CountDirFiles($dir.'/'.$file);
+			}
 			elseif(is_file($dir.'/'.$file))
+			{
 				$total++;
+			}
 		}
 		return $total;
 	}
 
 	/**
 	 * Метод выполняет построение списка всех файлов дериктории
-	 * @param string - абсолютный путь к директории
-	 * @return array
 	 */
 	function GetDirList($dir)
 	{
 		$arList=array();
-		$list=$this->GetDirItems($dir);
+		$list=self::GetDirItems($dir);
 		foreach($list as $file)
 		{
 			if(is_dir($dir.'/'.$file))
-				$arList=array_merge($arList,$this->GetDirList($dir.'/'.$file));
+			{
+				$arList=array_merge($arList,self::GetDirList($dir.'/'.$file));
+			}
 			elseif(is_file($dir.'/'.$file))
+			{
 				$arList[]=$dir.'/'.$file;
+			}
 		}
 		return $arList;
 	}
 
 	/**
 	 * Функция рекурсивно удаляет подкаталоги указанного пути.
-	 * @param string - удаляемый каталог
-	 * @return bool
-	 */
-	function ClearDir($path)
+	 * @param $path -- удаляемый каталог.*/
+	function cleardir($path)
 	{
 		$origipath = $path;
 		$handler = @opendir($path);
-		if(!$handler) 
-			throw new Exception('SYSTEM_FILE_NOT_FOUND');
+		if(!$handler) throw new Exception('SYSTEM_FILE_NOT_FOUND');
 		while (true)
 		{
 			$item = readdir($handler);
 			if ($item == "." or $item == "..")
+			{
 				continue;
+			}
 			elseif (gettype($item) == "boolean")
 			{
 				closedir($handler);
 				if($path!=$origipath)
 				{
 					if (!@rmdir($path))
+					{
 						return false;
+					}
 				}
 				else
+				{
 					break;
+				}
 				$path = substr($path, 0, strrpos($path, "/"));
 				$handler = opendir($path);
 			}
@@ -346,7 +370,9 @@ class CSimpleFs extends CFileSystem
 				$handler = opendir($path);
 			}
 			else
+			{
 				unlink($path."/".$item);
+			}
 		}
 		return true;
 	}

@@ -30,21 +30,13 @@ abstract class CModuleManagment extends CObject
 		global $ks_config,$KS_FS;
 		//Устанавливаем уровень обработки ошибок в системе
 		if(KS_RELEASE==1)
-		{
 			error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
-		}
 		else
-		{
 			error_reporting(E_ALL | E_STRICT);
-		}
+		//Если самоустановка, то надо скопировать структуру БД
 		if($ks_config['go_install']==1)
-		{
-			//Если самоустановка, то надо скопировать структуру БД
 			if(!$KS_FS->CopyFile(MODULES_DIR.'/main/install/db_structure.php',CONFIG_DIR.'/db_structure.php',''))
-			{
 				throw new CError('SYSTEM_COPY_DB_STRUCTURE_FAIL');
-			}
-		}
 		parent::__construct('main_modules');
 		$this->obSession=CSessionManager::get_instance();
 		if(!array_key_exists('notifies',$_SESSION) || !is_array($_SESSION['notifies'])) $_SESSION['notifies']=array();
@@ -61,11 +53,9 @@ abstract class CModuleManagment extends CObject
 		$arVersion=array();
 		include MODULES_DIR.'/main/install/version.php';
 		$this->arVersion=$arVersion;
+		//Надо провести самодиагностику и самоустановку
 		if($ks_config['go_install']==1)
-		{
-			//Надо провести самодиагностику и самоустановку
 			$this->SelfInstall();
-		}
 		$this->arHeads=array();
 		$this->arHeadScripts=array();
 	}
@@ -148,26 +138,20 @@ abstract class CModuleManagment extends CObject
 
 	/**
 	 * Деструктор класса
+	 * Выполняет обработку списка уведомлений, если
+     * уведомление живет больше 3-х хитов - удаляем его.
 	 */
 	function __destruct()
 	{
-		//Выполняем обработку списка уведомлений, если
-		//уведомление живет больше 3-х хитов - удаляем его.
 		$_SESSION['notifies']=array();
 		foreach($this->arNotifies as $arItem)
 		{
 			if(array_key_exists('life',$arItem))
-			{
 				$arItem['life']++;
-			}
 			else
-			{
 				$arItem['life']=1;
-			}
 			if($arItem['life']<NOTIFIES_LIFE)
-			{
 				$_SESSION['notifies'][]=$arItem;
-			}
 		}
 	}
 
@@ -212,30 +196,20 @@ abstract class CModuleManagment extends CObject
 		$arNotModules=Array('.','..');
 		$arResult=false;
 		if (is_dir($sPath))
-		{
 			if ($hDir = @opendir($sPath))
-    		{
         		while (($file = readdir($hDir)) !== false)
-	        	{
 	        		if (!in_array($file,$arNotModules)&&!$this->IsModule($file))
-	        		{
 	        			if(file_exists($sPath.'/'.$file.'/install/install.php'))
 	        			{
 	        				$arDescription=array();
 	        				if(file_exists($sPath.'/'.$file.'/install/description.php'))
-	        				{
 	        					include $sPath.'/'.$file.'/install/description.php';
-	        				}
 	        				$arResult[]=array(
 	        					'name'=>$file,
 	        					'title'=>$arDescription['title'],
 	        					'description'=>$arDescription['description'],
 	        				);
 	        			}
-	        		}
-	        	}
-	      	}
-		}
 		return $arResult;
 	}
 
@@ -246,16 +220,7 @@ abstract class CModuleManagment extends CObject
 	{
 		$sPath=MODULES_DIR;
 		if (!$this->IsModule($module))
-	    {
-	        if(file_exists($sPath.'/'.$module.'/install/install.php'))
-		    {
-		    	return true;
-		    }
-		    else
-		    {
-		    	return false;
-		    }
-		}
+	        return file_exists($sPath.'/'.$module.'/install/install.php');
 		throw new CModuleError("MAIN_MODULE_ALREADY_INSTALLED",0);
 	}
 
@@ -269,13 +234,11 @@ abstract class CModuleManagment extends CObject
 		{
 			$arResultStructure=array();
 			foreach($arModules as $arModule)
-			{
 				if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/install/db_structure.php'))
 				{
 					include MODULES_DIR.'/'.$arModule['directory'].'/install/db_structure.php';
 					$arResultStructure=array_merge($arResultStructure,$arStructure);
 				}
-			}
 			if(file_exists(MODULES_DIR.'/main/install/db_structure.php'))
 			{
 				include MODULES_DIR.'/main/install/db_structure.php';
@@ -296,9 +259,7 @@ abstract class CModuleManagment extends CObject
 			'directory'=>'main',
 		));
 		if($arRealModules=$this->GetList(array('id'=>'asc'),array('active'=>1)))
-		{
 			$arModules=array_merge($arModules,$arRealModules);
-		}
 		if(is_array($arModules) && count($arModules)>0)
 		{
 			$arInterfaceFiles=array();
@@ -330,17 +291,13 @@ abstract class CModuleManagment extends CObject
 				foreach($arInterfaceFiles as $sLang=>$sContent)
 				{
 					if(!file_exists($smarty->config_dir.'/'.$sLang.'/'))
-					{
 						$KS_FS->makedir($smarty->config_dir.'/'.$sLang.'/');
-					}
 					file_put_contents($smarty->config_dir.'/'.$sLang.'/admin.conf',$sContent);
 				}
 				foreach($arErrorFiles as $sLang=>$sContent)
 				{
 					if(!file_exists($smarty->config_dir.'/'.$sLang.'/'))
-					{
 						$KS_FS->makedir($smarty->config_dir.'/'.$sLang.'/');
-					}
 					file_put_contents($smarty->config_dir.'/'.$sLang.'/error.conf',$sContent);
 				}
 				$smarty->clear_all_cache();
@@ -348,9 +305,7 @@ abstract class CModuleManagment extends CObject
 				return true;
 			}
 			else
-			{
 				throw new CError('SYSTEM_STRANGE_ERROR');
-			}
 		}
 		throw new CError('SYSTEM_STRANGE_ERROR');
 	}
@@ -361,27 +316,17 @@ abstract class CModuleManagment extends CObject
 	private function DeleteAllModuleFiles($module_name)
 	{
 		global $KS_FS;
-		if(file_exists(MODULES_DIR.'/'.$module_name))
-		{
-			//Удаляем файлы административных шаблонов
-			if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/templates/admin/'))
-			{
-				foreach($arFiles as $sFile)
-				{
-					$KS_FS->Remove(SYS_TEMPLATES_DIR.'/admin/'.$sFile);
-				}
-			}
-			//Удаляем файлы яваскрипта
-			if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/js/'))
-			{
-				if(file_exists(ROOT_DIR.JS_DIR.'/'.$module_name.'/'))
-					$KS_FS->Remove(ROOT_DIR.JS_DIR.'/'.$module_name.'/');
-			}
-			if(file_exists(TEMPLATES_DIR.'/.default/'.$module_name.'/'))
-			{
-				$KS_FS->Remove(TEMPLATES_DIR.'/.default/'.$module_name.'/');
-			}
-		}
+		if(!file_exists(MODULES_DIR.'/'.$module_name)) return false;
+		//Удаляем файлы административных шаблонов
+		if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/templates/admin/'))
+			foreach($arFiles as $sFile)
+				$KS_FS->Remove(SYS_TEMPLATES_DIR.'/admin/'.$sFile);
+		//Удаляем файлы яваскрипта
+		if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/js/'))
+			if(file_exists(ROOT_DIR.JS_DIR.'/'.$module_name.'/'))
+				$KS_FS->Remove(ROOT_DIR.JS_DIR.'/'.$module_name.'/');
+		if(file_exists(TEMPLATES_DIR.'/.default/'.$module_name.'/'))
+			$KS_FS->Remove(TEMPLATES_DIR.'/.default/'.$module_name.'/');
 	}
 
 	/**
@@ -391,46 +336,34 @@ abstract class CModuleManagment extends CObject
 	private function InstallAllModuleFiles($module_name)
 	{
 		global $KS_FS;
-		if(file_exists(MODULES_DIR.'/'.$module_name))
+		if(!file_exists(MODULES_DIR.'/'.$module_name)) return false;
+		//Устанавливаем файлы административного интерфейса
+		if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/templates/.default/'))
 		{
-			//Устанавливаем файлы административного интерфейса
-			if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/templates/.default/'))
-			{
-				if(!file_exists(TEMPLATES_DIR.'/.default/'.$module_name.'/'))
-					$KS_FS->makedir(TEMPLATES_DIR.'/.default/'.$module_name.'/');
-				foreach($arFiles as $sFile)
-				{
-					$KS_FS->CopyFile(MODULES_DIR.'/'.$module_name.'/install/templates/.default/'.$sFile,TEMPLATES_DIR.'/.default/'.$module_name.'/'.$sFile,'');
-				}
-			}
-			if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/templates/admin/'))
-			{
-				foreach($arFiles as $sFile)
-				{
-					$KS_FS->CopyFile(MODULES_DIR.'/'.$module_name.'/install/templates/admin/'.$sFile,SYS_TEMPLATES_DIR.'/admin/'.$sFile,'');
-				}
-			}
-			if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/templates/events/'))
-			{
-				if(!file_exists(SYS_TEMPLATES_DIR.'/admin/eventTemplates/'))
-					$KS_FS->makedir(SYS_TEMPLATES_DIR.'/admin/eventTemplates/');
-				foreach($arFiles as $sFile)
-				{
-					$KS_FS->CopyFile(MODULES_DIR.'/'.$module_name.'/install/templates/events/'.$sFile,SYS_TEMPLATES_DIR.'/admin/eventTemplates/'.$sFile,'');
-				}
-			}
-			//Устанавливаем скрипты модуля
-			if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/js/'))
-			{
-				if(!file_exists(ROOT_DIR.JS_DIR))
-					$KS_FS->makedir(ROOT_DIR.JS_DIR);
-				if(!file_exists(ROOT_DIR.JS_DIR.'/'.$module_name.'/'))
-					$KS_FS->makedir(ROOT_DIR.JS_DIR.'/'.$module_name.'/');
-				foreach($arFiles as $sFile)
-				{
-					$KS_FS->CopyFile(MODULES_DIR.'/'.$module_name.'/install/js/'.$sFile,ROOT_DIR.JS_DIR.'/'.$module_name.'/'.$sFile,'');
-				}
-			}
+			if(!file_exists(TEMPLATES_DIR.'/.default/'.$module_name.'/'))
+				$KS_FS->makedir(TEMPLATES_DIR.'/.default/'.$module_name.'/');
+			foreach($arFiles as $sFile)
+				$KS_FS->CopyFile(MODULES_DIR.'/'.$module_name.'/install/templates/.default/'.$sFile,TEMPLATES_DIR.'/.default/'.$module_name.'/'.$sFile,'');
+		}
+		if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/templates/admin/'))
+			foreach($arFiles as $sFile)
+				$KS_FS->CopyFile(MODULES_DIR.'/'.$module_name.'/install/templates/admin/'.$sFile,SYS_TEMPLATES_DIR.'/admin/'.$sFile,'');
+		if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/templates/events/'))
+		{
+			if(!file_exists(SYS_TEMPLATES_DIR.'/admin/eventTemplates/'))
+				$KS_FS->makedir(SYS_TEMPLATES_DIR.'/admin/eventTemplates/');
+			foreach($arFiles as $sFile)
+				$KS_FS->CopyFile(MODULES_DIR.'/'.$module_name.'/install/templates/events/'.$sFile,SYS_TEMPLATES_DIR.'/admin/eventTemplates/'.$sFile,'');
+		}
+		//Устанавливаем скрипты модуля
+		if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/js/'))
+		{
+			if(!file_exists(ROOT_DIR.JS_DIR))
+				$KS_FS->makedir(ROOT_DIR.JS_DIR);
+			if(!file_exists(ROOT_DIR.JS_DIR.'/'.$module_name.'/'))
+				$KS_FS->makedir(ROOT_DIR.JS_DIR.'/'.$module_name.'/');
+			foreach($arFiles as $sFile)
+				$KS_FS->CopyFile(MODULES_DIR.'/'.$module_name.'/install/js/'.$sFile,ROOT_DIR.JS_DIR.'/'.$module_name.'/'.$sFile,'');
 		}
 	}
 
@@ -453,9 +386,7 @@ abstract class CModuleManagment extends CObject
 			return $showButtons;
 		}
 		else
-		{
 			throw new CModuleError('MAIN_MODULE_CANT_INSTALL');
-		}
 	}
 
 	/**
@@ -464,29 +395,27 @@ abstract class CModuleManagment extends CObject
 	private function UnInstallAllModuleFiles($module_name)
 	{
 		global $KS_FS;
-		if(file_exists(MODULES_DIR.'/'.$module_name))
+		if(!file_exists(MODULES_DIR.'/'.$module_name)) return false;
+		//Если есть шаблоны пользовательской части
+		if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/templates/.default/'))
 		{
-			//Если есть шаблоны пользовательской части
-			if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/templates/.default/'))
-			{
-				foreach($arFiles as $sFile)
-					$KS_FS->Remove(TEMPLATES_DIR.'/.default/'.$module_name.'/'.$sFile);
-				if(!$KS_FS->GetDirItems(TEMPLATES_DIR.'/.default/'.$module_name.'/'))
-					$KS_FS->Remove(TEMPLATES_DIR.'/.default/'.$module_name.'/');
-			}
-			//Если есть шаблоны административной части
-			if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/templates/admin/'))
-				foreach($arFiles as $sFile)
-					$KS_FS->Remove(SYS_TEMPLATES_DIR.'/admin/'.$sFile);
-			//Шаблоны событий
-			if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/templates/events/'))
-				foreach($arFiles as $sFile)
-					$KS_FS->Remove(SYS_TEMPLATES_DIR.'/admin/eventTemplates/'.$sFile);
-			//Cкрипты модуля
-			if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/js/'))
-				foreach($arFiles as $sFile)
-					$KS_FS->Remove(ROOT_DIR.JS_DIR.'/'.$module_name.'/'.$sFile);
+			foreach($arFiles as $sFile)
+				$KS_FS->Remove(TEMPLATES_DIR.'/.default/'.$module_name.'/'.$sFile);
+			if(!$KS_FS->GetDirItems(TEMPLATES_DIR.'/.default/'.$module_name.'/'))
+				$KS_FS->Remove(TEMPLATES_DIR.'/.default/'.$module_name.'/');
 		}
+		//Если есть шаблоны административной части
+		if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/templates/admin/'))
+			foreach($arFiles as $sFile)
+				$KS_FS->Remove(SYS_TEMPLATES_DIR.'/admin/'.$sFile);
+		//Шаблоны событий
+		if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/templates/events/'))
+			foreach($arFiles as $sFile)
+				$KS_FS->Remove(SYS_TEMPLATES_DIR.'/admin/eventTemplates/'.$sFile);
+		//Cкрипты модуля
+		if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/js/'))
+			foreach($arFiles as $sFile)
+				$KS_FS->Remove(ROOT_DIR.JS_DIR.'/'.$module_name.'/'.$sFile);
 	}
 
 	/**
@@ -507,9 +436,7 @@ abstract class CModuleManagment extends CObject
 			return $showButtons;
 		}
 		else
-		{
 			throw new CModuleError('MAIN_MODULE_CANT_DELETE');
-		}
 	}
 
 	/**
@@ -545,17 +472,12 @@ abstract class CModuleManagment extends CObject
 	 */
 	function UseJavaScript($script,$position=10)
 	{
-		if(file_exists(ROOT_DIR.JS_DIR.$script))
-		{
-			if(!array_key_exists($position,$this->arHeadScripts))
-				$this->arHeadScripts[$position]=array();
-			if(!in_array($script,$this->arHeadScripts[$position]))
-			{
-				$this->arHeadScripts[$position][]=$script;
-			}
-			return true;
-		}
-		return false;
+		if(!file_exists(ROOT_DIR.JS_DIR.$script)) return false;
+		if(!array_key_exists($position,$this->arHeadScripts))
+			$this->arHeadScripts[$position]=array();
+		if(!in_array($script,$this->arHeadScripts[$position]))
+			$this->arHeadScripts[$position][]=$script;
+		return true;
 	}
 
 	/**
@@ -564,9 +486,7 @@ abstract class CModuleManagment extends CObject
 	function HasJavaScript($script,$position=10)
 	{
 		if(isset($this->arHeadScripts[$position]) && is_array($this->arHeadScripts[$position]))
-		{
 			return in_array($script,$this->arHeadScripts[$position]);
-		}
 		return false;
 	}
 
@@ -578,12 +498,8 @@ abstract class CModuleManagment extends CObject
 		$sResult='';
 		ksort($this->arHeadScripts);
 		foreach($this->arHeadScripts as $position=>$arScripts)
-		{
 			foreach($arScripts as $sScript)
-			{
 				$sResult.='<script type="text/javascript" src="'.JS_DIR.$sScript.'"></script>'."\n";
-			}
-		}
 		return $sResult;
 	}
 
@@ -599,13 +515,9 @@ abstract class CModuleManagment extends CObject
 			$KS_EVENTS_HANDLER->PushMode();
 			$KS_EVENTS_HANDLER->SetMode('particular');
 			if($arResult=$KS_EVENTS_HANDLER->Execute('main','onGetHeader'))
-			{
 				foreach($arResult as $arItem)
-				{
 					if(is_string($arItem['executed']))
 						$sEvents.="\n".$arItem['executed'];
-				}
-			}
 		}
 		return $this->GetJavaScript()."\n".join("\n",$this->arHeads)."\n".$sEvents."\n";
 	}
@@ -620,9 +532,7 @@ abstract class CModuleManagment extends CObject
 		try
 		{
 			if(array_key_exists($module,$this->arIsModules))
-			{
 				return $this->arIsModules[$module];
-			}
 			elseif(array_key_exists($module,$this->arModules))
 			{
 				if(file_exists(MODULES_DIR.'/'.$module))
@@ -668,10 +578,8 @@ abstract class CModuleManagment extends CObject
 		{
 			//Такой модуль есть смотрим активность
 			if(!array_key_exists($module,$this->arModules))
-			{
 				//Если модуль не подключен - подключаем
 				if(is_array($res)) $this->InitModule($res); else $this->InitModule($module);
-			}
 			return $this->arModules[$module]['active']==1;
 		}
 		return false;
@@ -683,9 +591,7 @@ abstract class CModuleManagment extends CObject
 	function IsDefault($module)
 	{
 		if($this->IsActive($module))
-		{
 			return $this->arModules[$module]['URL_ident']=='default';
-		}
 		return false;
 	}
 
@@ -699,13 +605,9 @@ abstract class CModuleManagment extends CObject
 	function GetSitePath($module)
 	{
 		if($this->IsActive($module))
-		{
 			if($this->arModules[$module]['URL_ident']!='default')
-			{
 				return '/'.$this->arModules[$module]['URL_ident'].'/';
-			}
 			return '/';
-		}
 		return false;
 	}
 
@@ -715,9 +617,7 @@ abstract class CModuleManagment extends CObject
 	function GetTitle($module)
 	{
 		if($this->IsActive($module))
-		{
 			return $this->arModules[$module]['name'];
-		}
 		return false;
 	}
 
@@ -735,15 +635,11 @@ abstract class CModuleManagment extends CObject
 		if (!array_key_exists($module, $this->arModules))
 			$this->InitModule($module);
 		if(is_array($this->arModules[$module]))
-		{
 			if(array_key_exists('config',$this->arModules[$module]))
-			{
 				if (array_key_exists($var,$this->arModules[$module]['config']))
 					return $this->arModules[$module]['config'][$var];
-			}
 			elseif (array_key_exists($var,$this->arModules[$module]))
 				return $this->arModules[$module][$var];
-		}
 		return $default;
 	}
 
@@ -810,64 +706,8 @@ abstract class CModuleManagment extends CObject
 	function GetAccessArray($module)
 	{
 		if(!array_key_exists($module,$this->arModules))
-		{
 			$this->InitModule($module);
-		}
 		return $this->arModules[$module]['ALEVELS'];
-	}
-
-	/**
-	 * Метод выполняет подключение файла .tree.php для указанного модуля
-	 */
-	public function IncludeTreeFile($module,$arRow=array())
-	{
-		global $USER;
-		$KS_MODULES=$this;
-		if($this->IsActive($module))
-		{
-			$module_tree_file = MODULES_DIR . "/" . $module . "/.tree.php";
-			if (file_exists($module_tree_file))
-			{
-				$arMyTree=array();
-				$modTreeSettings=array();
-				include $module_tree_file;
-				return array(
-					'tree'=>$arMyTree,
-					'settings'=>$modTreeSettings
-				);
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Метод реализует работу с апи модулей
-	 * @param $module string - имя модуля к апи которого происходит обращение
-	 */
-	function module($module)
-	{
-		if(array_key_exists($module,$this->arModules))
-		{
-			if(array_key_exists('API',$this->arModules[$module]))
-			{
-				if(is_object($this->arModules[$module]['API'])) return $this->arModules[$module]['API'];
-			}
-			else
-			{
-				throw new CCriticalError('SYSTEM_NO_MODULE_API');
-			}
-		}
-		else
-		{
-			if($this->IsActive($module))
-			{
-				$fileName=MODULES_DIR.'/'.$module.'/libs/class.C'.$module.'API.php';
-				include_once $fileName;
-				$className='C'.$module.'API';
-				$this->arModules[$module]['API']=new $className;
-				return $this->arModules[$module]['API'];
-			}
-		}
 	}
 
 	/**
@@ -894,14 +734,10 @@ abstract class CModuleManagment extends CObject
 
 		//Разбиваем строку ввода
 		if(!preg_match("#^/?((?:[\w\d\-_]+\/)*)([\w\d_\-]+\.html)?(.*)$#", $full_uri, $uri_matches) )
-		{
 			return '.default';
-		}
 		if($uri_matches[2]=='')
-		{
 			//Значит обращение по адресу / делаем страницу индексной
 			$uri_matches[2]='index.html';
-		}
 		//Устанавливаем значение по умолчанию
 		$sResult='.default';
 		$obTpl=new CGlobalTemplates();
@@ -909,13 +745,9 @@ abstract class CModuleManagment extends CObject
 		if(is_array($arConditions)&&(count($arConditions)>0))
 		{
 			if($uri_matches[2]=='index.html')
-			{
 				$path='/'.$uri_matches[1];
-			}
 			else
-			{
 				$path='/'.$uri_matches[1].$uri_matches[2];
-			}
 			foreach($arConditions as $arCondition)
 			{
 				if($arCondition['type']=='=')
@@ -974,35 +806,22 @@ abstract class CModuleManagment extends CObject
 
 	/**
 	 * Метод выполняет копирование шаблонов из установочного каталога в рабочий каталог.
+	 * @param $module string - код модуля шаблоны которого необходимо скопировать
 	 */
 	public function CopyModuleTemplates($module)
 	{
 		global $KS_FS;
-		if($this->IsModule($module))
+		if(!$this->IsModule($module)) throw new CError('MAIN_MODULE_NOT_FOUND',0,$module);
+		if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module.'/install/templates/.default/'))
 		{
-			if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module.'/install/templates/.default/'))
-			{
-				if(!file_exists(TEMPLATES_DIR.'/.default/'.$module.'/'))
-				{
-					$KS_FS->makedir(TEMPLATES_DIR.'/.default/'.$module.'/');
-				}
-				foreach($arFiles as $sFile)
-				{
-					$KS_FS->CopyFile(MODULES_DIR.'/'.$module.'/install/templates/.default/'.$sFile,TEMPLATES_DIR.'/.default/'.$module.'/'.$sFile,'');
-				}
-			}
-			if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module.'/install/templates/admin/'))
-			{
-				foreach($arFiles as $sFile)
-				{
-					$KS_FS->CopyFile(MODULES_DIR.'/'.$module.'/install/templates/admin/'.$sFile,SYS_TEMPLATES_DIR.'/admin/'.$sFile,'');
-				}
-			}
+			if(!file_exists(TEMPLATES_DIR.'/.default/'.$module.'/'))
+				$KS_FS->makedir(TEMPLATES_DIR.'/.default/'.$module.'/');
+			foreach($arFiles as $sFile)
+				$KS_FS->CopyFile(MODULES_DIR.'/'.$module.'/install/templates/.default/'.$sFile,TEMPLATES_DIR.'/.default/'.$module.'/'.$sFile,'');
 		}
-		else
-		{
-			throw new CError('MAIN_MODULE_NOT_FOUND',0,$module);
-		}
+		if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module.'/install/templates/admin/'))
+			foreach($arFiles as $sFile)
+				$KS_FS->CopyFile(MODULES_DIR.'/'.$module.'/install/templates/admin/'.$sFile,SYS_TEMPLATES_DIR.'/admin/'.$sFile,'');
 	}
 
 	/**
@@ -1010,26 +829,22 @@ abstract class CModuleManagment extends CObject
 	 */
 	private function SelfInstall()
 	{
-		global $ks_db,$KS_FS;
+		global $KS_FS;
 		try
 		{
 			if(file_exists(MODULES_DIR.'/main/install/install.php'))
 			{
 				include MODULES_DIR.'/main/install/install.php';
 				if(!$this->IsModule('interfaces'))
-				{
 					$this->Install('interfaces');
-				}
 				if(!$this->IsModule('navigation'))
-				{
 					$this->Install('navigation');
-				}
 				$this->RecountDBStructure();
 				$this->RecountTextStructure();
 				$obConfig=new CConfigParser('main');
 				$obConfig->LoadConfig();
 				include_once(CONFIG_DIR.'/db_structure.php');
-				$ks_db->CheckDB($arStructure);
+				$this->obDB->CheckDB($arStructure);
 				$obConfig->Set('go_install',0);
 				$obConfig->WriteConfig();
 				CUrlParser::get_instance()->Redirect('/admin.php');
