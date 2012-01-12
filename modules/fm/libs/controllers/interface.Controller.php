@@ -7,9 +7,10 @@ interface Controller {
 	public function Upload();
 	public function Download();
 	public function Edit();
-	public function Copy();
-	public function Cut();
+	public function Copy($s);
+	public function Cut($s);
 	public function Paste();
-	public function Delete();
-	public function Open();
+	public function Delete($s);
+	public function Open($s);
+	public function Rename($s);
 }

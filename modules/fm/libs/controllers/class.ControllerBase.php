@@ -14,12 +14,15 @@ class ControllerBase {
 	private $obControllerDir;
 	private $obControllerFile;
 	private $sAction;
+	private $sType;
+	private $sPath;
 	
 	function __construct(){
 		$this->obControllerFile=new ControllerFile();
 		$this->obControllerDir=new ControllerDir($this->obControllerFile);
 		$this->sAction=(!empty($_REQUEST['action'])) ? strip_tags($_REQUEST['action']) : '';
 		$this->sType=(!empty($_REQUEST['type'])) ? strip_tags($_REQUEST['type']) : '';
+		$this->sPath=(!empty($_GET['fm_path'])) ? $_GET['fm_path'] : '';
 	}
 	
 	static function Instance(){
@@ -35,7 +38,7 @@ class ControllerBase {
 			case 'delete':
 				$obView=$this->SelectController()->Delete();
 			case 'copy':
-				$obView=$this->SelectController()->Copy();
+				$obView=$this->SelectController()->Copy($this->sPath);
 			case 'cut':
 				$obView=$this->SelectController()->Cut();
 			case 'paste':
@@ -45,7 +48,7 @@ class ControllerBase {
 			case 'edit':
 				$obView=$this->SelectController()->Edit();
 			case 'open':
-				$obView=$this->ControllerDir->Open();
+				$obView=$this->ControllerDir->Open($this->GetPath());
 			default:
 		}
 	}
@@ -55,15 +58,5 @@ class ControllerBase {
 			return $this->obControllerDir;
 		else
 			return $this->obControllerFile;
-	}
-	
-	public function SetPath($sPath){
-		$_SESSION['fm_path']=$sPath;
-	}
-	
-	public function GetPath(){
-		if(empty($_SESSION['fm_path']))
-			$this->SetPath(UPLOADS_DIR);
-		return $_SESSION['fm_path'];
 	}
 }
