@@ -88,7 +88,7 @@ if (!defined("KS_MAIN_INIT"))
 	require_once MODULES_DIR . "/main/libs/captcha/kcaptcha.php";
 	$smarty->register_function("captchaImageUrl", array("CCaptcha","GetCaptchaUrl"));
 	/*Инициализация работы с файловой системой*/
-	require_once "libs/class.CFileSystem.php";
+	require_once "libs/class.CSimpleFs.php";
 	$KS_FS = new CSimpleFs();
 	/* Подключение и опрос модулей */
 	require_once "libs/class.CMain.php";

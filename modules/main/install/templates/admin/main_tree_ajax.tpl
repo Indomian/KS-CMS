@@ -1,5 +1,5 @@
 {strip}
-<ul>
+<ul id="tree_root">
 	{foreach from=$tree.list item=oItem}
 		{math equation="rand()" var=1 assign="liid"}
 	   	<li style="padding-top: 1px; padding-bottom: 1px;">

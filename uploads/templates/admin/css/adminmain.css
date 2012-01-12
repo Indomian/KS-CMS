@@ -775,14 +775,10 @@ input.button_script_add {
 /*?=tree
 ------------------- */
 .tree {
-	height: auto;
 	margin: 0 0 2px;
 	overflow: hidden;
 	background: #fff;
-	padding-top: 8px;
-	padding-left: 8px;
-	padding-right: 8px;
-	padding-bottom: 24px;
+	padding:8px 8px 24px;
 	border: 1px solid #E5E5E5;
 	color: #878787;
 }
@@ -795,7 +791,19 @@ input.button_script_add {
 
 .tree ul li {
 	padding: 0 0 9px 0;
+	display:block;
 	/*background: url('/uploads/templates/admin/images/icons1/05.gif') left 2px no-repeat;*/
+}
+
+.tree ul li span {
+	margin-left:20px;
+}
+
+.tree ul li img.show,
+.tree ul li img.hide
+{
+	float:left;
+	cursor:pointer;
 }
 
 .tree ul li a {
@@ -1828,62 +1836,6 @@ login_body,.login_body .wrap {
 	color: #70808D;
 	padding: 0 5px;
 	font-size: 11px;
-}
-
-.tree li.addButton p {
-	position: relative;
-}
-
-.tree_line_normal {
-	height: 20px;
-	padding-top: 4px;
-	padding-left: 8px;
-	padding-right: 8px;
-}
-
-.tree_line_normal .lite_icons {
-	display: none;
-}
-
-.tree_line_normal font {
-	background-color: #FFF;
-}
-
-.tree_line_hover {
-	background-color: #EDEDED;
-	height: 20px;
-	padding-top: 4px;
-	padding-left: 8px;
-	padding-right: 8px;
-}
-
-.tree_line_hover .lite_icons {
-	display: block;
-	float: right;
-	overflow: hidden;
-}
-
-.tree_line_hover font {
-	background-color: #EDEDED;
-}
-
-.tree_line_hover_block {
-	background-color: #EDEDED;
-	color: #000;
-	height: 20px;
-	padding-top: 4px;
-	padding-left: 8px;
-	padding-right: 8px;
-}
-
-.tree_line_hover_block .lite_icons {
-	display: block;
-	float: right;
-	overflow: hidden;
-}
-
-.lite_icons img {
-	margin: 0 2px;
 }
 
 .add_01 {

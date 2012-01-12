@@ -27,38 +27,34 @@ class CmainAImain extends CModuleAdmin
 		$this->obTree=new CSiteTree();
 	}
 
-	function GetTreeList($arTree)
-	{
-		$arList=array();
-		if(is_array($arTree))
-			foreach($arTree as $key=>$arItem)
-			{
-				$arList[$key]=&$arItem;
-				if(array_key_exists('children',$arItem))
-					$arList=array_merge($arList,$this->GetTreeList($arItem['children']));
-			}
-		return $arList;
-	}
-
-	function GetModuleTree($module)
-	{
-		if($this->obModules->IsActive($module))
-			return new CModuleTree($module);
-		return false;
-	}
-
 	function GetLeaf()
 	{
+		$arResult=array('error'=>'nothing');
 		if(isset($_REQUEST['key']) && $_REQUEST['key']!='')
 		{
-			$arResult=array(
-				'parent'=>$_REQUEST['key'],
-				'list'=>$this->obTree->GetTreeBrunch($_REQUEST['key'])
-			);
+			if($arBrunch=$this->obTree->GetTreeItem($_REQUEST['key']))
+			{
+				if(array_key_exists('data',$arBrunch) && array_key_exists('module',$arBrunch['data']) && IsTextIdent($arBrunch['data']['module']))
+				{
+					if($this->obModules->IsModule($arBrunch['data']['module']))
+					{
+						include_once MODULES_DIR.'/'.$arBrunch['data']['module'].'/tree.inc.php';
+						$sClassName='C'.$arBrunch['data']['module'].'Tree';
+						$obModuleTree=new $sClassName($arBrunch['data']['module'],$this->obTree);
+						$obModuleTree->GetBrunch($_REQUEST['key']);
+						$arResult=array(
+							'parent'=>$_REQUEST['key'],
+							'list'=>$this->obTree->GetTreeBrunch($_REQUEST['key'])
+						);
+					}
+				}
+			}
+
 		}
 		else
 		{
 			/* Читаем список активных модулей */
+			$this->obTree->Clean();
 			if($arModules = $this->obModules->GetList(array("URL_ident"=>'asc'), array("active" => 1)))
 			{
 				foreach($arModules as $arRow)

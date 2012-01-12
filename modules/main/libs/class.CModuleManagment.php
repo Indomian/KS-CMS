@@ -815,7 +815,7 @@ abstract class CModuleManagment extends CObject
 		if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module.'/install/templates/.default/'))
 		{
 			if(!file_exists(TEMPLATES_DIR.'/.default/'.$module.'/'))
-				$KS_FS->makedir(TEMPLATES_DIR.'/.default/'.$module.'/');
+				$KS_FS->MakeDir(TEMPLATES_DIR.'/.default/'.$module.'/');
 			foreach($arFiles as $sFile)
 				$KS_FS->CopyFile(MODULES_DIR.'/'.$module.'/install/templates/.default/'.$sFile,TEMPLATES_DIR.'/.default/'.$module.'/'.$sFile,'');
 		}

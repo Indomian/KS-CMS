@@ -36,45 +36,42 @@ class CcatsubcatTree extends CModuleTree
 	{
 		if($arItem=$this->obSiteTree->GetTreeItem($key))
 		{
-
+			$arFilter=array('parent_id'=>$arItem['data']['id']);
 		}
 		else
 		{
-			if($arCategories=$this->obCategory->GetList(array('orderation'=>'asc'),false,false,array('id','title','parent_id','active')))
-			{
-				foreach($arCategories as $arItem)
-				{
-					$arHash=array('catsubcat','cat',$arItem['id'],$arItem['parent_id']);
-					$arItem['module']=$this->sModule;
-					$arRow=array(
-						'key'=>$this->obSiteTree->GenHash($arHash),
-						'title'=>$arItem['title'],
-						'href'=>'',
-						'actions'=>'',
-						'data'=>$arItem
-					);
-					if($arItem['id']==0 && $arItem['parent_id']==0)
-						$this->obSiteTree->AddTreeLeaf('',$arRow);
-					else
-						$this->obSiteTree->AddTreeBrunch('',$arRow);
-				}
-			}
-			if($arElements=$this->obElement->GetList(array('orderation'=>'asc'),false,false,array('id','title','parent_id','active')))
-			{
-				foreach($arElements as $arItem)
-				{
-					$arHash=array('catsubcat','elm',$arItem['id'],$arItem['parent_id']);
-					$arItem['module']=$this->sModule;
-					$arRow=array(
-						'key'=>$this->obSiteTree->GenHash($arHash),
-						'title'=>$arItem['title'],
-						'href'=>'',
-						'actions'=>'',
-						'data'=>$arItem
-					);
-					$this->obSiteTree->AddTreeLeaf('',$arRow);
-				}
-			}
+			$arFilter=array('parent_id'=>0);
 		}
+		if($arCategories=$this->obCategory->GetList(array('orderation'=>'asc'),$arFilter,false,array('id','title','parent_id','active')))
+			foreach($arCategories as $arItem)
+			{
+				$arHash=array('catsubcat','cat',$arItem['id'],$arItem['parent_id']);
+				$arItem['module']=$this->sModule;
+				$arRow=array(
+					'key'=>$this->obSiteTree->GenHash($arHash),
+					'title'=>$arItem['title'],
+					'href'=>'',
+					'actions'=>'',
+					'data'=>$arItem
+				);
+				if($arItem['id']==0 && $arItem['parent_id']==0)
+					$this->obSiteTree->AddTreeLeaf($key,$arRow);
+				else
+					$this->obSiteTree->AddTreeBrunch($key,$arRow);
+			}
+		if($arElements=$this->obElement->GetList(array('orderation'=>'asc'),$arFilter,false,array('id','title','parent_id','active')))
+			foreach($arElements as $arItem)
+			{
+				$arHash=array('catsubcat','elm',$arItem['id'],$arItem['parent_id']);
+				$arItem['module']=$this->sModule;
+				$arRow=array(
+					'key'=>$this->obSiteTree->GenHash($arHash),
+					'title'=>$arItem['title'],
+					'href'=>'',
+					'actions'=>'',
+					'data'=>$arItem
+				);
+				$this->obSiteTree->AddTreeLeaf($key,$arRow);
+			}
 	}
 }

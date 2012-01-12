@@ -30,9 +30,26 @@ class CSiteTree
 		}
 	}
 
-	function __desctruct()
+	function __destruct()
 	{
 		$_SESSION['adminTree']=$this->arTree;
+	}
+
+	/**
+	 * Метод преобразует дерево в список
+	 * @param array $arTree
+	 */
+	function GetTreeList(array &$arTree)
+	{
+		$arList=array();
+		if(is_array($arTree))
+			foreach($arTree as $key=>$arItem)
+			{
+				$arList[$key]=&$arTree[$key];
+				if(array_key_exists('children',$arItem))
+					$arList=array_merge($arList,$this->GetTreeList($arItem['children']));
+			}
+		return $arList;
 	}
 
 	/**
@@ -66,7 +83,7 @@ class CSiteTree
 	{
 		if($sParentKey!='' && array_key_exists($sParentKey,$this->arTreeList))
 		{
-			if(!array_key_exists('children',$this->arTreeList[$sParentKey]))
+			if(array_key_exists('children',$this->arTreeList[$sParentKey]))
 				$this->arTreeList[$sParentKey]['children'][$arLeaf['key']]=$arLeaf;
 			else
 				throw new CError('MAIN_TREE_CANT_ADD_LEAF_TO_LEAF');
@@ -76,6 +93,12 @@ class CSiteTree
 			$this->arTree[$arLeaf['key']]=$arLeaf;
 			$this->arTreeList[$arLeaf['key']]=&$this->arTree[$arLeaf['key']];
 		}
+	}
+
+	public function Clean()
+	{
+		$this->arTree=array();
+		$this->arTreeList=array();
 	}
 
 	/**

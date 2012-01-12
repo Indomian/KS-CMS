@@ -1,13 +1,68 @@
-function _KSAdminTree(){
+function _KSAdminTreeLoadBrunch(id)
+{
 	var arRequest={
 		'module':'main',
 		'action':'l',
-		'k':''
+		'key':id
 	};
 	ShowLoading();
 	$.getJSON('/admin.php',arRequest,function(data){
 		HideLoading();
-		alert(data);
+		if('list' in data)
+		{
+			var root=$('#tree_'+data.parent).empty();
+			for(ii in data.list)
+			{
+				var obItem=root.append('<li id="root_'+ii+'"><span>'+data.list[ii].title+'</span></li>').children('li:last');
+				if('children' in data.list[ii])
+				{
+					obItem.addClass('dir');
+					obItem.prepend('<img src="/uploads/templates/admin/images/icons_menu/plus.gif" alt="Развернуть" class="show">');
+					obItem.prepend('<img src="/uploads/templates/admin/images/icons_menu/minus.gif" alt="Свернуть" class="hide" style="display:none;">');
+				}
+				else
+				{
+					obItem.addClass('file');
+				}
+				obItem.append('<ul id="tree_'+ii+'"></ul>');
+			}
+		}
+	});
+}
+
+function _KSAdminTree(){
+	var arRequest={
+		'module':'main',
+		'action':'l',
+		'key':''
+	};
+	ShowLoading();
+	$.getJSON('/admin.php',arRequest,function(data){
+		HideLoading();
+		if('list' in data)
+		{
+			var root=$('#tree_root');
+			for(ii in data.list)
+			{
+				var obItem=root.append('<li id="'+ii+'"><span>'+data.list[ii].title+'</span></li>').children('li:last');
+				if('children' in data.list[ii])
+				{
+					obItem.addClass('dir');
+					obItem.prepend('<img src="/uploads/templates/admin/images/icons_menu/plus.gif" alt="Развернуть" class="show">');
+					obItem.prepend('<img src="/uploads/templates/admin/images/icons_menu/minus.gif" alt="Свернуть" class="hide" style="display:none;">');
+					obItem.children('.show').click(function(){
+						//$(this).hide().prev().show();
+						var id=$(this).parent().attr('id');
+						_KSAdminTreeLoadBrunch(id);
+					});
+				}
+				else
+				{
+					obItem.addClass('file');
+				}
+				obItem.append('<ul id="tree_'+ii+'"></ul>');
+			}
+		}
 	});
 }
 
