@@ -2,22 +2,24 @@
 /*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
-class ConrtollerFile implements Controller {
+class ControllerFile implements Controller {
 	private $obModelUploadResult;
 	private $obModelFile;
 	private $obModelImage;
 	private $obFile;
+	private $obHelper;
 	
 	function __construct(){
 		global $ks_fs;
 		$this->obFile=$ks_fs;
+		$this->obHelper=Helper::Instance();
 		$this->obModelImage=new ModelImage();
 		$this->obModelFile=new ModelFile();
 		$this->obModelUploadResult=new ModelUploadResult();
 	}
 
-	public function Open($sFile){
-		return $this->obModelDir->View();
+	public function Open(){
+		return $this->obModelFile->View();
 	}
 
 	public function Edit(){
@@ -29,34 +31,35 @@ class ConrtollerFile implements Controller {
 		if(!$sOldName || $sOldName=='' || $sNewName=='')
 			throw new CFileError('FM_INCORRECT_DATA');
 		$this->obFile->Rename($sOldName, $sNewName);
-		return $this->obModelDir->View();
+		return $this->obModelFile->View();
 	}
 
-	public function Delete($sPath){
-		$sPath=$this->ConcatPath($sPath);
-		if( $this->obFile->Remove($sPath) ){
+	public function Delete($sFile){
+		$sFile=$this->obHelper->ConcatPath($sFile);
+		if($this->obFile->Remove($sFile)){
 			return $this->obModelDir->View();
 		}
 		return $this->obModelDir->View();
 	}
 
-	public function Copy($sPath){
-		$sPath=$this->GetPath().'/'.$sPath;
-		Buffer::Add($sPath,'copy');
+	public function Copy($sFile){
+		$sFile=$this->obHelper->ConcatPath($sFile);
+		Buffer::Add($sFile,'copy');
 		return $this->obModelDir->View();
 	}
 
-	public function Cut($sPath){
-		$sPath=$this->GetPath().'/'.$sPath;
-		Buffer::Add($sPath,'cut');
+	public function Cut($sFile){
+		$sFile=$this->obHelper->GetPath($sFile);
+		Buffer::Add($sFile,'cut');
 		return $this->obModelDir->View();
 	}
 
 	public function Paste(){
 		if($arData=Buffer::Get()){
-			$sCurrentPath=$this->GetPath();
+			$sCurrentPath=$this->obHelper->GetPath();
 			$sMarker=(!empty($arData['marker'])) ? $arData['marker'] : 'copy';
-			$bResult=$this->obFile->DirCopy($arData['data'],$sCurrentPath);
+			$sFile=$this->obHelper->GetPathInfo($arData['data'],'filename');
+			$bResult=$this->obFile->CopyFile($arData['data'],$this->obHelper->ConcatPath($sFile));
 			if($bResult && $sMarker=='cut')
 				$this->obFile->Remove($arData['data']);
 		}

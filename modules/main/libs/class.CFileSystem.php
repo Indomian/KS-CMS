@@ -13,7 +13,7 @@ abstract class CFileSystem extends CBaseObject
 	abstract function Remove($path);
 	abstract function Rename($old, $new);
 	abstract function RemDir($path);
-	abstract function DirCopy($srcdir, $dstdir, $offset=0, $verbose = false);
+	abstract function DirCopy($srcdir, $dstdir);
 	abstract function CopyFile($from,$to,$absolute='');
 	abstract function CmpPath($old,$new);
 	abstract function ChangePath($old,$new);
@@ -142,16 +142,8 @@ class CSimpleFs extends CFileSystem
 	 */
 	function CopyFile($from,$to,$absolute='')
 	{
-		if($absolute==='')
-		{
-			$from=ROOT_DIR.$from;
-			$to=ROOT_DIR.$to;
-		}
-		else
-		{
-			$from=$absolute.$from;
-			$to=$absolute.$to;
-		}
+		$from=$absolute.$from;
+		$to=$absolute.$to;
 		if(is_dir($from))
 			$this->DirCopy($from,$to);
 		else
@@ -180,6 +172,17 @@ class CSimpleFs extends CFileSystem
 		return $path;
 	}
 
+	/**
+	 * Функия возвразщает новый путь, сформированный из расхождений
+	 * @param string - старый путь
+	 * @param string - новый путь
+	 * @return string - строка результата
+	 */
+	function DiffPath($sOld,$sNew)
+	{
+		
+	}
+	
 	/**
 	 * Функция ChangePath выполняет полный перенос файлов из одного пути в другой. При работе этой
 	 * функции происходит создание нового пути (указанного в параметре $new) и перенос всех файлов
@@ -319,5 +322,3 @@ class CSimpleFs extends CFileSystem
 		return true;
 	}
 }
-
-?>
