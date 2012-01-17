@@ -792,17 +792,26 @@ input.button_script_add {
 .tree ul li {
 	padding: 0 0 9px 0;
 	display:block;
+	position:relative;
 	/*background: url('/uploads/templates/admin/images/icons1/05.gif') left 2px no-repeat;*/
 }
 
 .tree ul li span {
-	margin-left:20px;
+	padding-left:40px;
+	display:block;
+}
+
+.tree ul li img.icon
+{
+	left:20px;
+	position:absolute;
 }
 
 .tree ul li img.show,
 .tree ul li img.hide
 {
-	float:left;
+	left:0px;
+	position:absolute;
 	cursor:pointer;
 }
 

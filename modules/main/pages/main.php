@@ -3,10 +3,9 @@
  * Файл отвечает за генерацию древовидной структуры лайт-версии сайта
  *
  * @filesource main.php
- * @author blade39 <blade39@kolosstudio.ru>, north-e <pushkov@kolosstudio.ru>
- * @since 07.04.2009
- * @version 1.1
- * @see lite.php
+ * @author blade39 <blade39@kolosstudio.ru>
+ * @since 17.01.2012
+ * @version 2.6
  */
 
 /* Обязательно вставляем во все файлы для защиты от взлома */
@@ -24,7 +23,7 @@ class CmainAImain extends CModuleAdmin
 	function __construct($module='main',&$smarty,&$parent)
 	{
 		parent::__construct($module,$smarty,$parent);
-		$this->obTree=new CSiteTree();
+		$this->obTree=new CSiteTree($this->obModules);
 	}
 
 	function GetLeaf()
@@ -32,33 +31,30 @@ class CmainAImain extends CModuleAdmin
 		$arResult=array('error'=>'nothing');
 		if(isset($_REQUEST['key']) && $_REQUEST['key']!='')
 		{
-			if($arBrunch=$this->obTree->GetTreeItem($_REQUEST['key']))
-			{
+			$sKey=$_REQUEST['key'];
+			if($arBrunch=$this->obTree->GetTreeItem($sKey))
 				if(array_key_exists('data',$arBrunch) && array_key_exists('module',$arBrunch['data']) && IsTextIdent($arBrunch['data']['module']))
-				{
 					if($this->obModules->IsModule($arBrunch['data']['module']))
 					{
 						include_once MODULES_DIR.'/'.$arBrunch['data']['module'].'/tree.inc.php';
 						$sClassName='C'.$arBrunch['data']['module'].'Tree';
 						$obModuleTree=new $sClassName($arBrunch['data']['module'],$this->obTree);
-						$obModuleTree->GetBrunch($_REQUEST['key']);
-						$arResult=array(
-							'parent'=>$_REQUEST['key'],
-							'list'=>$this->obTree->GetTreeBrunch($_REQUEST['key'])
-						);
-					}
-				}
-			}
+						$obModuleTree->GetBrunch($sKey);
 
+					}
+			$arTreeBrunch=$this->obTree->GetTreeBrunch($sKey);
+			$arResult=array(
+				'parent'=>$sKey,
+				'list'=>$arTreeBrunch,
+				'size'=>count($arTreeBrunch)
+			);
 		}
 		else
 		{
 			/* Читаем список активных модулей */
 			$this->obTree->Clean();
 			if($arModules = $this->obModules->GetList(array("URL_ident"=>'asc'), array("active" => 1)))
-			{
 				foreach($arModules as $arRow)
-				{
 					if(file_exists(MODULES_DIR.'/'.$arRow['directory'].'/tree.inc.php'))
 					{
 						include_once MODULES_DIR.'/'.$arRow['directory'].'/tree.inc.php';
@@ -69,11 +65,11 @@ class CmainAImain extends CModuleAdmin
 						else
 							$obModuleTree->GetRootBrunch();
 					}
-				}
-			}
+			$arTreeBrunch=$this->obTree->GetTreeBrunch();
 			$arResult=array(
-				'parent'=>'',
-				'list'=>$this->obTree->GetTreeBrunch(),
+				'parent'=>'root',
+				'list'=>$arTreeBrunch,
+				'size'=>count($arTreeBrunch)
 			);
 		}
 		echo json_encode($arResult);

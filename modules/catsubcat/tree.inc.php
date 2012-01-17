@@ -1,6 +1,6 @@
 <?php
 /**
- * В файле содержится класс выполняющий дерева модуля catsubcat
+ * В файле содержится класс выполняющий построение дерева модуля catsubcat
  *
  * @filesource catsubcat/tree.inc.php
  * @author blade39 <blade39@kolosstudio.ru>
@@ -25,23 +25,15 @@ class CcatsubcatTree extends CModuleTree
 		parent::__construct($module,$obSiteTree);
 		$this->obCategory=new CCategory();
 		$this->obElement=new CElement();
-	}
-
-	function GetRootBrunch()
-	{
-
+		$this->sIcon='/icons_tree/catsubcat.gif';
 	}
 
 	function GetBrunch($key='')
 	{
+		$arFilter=array('parent_id'=>0);
 		if($arItem=$this->obSiteTree->GetTreeItem($key))
-		{
-			$arFilter=array('parent_id'=>$arItem['data']['id']);
-		}
-		else
-		{
-			$arFilter=array('parent_id'=>0);
-		}
+			if(array_key_exists('id',$arItem['data']))
+				$arFilter=array('parent_id'=>$arItem['data']['id']);
 		if($arCategories=$this->obCategory->GetList(array('orderation'=>'asc'),$arFilter,false,array('id','title','parent_id','active')))
 			foreach($arCategories as $arItem)
 			{
@@ -55,9 +47,15 @@ class CcatsubcatTree extends CModuleTree
 					'data'=>$arItem
 				);
 				if($arItem['id']==0 && $arItem['parent_id']==0)
+				{
+					$arRow['icon']='/icons_tree/page.gif';
 					$this->obSiteTree->AddTreeLeaf($key,$arRow);
+				}
 				else
+				{
+					$arRow['icon']='/icons_tree/folder.gif';
 					$this->obSiteTree->AddTreeBrunch($key,$arRow);
+				}
 			}
 		if($arElements=$this->obElement->GetList(array('orderation'=>'asc'),$arFilter,false,array('id','title','parent_id','active')))
 			foreach($arElements as $arItem)
@@ -67,6 +65,7 @@ class CcatsubcatTree extends CModuleTree
 				$arRow=array(
 					'key'=>$this->obSiteTree->GenHash($arHash),
 					'title'=>$arItem['title'],
+					'icon'=>'/icons_tree/page.gif',
 					'href'=>'',
 					'actions'=>'',
 					'data'=>$arItem

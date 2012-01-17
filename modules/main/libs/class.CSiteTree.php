@@ -15,9 +15,11 @@ class CSiteTree
 {
 	private $arTree;
 	private $arTreeList;
+	private $obModules;
 
-	function __construct()
+	function __construct(CModuleManagment $obModules)
 	{
+		$this->obModules=$obModules;
 		if(isset($_SESSION['adminTree']))
 		{
 			$this->arTree=$_SESSION['adminTree'];
@@ -33,6 +35,11 @@ class CSiteTree
 	function __destruct()
 	{
 		$_SESSION['adminTree']=$this->arTree;
+	}
+
+	function Modules()
+	{
+		return $this->obModules;
 	}
 
 	/**

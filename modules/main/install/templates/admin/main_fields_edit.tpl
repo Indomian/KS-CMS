@@ -114,3 +114,4 @@ $(document).ready(function(){
     	</div>
    	</div>
 </form>
+{include file='admin/common/hint.tpl' title=$smarty.config.title description=$smarty.config.hint icon="/big_icons/settings.gif"}

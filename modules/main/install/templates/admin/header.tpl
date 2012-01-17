@@ -6,12 +6,10 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<title>{#control_panel#} {$VERSION.TITLE}</title>
 		<link rel="stylesheet" href="/uploads/templates/admin/css/adminmain.css" type="text/css" />
-		<link rel="stylesheet" href="/uploads/templates/admin/css/thickbox.css" type="text/css" />
 		<link rel="stylesheet" href="/uploads/templates/admin/css/ui.all.css" type="text/css" />
 		<script type="text/javascript" src="/js/jquery/jquery.js"></script>
 		<script type="text/javascript" src="/js/main/floatmessage.js"></script>
 		<script type="text/javascript" src="/js/main/admin.js"></script>
-		<script type="text/javascript" src="/js/main/ksWindow.js"></script>
 		{*Здесь подключается тинимце*}
 		<script type="text/javascript" src="/js/tiny_mce/tiny_mce.js"></script>
 		<script type="text/javascript" src="/js/tiny_mce/jquery.tinymce.js"></script>
@@ -38,12 +36,12 @@
 									{foreach from=$left_menu key=oKey item=oItem name=menu}
 									<li>
 										<a class="menu_link {$oItem.class}" href="/admin.php?{$oItem.href}">{$oItem.title}</a>
-										<ul id="b{$smarty.foreach.menu.iteration}" style="{if $module.current!=$oItem.module}display: none;{/if}">
+										<ul style="{if $module.current!=$oItem.module}display: none;{/if}">
 											{foreach from=$oItem.items key=soKey item=soItem}
 											<li><img src="{#images_path#}/icons_menu/{$soItem.class}" alt="icon" /><a href="/admin.php?{$soItem.href}">{$soItem.title}</a></li>
 											{/foreach}
 										</ul>
-										<span class="menu_arrow_down" id="i{$smarty.foreach.menu.iteration}" onclick="dis('i{$smarty.foreach.menu.iteration}', 'b{$smarty.foreach.menu.iteration}'); return false;">&nbsp;</span>
+										<a class="menu_arrow_{if $module.current!=$oItem.module}down{else}up{/if} menu_toggle" href="#">&nbsp;</a>
 									</li>
 									{/foreach}
 								</ul>

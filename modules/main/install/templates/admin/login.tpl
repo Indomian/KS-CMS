@@ -17,7 +17,7 @@
 				<div class="login_head">&nbsp;</div>
 {/if}
 					<div class="login_logo"><a href="/admin.php"><img src="{#images_path#}/logo.gif" alt="logo" height="67" width="249" /></a></div>
-					<form action="{$backurl}" method="POST" id="login_form">
+					<form action="{$backurl}" method="post" id="login_form">
 						<input type="hidden" name="CU_ACTION" value="login"/>
 						{strip}
 						<div class="ltop">

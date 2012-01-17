@@ -17,18 +17,18 @@ var _KS_CMS_ADMIN={
 			e.preventDefault();
 			var obPrev=$(this).prev();
 			var cookieTime=new Date();
-			cookieTime.setTime(cookieTime.getTime()+360000000);
+			cookieTime.setTime(cookieTime.getTime()+36000000);
 			if($(this).hasClass('content_arrow_up'))
 			{
 				obPrev.slideUp(300);
 				$(this).removeClass('content_arrow_up').addClass('content_arrow_down');
-				_KS_CMS_ADMIN.setCookie('showHelpBar',0,cookieTime.toGMTString());
+				_KS_CMS_ADMIN.setCookie('showHelpBar',1,cookieTime.toGMTString());
 			}
 			else
 			{
 				obPrev.slideDown(300);
 				$(this).addClass('content_arrow_up').removeClass('content_arrow_down');
-				_KS_CMS_ADMIN.setCookie('showHelpBar',1,cookieTime.toGMTString());
+				_KS_CMS_ADMIN.setCookie('showHelpBar',0,cookieTime.toGMTString());
 				
 			}
 		}
@@ -39,7 +39,7 @@ var _KS_CMS_ADMIN={
 	 */
 	"setCookie":function (name, value, expires, path, domain, secure)
 	{
-	      document.cookie = name + "=" + escape(value) +
+		document.cookie = name + "=" + escape(value) +
 	        ((expires) ? "; expires=" + expires : "") +
 	        ((path) ? "; path=" + path : "") +
 	        ((domain) ? "; domain=" + domain : "") +
@@ -242,7 +242,6 @@ function togglePanel(elm)
 	{
 		selectType($(':select[name=CM_type_id]').attr('value'), 0, document.getElementById('item0'));
 		document.getElementById('panel').style.display='';
-
 	}
 	else
 	{
@@ -494,24 +493,16 @@ $(document).ready(function()
 	$('input.checkall').click(function(){
 		$('input.checkItem').attr('checked',$(this).attr('checked'));
 		if($('input.checkItem:checked').length>0)
-		{
 			$('input.check_depend').attr('disabled',false);
-		}
 		else
-		{
 			$('input.check_depend').attr('disabled',true);
-		}
 	});
 
 	$('input.checkItem').click(function(){
 		if($('input.checkItem:checked').length>0)
-		{
 			$('input.check_depend').attr('disabled',false);
-		}
 		else
-		{
 			$('input.check_depend').attr('disabled',true);
-		}
 	});
 
 	$('input.check_depend').attr('disabled',true);

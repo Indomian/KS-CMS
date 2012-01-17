@@ -17,16 +17,29 @@ class CModuleTree
 {
 	protected $obSiteTree;
 	protected $sModule;
+	protected $sIcon;
 
 	function __construct($module,CSiteTree $obSiteTree)
 	{
 		$this->obSiteTree=$obSiteTree;
 		$this->sModule=$module;
+		$this->sIcon='/icons_tree/folder.gif';
 	}
 
 	function GetRootBrunch()
 	{
-
+		$arHash=array($this->sModule);
+		$arRow=array(
+			'key'=>$this->obSiteTree->GenHash($arHash),
+			'title'=>$this->obSiteTree->Modules()->GetTitle($this->sModule),
+			'icon'=>$this->sIcon,
+			'href'=>'',
+			'actions'=>'',
+			'data'=>array(
+				'module'=>$this->sModule
+			)
+		);
+		$this->obSiteTree->AddTreeBrunch('',$arRow);
 	}
 
 	function GetBrunch($key='')

@@ -164,13 +164,7 @@ else
 	}
 	if (file_exists(MODULES_DIR . "/main/pages/" . $start_adminpage . ".php"))
 	{
-		if($start_adminpage!='lite')
-			$page=$this->LoadModulePage('main',$start_adminpage);
-		else
-		{
-			$smarty->assign("modpage", $start_adminpage);
-			include("pages/" . $start_adminpage . ".php");
-		}
+		$page=$this->LoadModulePage('main',$start_adminpage);
 		$bInclude = true;
 	}
 	else
