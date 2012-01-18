@@ -15,6 +15,7 @@ class ControllerBase {
 	private $obControllerFile;
 	private $sAction;
 	private $sType;
+	private $sFile;
 	private $obHelper;
 	
 	function __construct(){
@@ -23,6 +24,7 @@ class ControllerBase {
 		$this->obHelper=Helper::Instance();
 		$this->sAction=(!empty($_REQUEST['a'])) ? strip_tags($_REQUEST['a']) : '';
 		$this->sType=(!empty($_REQUEST['t'])) ? strip_tags($_REQUEST['t']) : '';
+		$this->sFile=(!empty($_REQUEST['fm_file'])) ? $_REQUEST['fm_file'] : '';
 		$this->ParseCommonActions();
 	}
 	
@@ -43,23 +45,29 @@ class ControllerBase {
 				$obView=$this->obControllerDir->Delete($arTitles);
 				break;
 			case 'copy':
-				$obView=$this->SelectController()->Copy();
+				$arTitles=(!empty($_POST['title'])) ? $_POST['title'] : array();
+				$obView=$this->SelectController()->Copy($arTitles);
 				break;
 			case 'cut':
-				$obView=$this->SelectController()->Cut();
+				$arTitles=(!empty($_POST['title'])) ? $_POST['title'] : array();
+				$obView=$this->SelectController()->Cut($arTitles);
 				break;
 			case 'paste':
 				$obView=$this->obControllerDir->Paste();
 				break;
 			case 'download':
-				$obView=$this->obControllerFile->Download();
+				$sFile=(!empty($_REQUEST['title'])) ? strip_tags($_REQUEST['title']) : '';
+				$obView=$this->obControllerFile->Download($sFile);
 				break;
 			case 'edit':
-				$obView=$this->SelectController()->Edit();
+				$obView=$this->SelectController()->Edit($this->sFile);
+				break;
+			case 'cancel':
+				$obView=$this->obControllerDir->Cancel();
 				break;
 			case 'open':
 			default:
-				$obView=$this->SelectController()->Open();
+				$obView=$this->SelectController()->Open($this->sFile);
 				break;
 		}
 		return $obView;
@@ -77,5 +85,13 @@ class ControllerBase {
 			$this->sAction='delete';
 		elseif(isset($_REQUEST['comupl']))
 			$this->sAction='upload';
+		elseif(isset($_REQUEST['comсopy']))
+			$this->sAction='copy';
+		elseif(isset($_REQUEST['comcut']))
+			$this->sAction='cut';
+		elseif(isset($_REQUEST['compaste']))
+			$this->sAction='paste';
+		elseif(isset($_REQUEST['cancel']))
+			$this->sAction='cancel';
 	}
 }

@@ -2,7 +2,7 @@
 /*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
-class ViewUploadResult implements View {
+class ViewFile implements View {
 	private $arData;
 
 	function __construct(array $arData){
@@ -10,6 +10,9 @@ class ViewUploadResult implements View {
 	}
 
 	function GetData(){
-		return $this->arData;
+		return array(
+			'tpl'=>'_edit_file',
+			'data'=>array('file'=>$this->arData)
+		);
 	}
 }

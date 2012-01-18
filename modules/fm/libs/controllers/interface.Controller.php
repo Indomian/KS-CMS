@@ -4,12 +4,13 @@ if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 interface Controller {
 	public function Upload();
-	public function Download();
-	public function Edit();
-	public function Copy($s);
-	public function Cut($s);
+	public function Download($s);
+	public function Edit($s);
+	public function Copy(array $s);
+	public function Cut(array $s);
 	public function Paste();
 	public function Delete(array $s);
-	public function Open();
+	public function Open($s);
 	public function Rename($s);
+	public function Cancel();
 }

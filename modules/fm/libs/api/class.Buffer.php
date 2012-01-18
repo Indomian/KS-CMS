@@ -11,19 +11,27 @@ if( !defined('KS_ENGINE') )
 	die("Hacking attempt!");
 
 class Buffer {
-	static function Add($mData,$sMarker=''){
-		$this->Clear();
-		$_SESSION['buffer']=array(
-			'data'=>$mData,
+	static function Add($sPath,$sElement,$sMarker=''){
+		$_SESSION['buffer'][$sElement]=array(
+			'path'=>$sPath,
+			'element'=>$sElement,
 			'marker'=>$sMarker
 		);
 	}
 	
 	static function Clear(){
-		unset($_SESSION['buffer']);
+		$_SESSION['buffer']=array();
 	}
 	
 	static function Get(){
 		return (!empty($_SESSION['buffer'])) ? $_SESSION['buffer'] : false;
+	}
+
+	static function In($sElement, $sMarker=false){
+		if(!isset($_SESSION['buffer'][$sElement]))
+			return false;
+		if(!$sMarker)
+			return true;
+		return ($_SESSION['buffer'][$sElement]['marker']==$sMarker);
 	}
 }

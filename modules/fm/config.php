@@ -8,6 +8,8 @@
 $MODULE_fm_config = array
 (
 	'current_path'=>UPLOADS_DIR,
-	'allowed_edit_format'=>array('txt','html','php','tpl'),
-	'allowed_edit_image_format'=>array('jpg','png','gif'),
+	'availabels_types'=>array(
+		'text'=>array('txt','html','php','tpl','css','js'),
+		'image'=>array('jpg','png','gif')
+	)
 );

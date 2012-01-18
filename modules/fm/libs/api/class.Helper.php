@@ -26,6 +26,8 @@ class Helper {
 		
 		if(!empty($_GET['fm_path'])){
 			$sPath=preg_replace('#^(([.]{2,}+[\/]{0,1})||(\.\/))#','',$_GET['fm_path']);
+			if($sPath=='/')
+				$sPath='';
 			$this->sPath=$this->sCurrentPath.$sPath;
 		}
 	}
@@ -48,13 +50,6 @@ class Helper {
 
 	public function GetCurrentPath(){
 		return $this->sCurrentPath;
-	}
-	public function ConcatPath($sDir, $sPath=''){
-		$sPath=($sPath=='') ? $this->GetPath() : $sPath;
-		if(empty($sDir))
-			return $this->sPath;
-		$this->sPath=$sPath.$sDir;
-		return $this->sPath;
 	}
 
 	public function GetPathInfo($sPath,$sParam=false){
@@ -90,28 +85,27 @@ class Helper {
 		return (count($arDirs)>1)?implode('/',$arDirs):'/';
 	}
 
-	public function UploadFiles($sFieldName){
-		$arFiles=(isset($_FILES[$sFieldName])) ? $_FILES[$sFieldName] : array();
-		$arNames=(isset($_POST['file_name'])) ? $_POST['file_name'] : array();
-		if(count($arFiles)<=0)
-			return false;
+	public function GetNavChain($sFolder=''){
+		if($sFolder=='')
+			$sFolder=$this->GetFolder();
 		$arTemp=array();
-		foreach($arFiles as $sKey=>$arValues){
-			foreach($arValues as $nKey=>$sValue){
-				if(!empty($sValue))
-					$arTemp[$nKey][$sKey]=$sValue;
+		$arFolders=explode('/',$sFolder);
+		array_unshift($arFolders,'/');
+		if(count($arFolders)>0){
+			$nCount=count($arFolders);
+			for($i=0; $i<$nCount; $i++){
+				if(empty($arFolders[$i]))
+					continue;
+				$arPath=array();
+				for($y=0; $y<=$i; $y++)
+					if(!empty($arFolders[$y]))
+						$arPath[]=$arFolders[$y];
+				$arTemp[]=array(
+					'title'=>$arFolders[$i],
+					'path'=>implode('/',$arPath)
+				);
 			}
 		}
-		$nTempCount=count($arTemp);
-		if($nTempCount<=0)
-			return false;
-		$sPath=$this->GetPath();
-		$nCount=0;
-		foreach($arTemp as $nKey=>$arValue){
-			$sNewName=(!empty($arNames[$nKey])) ? $arNames[$nKey] : $arValue['name'];
-			if(@move_uploaded_file($arValue['tmp_name'], $sPath.'/'.$sNewName))
-				$nCount++;
-		}
-		return array('sends'=>$nTempCount, 'uploads'=>$nCount);
+		return $arTemp;
 	}
 }

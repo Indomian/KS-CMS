@@ -8,62 +8,66 @@ class ControllerFile implements Controller {
 	private $obModelImage;
 	private $obFile;
 	private $obHelper;
+	private $obFileAPI;
 	
 	function __construct(){
 		global $ks_fs;
 		$this->obFile=$ks_fs;
+		$this->obFileAPI=FileAPI::Instance();
 		$this->obHelper=Helper::Instance();
-		$this->obModelImage=new ModelImage();
-		$this->obModelFile=new ModelFile();
-		$this->obModelUploadResult=new ModelUploadResult();
 	}
 
-	public function Open(){
-		return $this->obModelFile->View();
+	public function Open($sFile){
+		if($sFile!=''){
+			$sPath=$this->obHelper->GetPath();
+			$arData=$this->obFileAPI->IsEditable($sFile);
+			if(!$arData['open'])
+				throw new CFileError('FM_EDIT_THE_FILE_IS_FORBIDDEN');
+			if($arData['type']=='image'){
+				$obModeImage=new ModelImage($sFile);
+				return $obModeImage->View();
+			}else{
+				$obModelFile=new ModelFile($sFile);
+				return $obModelFile->View();
+			}
+		}else{
+			throw new CFileError('FM_EDIT_THE_FILE_IS_FORBIDDEN');
+		}
 	}
 
-	public function Edit(){
-		
+	public function Edit($sFile){
+		if($sFile=='')
+			throw new CFileError('FM_EDIT_THE_FILE_IS_FORBIDDEN');
+		$sPath=$this->obHelper->GetPath();
+		$arData=$this->obFileAPI->IsEditable($sFile);
+		if(!$arData['open'])
+			throw new CFileError('FM_EDIT_THE_FILE_IS_FORBIDDEN');
+		if($arData['type']=='text'){
+			$this->obFileAPI->EditText($sPath.'/'.$sFile);
+		}
+		$arMessage=array('text'=>'FM_EDIT_COMLETE','code'=>2);
+		$obModelResult=new ModelResult($arMessage);
+		return $obModelResult->View();
 	}
 
 	public function Rename($sOldName){
-		$sNewName=(!empty($_POST['new_name'])) ? $_POST['new_name'] : '';
-		if(!$sOldName || $sOldName=='' || $sNewName=='')
-			throw new CFileError('FM_INCORRECT_DATA');
-		$this->obFile->Rename($sOldName, $sNewName);
-		return $this->obModelFile->View();
+		throw new CFileError('FM_NO_METHOD');
 	}
 
 	public function Delete(array $sFile){
-		$sFile=$this->obHelper->ConcatPath($sFile);
-		if($this->obFile->Remove($sFile)){
-			return $this->obModelDir->View();
-		}
-		return $this->obModelDir->View();
+		throw new CFileError('FM_NO_METHOD');
 	}
 
-	public function Copy($sFile){
-		$sFile=$this->obHelper->ConcatPath($sFile);
-		Buffer::Add($sFile,'copy');
-		return $this->obModelDir->View();
+	public function Copy(array $sFile){
+		throw new CFileError('FM_NO_METHOD');
 	}
 
-	public function Cut($sFile){
-		$sFile=$this->obHelper->GetPath($sFile);
-		Buffer::Add($sFile,'cut');
-		return $this->obModelDir->View();
+	public function Cut(array $sFile){
+		throw new CFileError('FM_NO_METHOD');
 	}
 
 	public function Paste(){
-		if($arData=Buffer::Get()){
-			$sCurrentPath=$this->obHelper->GetPath();
-			$sMarker=(!empty($arData['marker'])) ? $arData['marker'] : 'copy';
-			$sFile=$this->obHelper->GetPathInfo($arData['data'],'filename');
-			$bResult=$this->obFile->CopyFile($arData['data'],$this->obHelper->ConcatPath($sFile));
-			if($bResult && $sMarker=='cut')
-				$this->obFile->Remove($arData['data']);
-		}
-		return $this->obModelDir->View();
+		throw new CFileError('FM_NO_METHOD');
 	}
 
 	public function Upload(){
@@ -80,10 +84,22 @@ class ControllerFile implements Controller {
 				continue;
 			$obFileUploader->Upload($sNewName, false);
 		}
-		return $this->obModelUploadResult->View();
+		$arMessage=array('text'=>'FM_UPLOAD_COMLETE','code'=>2);
+		$obModelResult=new ModelResult($arMessage);
+		return $obModelResult->View();
 	}
 
-	public function Download(){
+	public function Download($sFile){
+		if(!empty($sFile)){
+			$sPath=$this->obHelper->GetPath();
+			$sFile=$sPath.'/'.$sFile;
+			if(is_file($sFile))
+				$this->obFileAPI->DownloadFile($sFile);
+		}
+		return $this->obModelResult->View();
+	}
+
+	public function Cancel(){
 		throw CFileError('FM_NO_METHOD');
 	}
 }

@@ -145,7 +145,7 @@ class CSimpleFs extends CFileSystem
 		$from=$absolute.$from;
 		$to=$absolute.$to;
 		if(is_dir($from))
-			$this->DirCopy($from,$to);
+			return $this->DirCopy($from,$to);
 		else
 			return @copy($from, $to);
 	}
