@@ -9,7 +9,7 @@ interface Controller {
 	public function Copy($s);
 	public function Cut($s);
 	public function Paste();
-	public function Delete($s);
+	public function Delete(array $s);
 	public function Open();
 	public function Rename($s);
 }

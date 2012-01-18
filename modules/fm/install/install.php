@@ -92,6 +92,9 @@ if(array_key_exists('go',$_POST))
 			$KS_FS->CopyFile(MODULES_DIR.'/'.$module_name.'/install/js/'.$sFile,ROOT_DIR.JS_DIR.'/'.$module_name.'/'.$sFile,'');
 		}
 	}
+
+	$this->InstallResources($module_name);
+	
 	$this->AddNotify('SYSTEM_MODULE_INSTALL_OK',$arDescription['title'],NOTIFY_MESSAGE);
 }
 else

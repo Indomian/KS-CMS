@@ -10,8 +10,7 @@ class CfmAIindex extends CModuleAdmin {
 	}
 	function Run(){
 		$obData=$this->obBase->Run();
-		$obDecorator=new Decorator($obData, $this->smarty);
-		$obDecorator->Init();
-		return '';
+		$obDecorator=new Decorator($obData, $this->smarty, $this->obUrl);
+		return $obDecorator->Init();
 	}
 }

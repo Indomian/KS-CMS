@@ -389,6 +389,22 @@ abstract class CModuleManagment extends CObject
 			throw new CModuleError('MAIN_MODULE_CANT_INSTALL');
 	}
 
+	public function InstallResources($module)
+	{
+		global $KS_FS;
+		
+		if(!file_exists(MODULES_DIR.'/'.$module)) return false;
+		
+		if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module.'/install/templates/resources/'))
+		{
+			$sResourcesDir=TEMPLATES_DIR.'/admin/images/'.$module.'/';
+			if(!file_exists($sResourcesDir))
+				$KS_FS->makedir($sResourcesDir);
+			foreach($arFiles as $sFile)
+				$KS_FS->CopyFile(MODULES_DIR.'/'.$module.'/install/templates/resources/'.$sFile,$sResourcesDir.$sFile,'');
+		}
+	}
+	
 	/**
 	 * Метод выполняет удаление всех файлов указанного модуля из соответствующих каталогов,
 	 */

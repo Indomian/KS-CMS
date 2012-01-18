@@ -9,6 +9,8 @@ require_once MODULES_DIR.'/fm/libs/api/class.Decorator.php';
 
 require_once MODULES_DIR.'/fm/libs/views/interface.View.php';
 require_once MODULES_DIR.'/fm/libs/views/class.ViewDir.php';
+require_once MODULES_DIR.'/fm/libs/views/class.ViewUploadForm.php';
+require_once MODULES_DIR.'/fm/libs/views/class.ViewUploadResult.php';
 
 require_once MODULES_DIR.'/fm/libs/models/interface.Model.php';
 require_once MODULES_DIR.'/fm/libs/models/class.ModelImage.php';

@@ -2,17 +2,16 @@
 /*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
-class ViewDir implements View {
+class ViewUploadForm implements View {
 	private $arData;
-	
+
 	function __construct(array $arData){
 		$this->arData=$arData;
 	}
 
 	function GetData(){
 		return array(
-			'tpl'=>'',
-			'data'=>$this->arData
+			'tpl'=>'_upload',
 		);
 	}
 }

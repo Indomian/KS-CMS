@@ -10,27 +10,17 @@
 </ul>
 {/strip}
 <h1>{#title#}</h1>
+<form action="{get_url}" method="POST" name="form1">
 <div class="manage">
 	<table class="layout" style="width:auto">
 		<tr>
 			<td>
-				<div>
-					<form action="{get_url ACTION=new CSC_catid=$dataList.SECTION.id type=cat}" method="post">
-					<input type="submit" class="add_div" value="{#add_folder#}"/>
-					</form>
-				</div>
-			</td>
-			<td>
-				<div>
-					<form action="{get_url ACTION=new CSC_catid=$dataList.SECTION.id type=elm}" method="post">
-					<input type="submit" class="create" value="{#add_file#}"/>
-					</form>
-				</div>
+				<input type="submit" id="comupl" name="comupl" value="{#upload#}" />
+				<input type="submit" id="comdel" name="comdel" class="check_depend" value="{#delete#}" onclick="return confirm('{#delete_common_confirm#}');" />
 			</td>
 		</tr>
 	</table>
 </div>
-<form action="{get_url}" method="POST" name="form1">
 {strip}
 <div class="users">
     <input type="hidden" name="ACTION" value="common">
@@ -43,7 +33,7 @@
 		<col />
 		<tr>
 			<th>
-				<input type="checkbox" name="sel[ALL]" value="ALL" class="checkall"/>
+				<input type="checkbox" name="title[ALL]" value="ALL" class="checkall"/>
 			</th>
 			{TableHead field="title" order=$order}
 			{TableHead field="date_access" order=$order}
@@ -52,22 +42,39 @@
 			{TableHead field="mode" order=$order}
 			<th></th>
 		</tr>
-{if $fm_data!=0}
-{foreach from=$fm_data item=oItem key=oKey name=fList}
+		{if $fm.parent}
+		<tr class="odd">
+			<td></td>
+			<td colspan="6">
+				<img src="{#images_path#}/icons2/folder_open.gif">
+				<a href="{get_url _CLEAR="a" fm_path=$fm.parent}">...</a>
+			</td>
+		</tr>
+		{/if}
+{if $fm.items!=0}
+{foreach from=$fm.items item=oItem key=oKey name=fList}
     <tr {if $smarty.foreach.fList.iteration is even}class="odd"{/if}>
     	<td{Highlight date=$oItem.date_access assign=highlight i=$smarty.foreach.fList.iteration}>
-    		<input type="checkbox" name="name[{$oItem.id}]" value="{$oItem.title}"/>
+    		<input type="checkbox" name="title[]" value="{$oItem.title}" class="checkItem"/>
     	</td>
     	<td class="namet"{$highlight}>
+			{if $oItem.type=='dir'}
+				<a href="{get_url _CLEAR="a" fm_path=$oItem.folder}">
+			{else}
+				<a href="{get_url _CLEAR="fm_path" a=open t=$oItem.type}">
+			{/if}
 			{strip}
-    			<img src="{#images_path#}/icons2/
-    				{if $oItem.type=='dir'}
-						folder
-    				{else}
-						file
-    				{/if}.gif" alt="{$oItem.title}">&nbsp;
+    			<img src="{#images_path#}/
+					{if $oItem.type=='dir'}
+						icons2/folder.gif
+					{elseif $oItem.type=='tpl'}
+						icons2/file.gif
+					{else}
+						fm/images/file_icons/file_extension_{$oItem.type}.png
+					{/if}" alt="{$oItem.title}">&nbsp;
     		{/strip}
-    		{$oItem.title}
+				{$oItem.title}
+    		</a>
     	</td>
 		<td{$highlight}>{if $oItem.date_access}{$oItem.date_access|date_format:"%d.%m.%Y %H:%M"}{else}Неизвестно{/if}</td>
 		<td{$highlight}>{if $oItem.type}{$oItem.type}{else}Неизвестно{/if}</td>
@@ -85,16 +92,6 @@
     <script type="text/javascript">{$highlightScript}</script>
 </div>
 {/strip}
-
-<div class="manage">
-    <table class="layout">
-    	<tr class="titles">
-    		<td>{#selected#}
-    			<input type="submit" id="comdel" name="comdel" class="check_depend" value="{#delete#}" onclick="return confirm('{#delete_common_confirm#}');" />
-    		</td>
-    	</tr>
-    </table>
-</div>
 </form>
 
 {strip}

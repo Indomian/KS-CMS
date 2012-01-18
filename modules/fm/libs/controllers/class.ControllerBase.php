@@ -21,8 +21,9 @@ class ControllerBase {
 		$this->obControllerFile=new ControllerFile();
 		$this->obControllerDir=new ControllerDir($this->obControllerFile);
 		$this->obHelper=Helper::Instance();
-		$this->sAction=(!empty($_REQUEST['action'])) ? strip_tags($_REQUEST['action']) : '';
-		$this->sType=(!empty($_REQUEST['type'])) ? strip_tags($_REQUEST['type']) : '';
+		$this->sAction=(!empty($_REQUEST['a'])) ? strip_tags($_REQUEST['a']) : '';
+		$this->sType=(!empty($_REQUEST['t'])) ? strip_tags($_REQUEST['t']) : '';
+		$this->ParseCommonActions();
 	}
 	
 	static function Instance(){
@@ -32,12 +33,14 @@ class ControllerBase {
 	}
 	
 	public function Run(){
+		
 		switch($this->sAction){
 			case 'upload':
 				$obView=$this->SelectController()->Upload();
 				break;
 			case 'delete':
-				$obView=$this->SelectController()->Delete();
+				$arTitles=(!empty($_POST['title'])) ? $_POST['title'] : array();
+				$obView=$this->obControllerDir->Delete($arTitles);
 				break;
 			case 'copy':
 				$obView=$this->SelectController()->Copy();
@@ -63,9 +66,16 @@ class ControllerBase {
 	}
 	
 	public function SelectController(){
-		if($this->sType=='file')
-			return $this->obControllerFile;
-		else
+		if($this->sType=='' || $this->sType=='dir')
 			return $this->obControllerDir;
+		else
+			return $this->obControllerFile;
+	}
+
+	public function ParseCommonActions(){
+		if(isset($_REQUEST['comdel']))
+			$this->sAction='delete';
+		elseif(isset($_REQUEST['comupl']))
+			$this->sAction='upload';
 	}
 }

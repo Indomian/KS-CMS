@@ -10,9 +10,9 @@ class ControllerDir implements Controller {
 	private $obHelper;
 	
 	function __construct(Controller $obControllerFile){
-		global $ks_fs;
+		global $KS_FS;
 		$this->obHelper=Helper::Instance();
-		$this->obFile=$ks_fs;
+		$this->obFile=$KS_FS;
 		$this->obControllerFile=$obControllerFile;
 		$this->obModelDir=new ModelDir();
 		$this->obModelUploadForm=new ModelUploadForm();
@@ -34,10 +34,17 @@ class ControllerDir implements Controller {
 		return $this->obModelDir->View();
 	}
 	
-	public function Delete($sPath){
-		$sPath=$this->obHelper->ConcatPath($sPath);
-		if( $this->obFile->Remove($sPath) ){
-			return $this->obModelDir->View();
+	public function Delete(array $arElements){
+		if(!is_array($arElements))
+			$arTitles=array($arElements);
+			
+		$nElmCount=count($arElements);
+		if($nElmCount>0){
+			$sCurrentPath=$this->obHelper->GetCurrentPath();
+			$nCount=0;
+			foreach($arElements as $nKey=>$sTitle){
+				$this->obFile->Remove($sCurrentPath.'/'.$sTitle);
+			}
 		}
 		return $this->obModelDir->View();
 	}

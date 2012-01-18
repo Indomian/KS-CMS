@@ -34,7 +34,7 @@ class ControllerFile implements Controller {
 		return $this->obModelFile->View();
 	}
 
-	public function Delete($sFile){
+	public function Delete(array $sFile){
 		$sFile=$this->obHelper->ConcatPath($sFile);
 		if($this->obFile->Remove($sFile)){
 			return $this->obModelDir->View();
@@ -67,7 +67,20 @@ class ControllerFile implements Controller {
 	}
 
 	public function Upload(){
-		return $this->obModelUploadForm->View();
+		$arFiles=$_FILES;
+		$arNames=(!empty($_POST['file_name'])) ? $_POST['file_name'] : array();
+		if(count($arFiles)<=0)
+			throw new CFileError('FM_UPLOAD_FILE_NOT_SELECTED');
+		$sPath=$this->obHelper->GetPath();
+		foreach($arFiles as $sKey=>$arValue){
+			$obFileUploader=new CFileUploader($sKey, __CLASS__);
+			$obFileUploader->SetRootDir($sPath);
+			$sNewName=(!empty($arNames[$sKey])) ? $arNames[$sKey] : $arValue['name'];
+			if(empty($sNewName))
+				continue;
+			$obFileUploader->Upload($sNewName, false);
+		}
+		return $this->obModelUploadResult->View();
 	}
 
 	public function Download(){
