@@ -1,4 +1,3 @@
-<script type="text/javascript" src="/js/jquery/ui.datetimepicker.js"></script>
 <ul class="nav" id="navChain">
 	<li><a href="/admin.php"><img src="{#images_path#}/icons_menu/home.gif" alt="icon_home" height="13" width="13" />&nbsp;<span>{#home#}</span></a></li>
     <li><a href="{get_url _CLEAR="ACTION id"}"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;<span>{#title#}</span></a></li>
@@ -162,13 +161,7 @@
    	</div>
 </form>
 
-{strip}
-<dl class="def" style="background:#FFF6C4 url('{#images_path#}/big_icons/people.gif') left 50% no-repeat;{if $smarty.cookies.showHelpBar==1}display:none;{/if}">
-	<dt>{#title_edit#}</dt>
-	<dd>{#hint#}</dd>
-</dl>
-<div class="content_arrow_{if $smarty.cookies.showHelpBar==1}down{else}up{/if}" onclick="ToggleHelpBar(this)" style="cursor:pointer;">&nbsp;</div>
-{/strip}
+{include file='admin/common/hint.tpl' title=$smarty.config.title_edit description=$smarty.config.hint icon="/big_icons/people.gif"}
 
 <script type="text/javascript">
 {literal}

@@ -335,6 +335,7 @@ class CmainAIusers extends CModuleAdmin
 			$this->obModules->AddNotify($e->getMessage());
 			$page=$this->Table();
 		}
+		$this->obModules->UseJavaScript('/jquery/ui.datetimepicker.js');
 		return "_users".$page;
 	}
 }

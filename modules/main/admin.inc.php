@@ -4,7 +4,7 @@
  *
  * Выполняет инициализацию системных переменных и классов, подключение базовых модулей, генерацию системного меню
  *
- * @filesource admin.inc.php
+ * @filesource main/admin.inc.php
  * @author BlaDe39, north-e <pushkov@kolosstudio.ru>
  * @version 2.6
  * Изменения:

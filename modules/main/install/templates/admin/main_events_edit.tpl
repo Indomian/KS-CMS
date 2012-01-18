@@ -67,7 +67,7 @@ $(document).ready(function(){
     		<input type="submit" value="{#save#}" class="save"/>
     	</div>
     	<div>
-    		<a href="{get_url _CLEAR="ACTION type id template"}" class="cancel_button">{#cancel#}</a>
+    		<a href="{get_url _CLEAR="action type id template"}" class="cancel_button">{#cancel#}</a>
     	</div>
    	</div>
 </form>
