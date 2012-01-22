@@ -13,55 +13,51 @@ if(!defined('KS_ENGINE')){  die("Hacking attempt!");}
 define('KS_ACCESS_FULL',0);
 define('KS_ACCESS_DENIED',10);
 //==================== Блок инклудов требуемых библиотек ==============================
-include_once(MODULES_DIR.'/main/libs/class.CFieldsObject.php');
+include_once(MODULES_DIR.'/main/libs/class.CMain.php');
 include_once(MODULES_DIR.'/main/libs/interface.BaseAccess.php');
 
 /**
  * Класс для управления правами доступа групп пользователей к модулям
  */
 
-class CModulesAccess extends CFieldsObject implements BaseAccess
+class CModulesAccess extends CObject implements BaseAccess
 {
-	function __construct($sTable='usergroups_levels',$sUploadPath='',$sModule=false)
+	function __construct($sTable='usergroups_levels')
 	{
-		parent::__construct($sTable,$sUploadPath,$sModule);
-	}
-
-	function Set($group_id,$module,$level)
-	{
-		if($res=$this->GetRecord(array('group_id'=>$group_id,'module'=>$module)))
-		{
-			$this->Update($res['id'],array('level'=>intval($level)));
-		}
-		else
-		{
-			$this->Save('',array('group_id'=>intval($group_id),'module'=>$module,'level'=>intval($level)));
-		}
+		parent::__construct($sTable);
 	}
 
 	/**
-	 * @todo Разобраться зачем здесь нужна нестандартная функция, понять что она собственно делает.
+	 * @todo Документировать!
+	 * @param $group_id
+	 * @param $module
+	 * @param $level
 	 */
-	function GetList($arOrder=false,$arFilter=false,$arLimit=false,$arSelect=false,$arGroupBy=false)
+	function Set($group_id,$module,$level)
 	{
-		global $ks_db;
-		$sWhere=$this->_GenWhere($arFilter);
-		if($res=$ks_db->query("SELECT * FROM ".$this->_GenFrom().$sWhere))
+		if($res=$this->GetRecord(array('group_id'=>$group_id,'module'=>$module)))
+			$this->Update($res['id'],array('level'=>intval($level)));
+		else
+			$this->Save('',array('group_id'=>intval($group_id),'module'=>$module,'level'=>intval($level)));
+	}
+
+	/**
+	 * Метод выполняет выборку списка модулей со списком уровней доступа
+	 */
+	function GetListEx($arFilter=false)
+	{
+		if($arList=$this->GetList(false,$arFilter,false))
 		{
-			$i=0;
 			$arResult=array();
-			while($arRow=$ks_db->get_row($res))
+			$i=0;
+			foreach($arList as $arRow)
 			{
 				$arResult[$arRow['module']]=$arRow;
 				$arResult[$i++]=$arRow;
 			}
 			return $arResult;
 		}
-		else
-		{
-			return false;
-		}
-
+		return false;
 	}
 }
 

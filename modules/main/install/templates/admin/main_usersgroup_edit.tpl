@@ -42,6 +42,10 @@
     					<td>{Title field="login_tries"}</td>
     					<td><input type="text" name="CUG_number_of_log_tries" class="form_input" style="width:100px;" value="{$userdata.number_of_log_tries|intval}"></td>
     				</tr>
+    				<tr>
+    					<td>{Title field="is_guest"}</td>
+    					<td><input type="checkbox" name="CUG_is_guest" value="1" {if $userdata.is_guest==1}checked="checked"{/if}></td>
+    				</tr>
     			</table>
     		</div>
     	{/strip}{/ksTab}

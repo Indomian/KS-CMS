@@ -290,81 +290,88 @@ class CcatsubcatAIindex extends CModuleAdmin
 			$sNewDir=($sOrderDir=='desc')?'asc':'desc';
 			$arSort=array($sOrderField=>$sOrderDir);
 
-			$arTables=array(
-				'element'=>$this->obElement,
-				'category'=>$this->obCategory
-			);
-			$arResult=$this->obAPI->GetAllList($arSectionRes['id'],$arSort,$arFilter,Array($iElCount*($iPage-1),$iElCount),$arTables);
-
-			$arResult['SECTION'] = $arSectionRes;
-			/* Перебрасываем главную страницу к файлам и формируем полную ссылку */
-			$mainItem = false;
-			$side_length = 20;
-			if(isset($arResult['ITEMS']) && count($arResult['ITEMS']))
+			if($arResult=$this->obAPI->GetAllList($arSectionRes['id'],$arSort,$arFilter,Array($iElCount*($iPage-1),$iElCount)))
 			{
-				foreach ($arResult['ITEMS'] as $arKey => $arValue)
+				/* Перебрасываем главную страницу к файлам и формируем полную ссылку */
+				$mainItem = false;
+				$side_length = 20;
+				if(isset($arResult['ITEMS']) && count($arResult['ITEMS']))
 				{
-					if(!array_key_exists($arValue['parent_id'],$obTree))
+					foreach ($arResult['ITEMS'] as $arKey => $arValue)
 					{
-						$obTree[$arValue['parent_id']]=$obCategory->GetParents($arValue['parent_id']);
-					}
-					$full_path=$obTree[$arValue['parent_id']]->GetFullPath($root_path);
-					/* Добавляем в массив полный путь к странице и его сокращённый вид для отображения в подсказке */
-					if ($arValue['TYPE'] === 'cat')
-					{
-						$full_url = $this->obModules->GetConfigVar('main','home_url').$full_path.($arValue['text_ident'] != "" ? $arValue['text_ident'] . "/" : "");
-					}
-					else
-					{
-						$full_url = $this->obModules->GetConfigVar('main','home_url').$full_path.$arValue['text_ident'] . ".html";
-					}
-					$arValue['full_url'] = $full_url;
-					$arValue['short_url'] = ShorterUrl($full_url);
-					$arResult['ITEMS'][$arKey] = $arValue;
+						if(!array_key_exists($arValue['parent_id'],$obTree))
+						{
+							$obTree[$arValue['parent_id']]=$obCategory->GetParents($arValue['parent_id']);
+						}
+						$full_path=$obTree[$arValue['parent_id']]->GetFullPath($root_path);
+						/* Добавляем в массив полный путь к странице и его сокращённый вид для отображения в подсказке */
+						if ($arValue['TYPE'] === 'cat')
+						{
+							$full_url = $this->obModules->GetConfigVar('main','home_url').$full_path.($arValue['text_ident'] != "" ? $arValue['text_ident'] . "/" : "");
+						}
+						else
+						{
+							$full_url = $this->obModules->GetConfigVar('main','home_url').$full_path.$arValue['text_ident'] . ".html";
+						}
+						$arValue['full_url'] = $full_url;
+						$arValue['short_url'] = ShorterUrl($full_url);
+						$arResult['ITEMS'][$arKey] = $arValue;
 
-					if ($arValue['id'] == 0 && $arValue['TYPE'] === 'cat')
-					{
-						/* Запоминаем главную страницу */
-						$mainItem = $arValue;
-						$mainItem['TYPE'] = 'cat';
-						unset($arResult['ITEMS'][$arKey]);
+						if ($arValue['id'] == 0 && $arValue['TYPE'] === 'cat')
+						{
+							/* Запоминаем главную страницу */
+							$mainItem = $arValue;
+							$mainItem['TYPE'] = 'cat';
+							unset($arResult['ITEMS'][$arKey]);
+						}
 					}
-				}
-				$is_cat_now = true;
-				$newItems = array();
-				foreach ($arResult['ITEMS'] as $arKey => $arValue)
-				{
-					if ($arValue['TYPE'] === 'elm')
-						$is_cat_now = false;
-					if (!$is_cat_now && $mainItem)
+					$is_cat_now = true;
+					$newItems = array();
+					foreach ($arResult['ITEMS'] as $arKey => $arValue)
 					{
+						if ($arValue['TYPE'] === 'elm')
+							$is_cat_now = false;
+						if (!$is_cat_now && $mainItem)
+						{
+							$newItems[] = $mainItem;
+							$mainItem = false;
+						}
+						$newItems[] = $arValue;
+					}
+					if ($mainItem)
 						$newItems[] = $mainItem;
-						$mainItem = false;
-					}
-					$newItems[] = $arValue;
+					$arResult['ITEMS'] = $newItems;
 				}
-				if ($mainItem)
-					$newItems[] = $mainItem;
-				$arResult['ITEMS'] = $newItems;
-			}
 
-			//Подготавливаем постраничный вывод
-			/**
-			 * @todo Сделать вызов нормального класса или генератора объекта класса
-			 */
-			$pages=array();
-			$pages['TOTAL']=$arResult['TOTAL'];
-			$pages['num']=$arResult['PAGES'];
-			$pages['active']=$arResult['CURRENT_PAGE'];
-			if ($pages['active']==0)
-				$pages['active']=1;
-			for($i=1;$i<=$pages['num'];$i++)
+				//Подготавливаем постраничный вывод
+				/**
+				 * @todo Сделать вызов нормального класса или генератора объекта класса
+				 */
+				$pages=array();
+				$pages['TOTAL']=$arResult['TOTAL'];
+				$pages['num']=$arResult['PAGES'];
+				$pages['active']=$arResult['CURRENT_PAGE'];
+				if ($pages['active']==0)
+					$pages['active']=1;
+				for($i=1;$i<=$pages['num'];$i++)
+				{
+					$pages['pages'][$i]=$i;
+				}
+				$pages['index']=1;
+				$pages['visible']=$arResult['IN_PAGE'];
+			}
+			else
 			{
-				$pages['pages'][$i]=$i;
+				$arResult=array();
+				$pages=array();
+				$pages['TOTAL']=0;
+				$pages['num']=1;
+				$pages['active']=1;
+				$pages['pages'][1]=1;
+				$pages['index']=1;
+				$pages['visible']=$iElCount;
 			}
-			$pages['index']=1;
-			$pages['visible']=$arResult['IN_PAGE'];
-
+			$arResult['SECTION'] = $arSectionRes;
 			/* Получаем дерево для перемещения разделов и элементов в другие разделы */
 			$tree_to_move_to = $this->obCategory->GetExpandedTree();
 			foreach ($tree_to_move_to as $tree_leaf_key => $tree_leaf)

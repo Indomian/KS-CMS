@@ -34,13 +34,9 @@ class CRestorable extends CFieldsObject
 			if(preg_match('#^([><!~=]|>=|<=|->|)?([\w_\.\-]+)#i',$key,$matches))
 			{
 				if(strpos($key,'\.')>0)
-				{
 					$field=substr($key,strpos($matches[2],'\.'));
-				}
 				else
-				{
 					$field=$matches[2];
-				}
 				if($field=='deleted')
 				{
 					$bAddField=true;

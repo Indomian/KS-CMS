@@ -68,10 +68,8 @@ function smarty_function_WavePosts($params,&$subsmarty)
 					$action='votem';
 			}
 			else
-			{
 				if(in_array($_GET['WV_a'],array('addpost','hide','show','delete','edit','votep','votem')))
 					$action=$_GET['WV_a'];
-			}
 			switch($action)
 			{
 				case 'addpost':
@@ -83,12 +81,8 @@ function smarty_function_WavePosts($params,&$subsmarty)
 					if(!$USER->IsLogin())
 					{
 						if($KS_MODULES->GetConfigVar('wave','use_captcha',0)==1)
-						{
 							if (!CCaptcha::CheckCaptcha($_POST['c']))
-							{
 								$bError=$KS_MODULES->AddNotify("WAVE_WRONG_CAPTCHA");
-							}
-						}
 						$arPost['user_email']=EscapeHTML($_REQUEST['WV_user_email']);
 						$arPost['user_name']=EscapeHTML($_REQUEST['WV_user_name']);
 						$arPost['user_id']=-1;
@@ -97,9 +91,12 @@ function smarty_function_WavePosts($params,&$subsmarty)
 					}
 					else
 					{
-						$arPost['user_email']=$USER->Email();
+
 						$arUser=$USER->GetUserData();
 						$arPost['user_name']=$_REQUEST['WV_user_name']==''?$arUser['title']:EscapeHTML($_POST['WV_user_name']);
+						$arPost['user_email']=$USER->Email();
+						if($arPost['user_email']=='' && isset($_REQUEST['WV_user_email']) && $_REQUEST['WV_user_email']!='')
+							$arPost['user_email']=EscapeHTML($_REQUEST['WV_user_email']);
 						$arPost['user_id']=$USER->ID();
 					}
 					if(!$bError)
@@ -255,12 +252,8 @@ function smarty_function_WavePosts($params,&$subsmarty)
 
 	$arPosts=$obPostsAPI->GetWave($params['hash'],$params['order'],$arFilter,$arSelect,$obPages);
 	if(!$USER->IsLogin())
-	{
 		if($KS_MODULES->GetConfigVar('wave','use_captcha',0)==1)
-		{
 			$subsmarty->assign('use_captcha',1);
-		}
-	}
 	$subsmarty->assign('fields',$obPostsAPI->GetFormFields());
 	$subsmarty->assign('posts',$arPosts);
 	$subsmarty->assign('data',$arData);

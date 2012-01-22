@@ -17,11 +17,13 @@ require_once MODULES_DIR.'/main/libs/class.CModuleAdmin.php';
 class CmainAIusergroups extends CModuleAdmin
 {
 	private $obGroups;
+	private $obAccess;
 
 	function __construct($module='main',&$smarty,&$parent)
 	{
 		parent::__construct($module,$smarty,$parent);
 		$this->obGroups=new CUserGroup();
+		$this->obAccess=new CModulesAccess();
 		//Устанавливаем значение для правильного вывода меню в верхней части шаблона
 		$this->smarty->assign('modpage','users');
 		//Проверка прав доступа
@@ -57,10 +59,7 @@ class CmainAIusergroups extends CModuleAdmin
 		{
 			$arGroup=$data;
 			if(array_key_exists('id',$arGroup))
-			{
-				$obAccess=new CModulesAccess();
-				$arGroup['ACCESS']=$obAccess->GetList(array('id'=>'asc'),array('group_id'=>$arGroup['id']));
-			}
+				$arGroup['ACCESS']=$this->obAccess->GetListEx(array('group_id'=>$arGroup['id']));
 		}
 		else
 			$arGroup['id']=-1;
@@ -84,19 +83,21 @@ class CmainAIusergroups extends CModuleAdmin
 			$arGroup=array(
 				'title'=>EscapeHTML($_POST['CUG_title']),
 				'description'=>EscapeHTML($_POST['CUG_description']),
-				'number_of_log_tries'=>intval($_POST['CUG_number_of_log_tries'])
+				'number_of_log_tries'=>intval($_POST['CUG_number_of_log_tries']),
+				'is_guest'=>0,
 			);
 			if(array_key_exists('CUG_id',$_POST))
 				$arGroup['id']=intval($_POST['CUG_id']);
+			if(array_key_exists('CUG_is_guest',$_POST))
+				$arGroup['is_guest']=1;
 			if(strlen($arGroup['title'])==0)
 				$bError=$this->obModules->AddNotify('MAIN_GROUP_TITLE_REQUIRED');
 			if($bError==0)
 			{
 				$this->obGroups->AddAutoField('id');
 				$id=$this->obGroups->Save('',$arGroup);
-				$obAccess=new CModulesAccess();
 				foreach($_POST['CUG_level'] as $key=>$value)
-					$obAccess->Set($id,$key,min($value));
+					$this->obAccess->Set($id,$key,min($value));
 				$this->obModules->AddNotify('MAIN_GROUP_SAVE_OK','',NOTIFY_MESSAGE);
 				if(!array_key_exists('update',$_REQUEST))
 					$this->obUrl->Redirect("/admin.php?".$this->obUrl->GetUrl(Array('ACTION','id')));

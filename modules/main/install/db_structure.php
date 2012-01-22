@@ -667,14 +667,6 @@ $arStructure=array(
 			'Default'=>	'0',
 			'Extra'	=>	'auto_increment',
 		),
-		'level'=>array(
-			'Field'=>'level',
-			'Type'=>'smallint(3) unsigned',
-			'Null'=>'NO',
-			'Key'=>'',
-			'Default'=>'0',
-			'Extra'=>'',
-		),
 		'title'=>array(
 			'Field'=>'title',
 			'Type'=>'char(255)',
@@ -701,6 +693,14 @@ $arStructure=array(
 		),
 		'undeletable'=>array(
 			'Field'=>'undeletable',
+			'Type'=>'tinyint(1) unsigned',
+			'Null'=>'NO',
+			'Key'=>'',
+			'Default'=>'0',
+			'Extra'=>'',
+		),
+		'is_guest'=>array(
+			'Field'=>'is_guest',
 			'Type'=>'tinyint(1) unsigned',
 			'Null'=>'NO',
 			'Key'=>'',
@@ -751,4 +751,3 @@ $arStructure=array(
 		),
 	),
 );
-?>
