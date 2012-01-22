@@ -14,6 +14,7 @@
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 require_once MODULES_DIR.'/catsubcat/libs/class.CCategorySubCategory.php';
+require_once MODULES_DIR.'/catsubcat/libs/class.CParentsResult.php';
 
 /**
  * Класс обработки категорий элементов для модуля кэтсубкэт и их потомков

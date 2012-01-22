@@ -90,7 +90,7 @@ class CcatsubcatAIbasket extends CModuleAdmin
 			'element'=>$this->obElement,
 			'category'=>$this->obCategory
 		);
-		$arResult=GetAllList(array($sOrderField=>$sOrderDir),$arFilter,Array($iElCount*($iPage-1),$iElCount),$arTables);
+		$arResult=GetAllList(0,array($sOrderField=>$sOrderDir),$arFilter,Array($iElCount*($iPage-1),$iElCount),$arTables);
 
 		//Подготавливаем постраничный вывод
 		/**

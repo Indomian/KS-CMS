@@ -51,7 +51,7 @@ class CnavigationAIindex extends CModuleAdmin
 		// Выборка списка результата
 		$arSelect=Array('id','name','text_ident','description','script_name');
 		$arSortFields=Array('id','name','text_ident','description','script_name');
-		list($sOrderField,$sOrderDir)=$this->InitSort($arSortFields,$_REQUEST['order'],$_REQUEST['dir']);
+		list($sOrderField,$sOrderDir)=$this->InitSort($arSortFields);
 		$sNewDir=($sOrderDir=='desc')?'asc':'desc';
 		$arOrder=Array($sOrderField=>$sOrderDir);
 		if($arResult['ITEMS']=$this->oType->GetList($arOrder))
@@ -59,14 +59,12 @@ class CnavigationAIindex extends CModuleAdmin
 			/* Добавляем описание скриптов генерации меню из файла menu_scripts/.description.php */
 			include (MODULES_DIR . "/" . $this->module . "/menu_scripts/.description.php");
 			if(is_array($arResult['ITEMS']))
-			{
 				foreach ($arResult['ITEMS'] as $item_key => $item)
 				{
 					$descr_key = $item['script_name'] . ".php";
 					if (isset($arDescription[$descr_key]))
 						$arResult['ITEMS'][$item_key]['script_descr'] = $arDescription[$descr_key];
 				}
-			}
 			// Формирование данных для вывода
 			$this->smarty->assign('dataList',$arResult);
 			$this->smarty->assign('order',Array('newdir'=>$sNewDir,'curdir'=>$sOrderDir,'field'=>$sOrderField));
@@ -105,9 +103,7 @@ class CnavigationAIindex extends CModuleAdmin
 					CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(array('ACTION','CSC_catid')).'&ACTION=edit&CSC_catid='.$id);
 			}
 			else
-			{
 				throw new CDataError('NAVIGATION_FIELDS_ERROR');
-			}
 		}
 		catch(CError $e)
 		{
@@ -154,9 +150,7 @@ class CnavigationAIindex extends CModuleAdmin
 		if(isset($_REQUEST['CSC_catid']))
 			$this->iId=intval($_REQUEST['CSC_catid']);
 		if(array_key_exists('ACTION',$_POST)&&($_POST['ACTION']=='common'))
-		{
 			$this->CommonActions();
-		}
 		$page='';
 		$data=false;
 		switch($sAction)

@@ -18,6 +18,7 @@ class CcatsubcatAIindex extends CModuleAdmin
 {
 	private $obCategory;
 	private $obElement;
+	private $obAPI;
 	private $obEditable;
 	private $iCurSection;
 	private $sType;
@@ -25,11 +26,10 @@ class CcatsubcatAIindex extends CModuleAdmin
 
 	function __construct($module='catsubcat',&$smarty,&$parent)
 	{
-		global $USER;
 		parent::__construct($module,$smarty,$parent);
+		$this->obAPI=CCatsubcatAPI::get_instance();
 		$this->obCategory=new CCategory();
 		$this->obElement=new CElement();
-		$this->obUser=$USER;
 		$this->access_level=10;
 		$this->iCurSection=0;
 	}
@@ -37,17 +37,12 @@ class CcatsubcatAIindex extends CModuleAdmin
 	function EditForm($data=false)
 	{
 		$arDefaults=array();
-		if (class_exists('CFields'))
+		$obFields=new CFields();
+		if($arFields=$obFields->GetList(Array('id'=>'asc'),Array('module'=>$this->module,'type'=>$this->obEditable->sTable)))
 		{
-			$obFields=new CFields();
-			if($arFields=$obFields->GetList(Array('id'=>'asc'),Array('module'=>$this->module,'type'=>$this->obEditable->sTable)))
-			{
-				foreach($arFields as $item)
-				{
-					$arDefaults['ext_'.$item['title']]=$item['default'];
-				}
-				$this->smarty->assign('addFields',$arFields);
-			}
+			foreach($arFields as $item)
+				$arDefaults['ext_'.$item['title']]=$item['default'];
+			$this->smarty->assign('addFields',$arFields);
 		}
 		if(!$data)
 		{
@@ -288,12 +283,10 @@ class CcatsubcatAIindex extends CModuleAdmin
 			//Определяем номер страницы
 			$iPage=1;
 			if(array_key_exists('p1',$_REQUEST))
-			{
 				$iPage=(intval($_REQUEST['p1'])<1)?1:intval($_REQUEST['p1']);
-			}
 			$arSortFields=Array('id','title','text_ident','date_add','date_edit','orderation','active','views_count');
 			//Определяем порядок сортировки записей
-			list($sOrderField,$sOrderDir)=$this->InitSort($arSortFields,$_REQUEST['order'],$_REQUEST['dir']);
+			list($sOrderField,$sOrderDir)=$this->InitSort($arSortFields);
 			$sNewDir=($sOrderDir=='desc')?'asc':'desc';
 			$arSort=array($sOrderField=>$sOrderDir);
 
@@ -301,7 +294,7 @@ class CcatsubcatAIindex extends CModuleAdmin
 				'element'=>$this->obElement,
 				'category'=>$this->obCategory
 			);
-			$arResult=GetAllList($arSort,$arFilter,Array($iElCount*($iPage-1),$iElCount),$arTables);
+			$arResult=$this->obAPI->GetAllList($arSectionRes['id'],$arSort,$arFilter,Array($iElCount*($iPage-1),$iElCount),$arTables);
 
 			$arResult['SECTION'] = $arSectionRes;
 			/* Перебрасываем главную страницу к файлам и формируем полную ссылку */

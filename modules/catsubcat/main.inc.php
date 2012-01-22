@@ -52,13 +52,13 @@ $module_parameters['setPageTitle'] = $this->GetConfigVar($module, "set_title",1)
 
 /* Родительский раздел */
 $module_parameters['parent_id'] = 0;
-
+$obAPI=CCatsubcatAPI::get_instance();
 /* Формирование навигационной цепочки */
 $arDirs=$this->GetPathDirs(0);
 if (count($arDirs) > $iBase)
 {
 	/* Объект для работы с категориями */
-	$obCategory = new CCategory();
+	$obCategory = $obAPI->Category();
 	$arFilter = array('parent_id' => 0);
 
 	for ($i = $iBase; $i < count($arDirs); $i++)
@@ -70,10 +70,8 @@ if (count($arDirs) > $iBase)
 			$arFilter['parent_id'] = $arCategory['id'];
 			$sUrl .= $arCategory['text_ident'] . "/";
 			if ($module_config['show_nav_chain'] == "1")
-			{
 				if ($this->IsActive("navigation"))
 					CNNavChain::get_instance()->Add( $arCategory['title'],$sUrl);
-			}
 
 			/* Проверка прав доступа */
 			if ($access_level > 8)
@@ -82,9 +80,7 @@ if (count($arDirs) > $iBase)
 			$module_parameters['parent_id'] = $arCategory['id'];
 		}
 		else
-		{
 			throw new CHTTPError("SYSTEM_SECTION_NOT_FOUND", 404);
-		}
 	}
 }
 /* Определение виджета для подключения в качестве контента страницы */

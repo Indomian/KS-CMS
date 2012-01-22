@@ -43,4 +43,3 @@ abstract class CBaseAPI extends CBaseObject
 		return $arDifferent;
 	}
 }
-?>

@@ -1,10 +1,10 @@
 <?php
-/*
- * CMS-remote
- *
- * Created on 27.10.2008
- *
- * Developed by blade39
+/**
+ * KS-CMS
+ * @filesource catsubcat/widgets/function.CatElement.php
+ * @since 27.10.2008
+ * @version 2.6
+ * @author blade39 <blade39@kolosstudio.ru>
  *
  * Виджет, выполняет функцию поиска элемента по его коду и пути, если путь и код элемента верные,
  * возвращаются данные иначе выбрасывается 404 ошибка.
@@ -21,71 +21,27 @@ function smarty_function_CatElement($params, &$smarty)
 {
 	global $USER,$KS_MODULES;
 
-	$sUrl = '';
-	$data = array();
-
+	if(!isset($params['url'])) $sUrl = ''; else	$sUrl=$params['url'];
 	$access_level=$USER->GetLevel('catsubcat');
-	if($access_level>8) throw new CAccessError("SYSTEM_NOT_ACCESS_MODULE");
-	$arElmFilter=array('text_ident'=>$params['text_ident']);
-	//Если не указан номер элемента который надо найти (т.е. работаем как основной контент или по адресу)
-	//то пытаемся найти этот элемент в данном адресе.
-	if(!isset($params['ID']) || ($params['ID']==''))
-	{
-		if(!array_key_exists('parent_id',$params))
-		{
-			//Пробуем определить верность указанного пути
-			$parent_id=0;
-			$obCategory=new CCategory();
-			foreach($this->GetPathDirs() as $path)
-			{
-				if(($path!='')&&($path!=$this->CurrentTextIdent()))
-				{
-					$arFilter=array('text_ident'=>$path,'parent_id'=>$parent_id);
-					if($arRow=$obCategory->GetRecord($arFilter))
-					{
-						$parent_id=$arRow['id'];
-						$sUrl.='/'.$arRow['text_ident'];
-						$data['parent']=$arRow;
-					}
-					else
-					{
-						throw new CHTTPError("SYSTEM_ELEMENT_NOT_FOUND",404);
-					}
-				}
-			}
-		}
-		else
-		{
-			$parent_id=$params['parent_id'];
-		}
-		$arElmFilter['parent_id']=$parent_id;
-	}
+	if($access_level>8) throw new CAccessError("CATSUBCAT_NOT_VIEW_ELEMENTS");
+	if(isset($params['text_ident']) && IsTextIdent($params['text_ident']))
+		$arElmFilter=array('text_ident'=>$params['text_ident']);
+	elseif(isset($params['ID']) && ($params['ID']>0))
+		$arElmFilter=array('id'=>intval($params['ID']));
 	else
-	{
-		$arElmFilter=array('id'=>$params['ID']);
-	}
-	$obElement=new CElement();
+		throw new CDataError("CATSUBCAT_ID_PARAM_REQUIRED");
+	$obElement=CCatsubcatAPI::get_instance()->Element();
 	/* обратились к элементу */
 	$arElmFilter['active']=1;
-	if($data['main_content'] = $obElement->GetRecord($arElmFilter))
+	if($arElement = $obElement->GetRecord($arElmFilter))
 	{
 		/* Неплохо бы добавить дату добавления в понятном формате, чтобы юзеры в Смарти не мучились :) */
-		$data['main_content']['date'] = date("d.m.Y", $data['main_content']['date_add']);
+		$arElement['date'] = date("d.m.Y", $arElement['date_add']);
 
-		//Проверка прав доступа
-		if($access_level>8) throw new CAccessError("CATSUBCAT_NOT_VIEW_ELEMENTS");
-		if($access_level>7)
-		{
-			if(!in_array($data['main_content']['access_view'],$USER->GetGroups()))
-			{
-				throw new CAccessError("CATSUBCAT_NOT_VIEW_ELEMENT");
-			}
-		}
 		if($sUrl=='')
 		{
-			$sUrl='/'.$data['main_content']['text_ident'].'.html';
 			$obCategory=new CCategory();
-			$parent_id=$data['main_content']['parent_id'];
+			$parent_id=$arElement['parent_id'];
 			$i=0;
 			while(($i<30)&&($parent_id!=0))
 			{
@@ -98,34 +54,31 @@ function smarty_function_CatElement($params, &$smarty)
 				$i++;
 			}
 		}
-		else
-		{
-			$sUrl.='/'.$data['main_content']['text_ident'].'.html';
-		}
-		$smarty->assign('data', $data);
+		$sUrl.='/'.$arElement['text_ident'].'.html';
+
+		$smarty->assign('data', $arElement);
 		$smarty->assign('url',$sUrl);
+
 		if(array_key_exists('addToNavChain',$params) && $params['addToNavChain']=='Y' && $KS_MODULES->IsActive('navigation'))
-			CNNavChain::get_instance()->Add( $data['main_content']['title'],$sUrl);
+			CNNavChain::get_instance()->Add($arElement['title'],$sUrl);
+
 		if($params['setPageTitle']=='Y')
 		{
-			$sTitle=$data['main_content']['seo_title']!=''?$data['main_content']['seo_title']:$data['main_content']['title'];
+			$sTitle=$arElement['seo_title']!=''?$arElement['seo_title']:$arElement['title'];
 			$smarty->assign('TITLE',($sTitle!=''?$sTitle:$KS_MODULES->GetConfigVar('catsubcat','title_default','Текстовые страницы')));
-			$smarty->assign('DESCRIPTION',$data['main_content']['seo_description']);
-			$smarty->assign('KEYWORDS',$data['main_content']['seo_keywords']);
+			$smarty->assign('DESCRIPTION',$arElement['title']['seo_description']);
+			$smarty->assign('KEYWORDS',$arElement['title']['seo_keywords']);
 		}
 		$sResult=$KS_MODULES->RenderTemplate($smarty,'/catsubcat/CatElement',$params['global_template'],$params['tpl']);
 		/* Шаблон найдем, можно увеличить количество показов страницы на единицу */
-		if(!isset($_COOKIE['cscp'.$data['main_content']['id']]) || $_COOKIE['cscp'.$data['main_content']['id']]!='1')
+		if(!isset($_COOKIE['cscp'.$arElement['id']]) || $_COOKIE['cscp'.$arElement['id']]!='1')
 		{
-			$obElement->Update($data['main_content']['id'],array('views_count'=>intval($data['main_content']['views_count']) + 1));
-			setcookie('cscp'.$data['main_content']['id'],1,time()+30000);
+			$obElement->Update($arElement['id'],array('views_count'=>intval($arElement['views_count']) + 1));
+			setcookie('cscp'.$arElement['id'],1,time()+30000);
 		}
 		return $sResult;
 	}
-	else
-	{
-		throw new CHTTPError("SYSTEM_FILE_NOT_FOUND", 404);
-	}
+	throw new CHTTPError("SYSTEM_FILE_NOT_FOUND", 404);
 }
 
 function widget_params_CatElement()
@@ -156,4 +109,3 @@ function widget_params_CatElement()
 		'fields' => $arFields
 	);
 }
-?>

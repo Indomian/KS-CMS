@@ -1,12 +1,9 @@
 <?php
 /**
  * Файл инициализации модуля catsubcat
- * @file init.inc.php
+ * @filesource init.inc.php
  * @author BlaDe39 <blade39@kolosstudio.ru>
- * @version 2.5.4-14
+ * @version 2.6
  * @since 21.10.2010
  */
-require_once(MODULES_DIR . "/" . $module_name . "/libs/class.CCategory.php");
-require_once(MODULES_DIR . "/" . $module_name . "/libs/class.CElement.php");
-require_once(MODULES_DIR . "/" . $module_name . "/libs/functions.php");
-?>
+require_once MODULES_DIR.'/catsubcat/libs/class.CCatsubcatAPI.php';
