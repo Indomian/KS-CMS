@@ -4,11 +4,19 @@ if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 class FileAPI {
 	private static $obInstance;
-	public function __construct(){}
+	private $sImagesPath;
+	public function __construct(){
+		$this->sImagesPath='/uploads/templates/admin/images';
+	}
 	public static function Instance(){
 		if(!self::$obInstance)
 			self::$obInstance=new self();
 		return self::$obInstance;
+	}
+	public function InitModifier(&$smarty){
+		if($smarty && $smarty instanceof Smarty){
+			$smarty->register_modifier('fm_icons',array(&$this, 'GetIcon'));
+		}
 	}
 	public function DownloadFile($sFile){
 		if(file_exists($sFile)){
@@ -62,5 +70,16 @@ class FileAPI {
 		}else{
 			return false;
 		}
+	}
+	public function GetIcon($sFileType){
+		$sData='/icons2/file.gif';
+		if($sFileType=='dir')
+			$sData='/icons2/folder.gif';
+		else{
+			$sFile='/fm/images/file_icons/file_extension_'.$sFileType.'.png';
+			if(file_exists(ROOT_DIR.$this->sImagesPath.$sFile))
+				$sData=$sFile;
+		}
+		return $sData;
 	}
 }

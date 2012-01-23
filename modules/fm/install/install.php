@@ -100,15 +100,9 @@ if(array_key_exists('go',$_POST))
 else
 {
 	//Если мы не выполняем работу то надо сообщить о настройках модуля перед установкой
-	$arFields=array(
-		'installTemplates'=>array(
-			'type'=>'checkbox',
-			'title'=>'Установить шаблоны виджетов',
-			'value'=>'1',
-		),
-	);
+	$arFields=array();
 	$arFields['text']=array(
 		'type'=>'label',
 		'title'=>$arDescription['description']
-		);
+	);
 }

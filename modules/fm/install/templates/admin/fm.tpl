@@ -68,14 +68,7 @@
 			{else}
 				<a href="{get_url _CLEAR="fm_path" a=open t=$oItem.type fm_file=$oItem.title}">
 			{/if}
-    			<img src="{#images_path#}/
-					{if $oItem.type=='dir'}
-						icons2/folder.gif
-					{elseif $oItem.type=='tpl'}
-						icons2/file.gif
-					{else}
-						fm/images/file_icons/file_extension_{$oItem.type}.png
-					{/if}" alt="{$oItem.folder}" title="{$oItem.real_path}"{if $oItem.is_cut} style="opacity:0.5"{/if}>
+    			<img src="{#images_path#}{$oItem.type|fm_icons}" alt="{$oItem.folder}" title="{$oItem.real_path}"{if $oItem.is_cut} style="opacity:0.5"{/if}>
 				{$oItem.title}
     		</a>
 		{/strip}
