@@ -14,68 +14,42 @@ if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 class CReleases extends CObject
 {
-	private $obNews;
-
 	function __construct($sTable="subscribe_releases")
 	{
 		parent::__construct($sTable);
-		$this->obNews= new CObject('subscribe_newsletters');
 	}
 
-	/**
-	 * Метод возвращает объект рассылок
-	 */
-	function News()
+	function Save($prefix = "SB_", $data = false)
 	{
-		return $this->obNews;
-	}
-
-	/**
-	 * Метод возвращает список активных рассылок
-	 */
-	function GetNewslettersList($arOrder=array('name'=>'asc'))
-	{
-		return $this->obNews->GetList($arOrder,array('active'=>1), false, array('id','name'));
-	}
-
-	function Save($prefix = "KS_", $data = "")
-	{
-		if($data['SB_newsletter']==-1)
+		if(!$data) $data=$_POST;
+		if($data[$prefix.'newsletter']==-1)
 		{
 			$recipients="";
-			if($data['SB_news'])
+			if(isset($data[$prefix.'news']))
 			{
 				$recipients.='newsletters=';
-				foreach($data['SB_news'] as $elm)
-				{
+				foreach($data[$prefix.'news'] as $elm)
 					$recipients.=$elm.",";
-				}
 				$recipients=substr_replace($recipients,'&',-1);
-				unset($data['SB_news']);
+				unset($data[$prefix.'news']);
 			}
-			if($data['SB_groups'])
+			if(isset($data[$prefix.'groups']))
 			{
 				$recipients.='groups=';
-				foreach($data['SB_groups'] as $elm)
-				{
+				foreach($data[$prefix.'groups'] as $elm)
 					$recipients.=$elm.",";
-				}
 				$recipients=substr_replace($recipients,'&',-1);
-				unset($data['SB_groups']);
+				unset($data[$prefix.'groups']);
 			}
-			if($data['SB_list'])
+			if(isset($data[$prefix.'list']))
 			{
-				$recipients.='list='.str_replace("\r\n",",",$data['SB_list']).'&';
-				unset($data['SB_list']);
+				$recipients.='list='.str_replace(array("\n","\r"),array(",",''),$data[$prefix.'list']).'&';
+				unset($data[$prefix.'list']);
 			}
 			if($recipients)
-			{
-				$data['SB_recipients']=$recipients;
-			}
+				$data[$prefix.'recipients']=$recipients;
 			else
-			{
 				throw new CError("SUBSCRIBE_RECIPIENTS_ERROR");
-			}
 		}
 		return parent::Save($prefix, $data);
 	}
@@ -83,15 +57,15 @@ class CReleases extends CObject
 
 	function GetRecord($where=false)
 	{
-		$data=parent::GetRecord($where);
-		if($data['recipients'] && $data['newsletter']==-1)
+		if($data=parent::GetRecord($where))
 		{
-			 parse_str($data['recipients'],$res);
-			 foreach($res as $key=>$elm)
-			 {
-				 $res[$key]=explode(',',$res[$key]);
-			 }
-			 $data=array_merge($data,$res);
+			if($data['recipients'] && $data['newsletter']==-1)
+			{
+				parse_str($data['recipients'],$res);
+				foreach($res as $key=>$elm)
+					$res[$key]=explode(',',$res[$key]);
+				$data=array_merge($data,$res);
+			}
 		}
 		return $data;
 	}

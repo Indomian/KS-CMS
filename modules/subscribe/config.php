@@ -2,14 +2,14 @@
 
 /**
  * Конфигурационный файл модуля "subscribe"
- * Последнее изменение: 02.03.2010, 00:35:59
+ * Последнее изменение: 23.01.2012, 17:06:01
  */
 
 $MODULE_subscribe_config = array
 (
 	'format' => "1",
-	'encryption' => "cp1251",
-	'from' => "fox@kolosstudio.ru",
+	'encryption' => "utf8",
+	'from' => "blade39@kolosstudio.ru",
 	'title_default' => "Рассылка сообщений",
 	'acceptable_order_fields' => array
 	(
@@ -29,3 +29,5 @@ $MODULE_subscribe_config = array
 		'6' => "send"
 	)
 );
+
+?>

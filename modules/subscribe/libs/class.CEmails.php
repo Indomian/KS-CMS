@@ -18,17 +18,18 @@ class CEmails extends CEmailMessage
 {
 	function send($data)
 	{
-		foreach($data['emails'] as $mail)
-		{
-			$name_to='Гость';
-			if($mail['users_title'])$name_to=$mail['users_title'];
-			if($mail['format']==1)
-				$format='text/html';
-			elseif($mail['format']==2)
-				$format='text/plain';
-			else
-				$format='text/plain';
-			$this->AddTemplate($mail['email'],$data,'subscribe.message.tpl',$format,$data['encryption'],$data['from'],$name_to,$data['theme']);
-		}
+		if(isset($data['emails']))
+			foreach($data['emails'] as $mail)
+			{
+				$name_to='Гость';
+				if($mail['users_title'])$name_to=$mail['users_title'];
+				if($mail['format']==1)
+					$format='text/html';
+				elseif($mail['format']==2)
+					$format='text/plain';
+				else
+					$format='text/plain';
+				$this->AddTemplate($mail['email'],$data,'subscribe.message.tpl',$format,$data['encryption'],$data['from'],$name_to,$data['theme']);
+			}
 	}
 }

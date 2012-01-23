@@ -1,6 +1,6 @@
 <?php
 /**
- * @file modules/subscribe/pages/newsletters.php
+ * @file subscribe/pages/index.php
  * Файл управления рассылками
  * Файл проекта kolos-cms.
  *
@@ -18,47 +18,52 @@ require_once MODULES_DIR.'/main/libs/class.CModuleAdmin.php';
 
 class CsubscribeAIindex extends CModuleAdmin
 {
-	private $access_level;
-	private $obNews;
-	private $obPages;
+	private $iAccessLevel;
 	private $obUserGroups;
 	private $obAccess;
-	private $obSubsUsergroupsLevels;
+	private $obAPI;
 
 	function __construct($module='subscribe',&$smarty,&$parent)
 	{
 		parent::__construct($module,$smarty,$parent);
-		$this->access_level=$this->obUser->GetLevel($this->module);
-		$this->obNews = new CObject('subscribe_newsletters');
+		$this->iAccessLevel=$this->obUser->GetLevel($this->module);
+		$this->obAPI=CSubscribeAPI::get_instance();
 		/* Объект для работы с группами пользователей */
 		$this->obUserGroups = new CUserGroup();
 		/* Объект для работы с правами доступа пользователей к модулям */
 		$this->obAccess = new CModulesAccess();
-		$this->obSubsUsergroupsLevels= new CObject('subscribe_usergroups_levels');
 	}
 
-	function Table()
+	/**
+	 * Метод выполняет подготовку данных для вывода страницы списка тем рассылки
+	 * @return string Название шаблона для вывода
+	 */
+	protected function Table()
 	{
 		/* Поля, по которым можно отсортировать */
 		$arSortFields = array("id", "name", "date_add","description","active");
 		//Определяем порядок сортировки записей
-		list($sOrderField,$sOrderDir)=$this->InitSort($arSortFields,$_REQUEST['order'],$_REQUEST['dir']);
+		list($sOrderField,$sOrderDir)=$this->InitSort($arSortFields);
 		$sNewDir=($sOrderDir=='desc')?'asc':'desc';
 		$arSort=array($sOrderField=>$sOrderDir);
 		$arFilter=array();
-		$obPages = new CPages();
-		$totalNews = $this->obNews->count();
+		$obPages=$this->InitPages();
+		$totalNews = $this->obAPI->Newsletter()->count();
 		/* Для постраничной навигации */
 		$this->smarty->assign("pages", $obPages->GetPages($totalNews));
 		/* Количество отображаемых на странице голосований */
 		$this->smarty->assign("num_visible", $obPages->GetVisible());
 		/* Параметры сортировки */
 		$this->smarty->assign("order", array('newdir' => $sNewDir, 'curdir' => $sOrderDir, 'field' => $sOrderField));
-		$this->smarty->assign("list", $this->obNews->GetList($arSort, $arFilter, $obPages->GetLimits($totalNews)));
+		$this->smarty->assign("list", $this->obAPI->Newsletter()->GetList($arSort, $arFilter, $obPages->GetLimits($totalNews)));
 		return '';
 	}
 
-	function Save($id)
+	/**
+	 * Метод выполняет сохранение записи темы рассылки
+	 * @return string Название шаблона для вывода
+	 */
+	protected function Save()
 	{
 		/* Параметры для сохранения */
 		$arData = $_POST;
@@ -67,12 +72,16 @@ class CsubscribeAIindex extends CModuleAdmin
 		/* Поле для автозаполнения */
 		if (strlen(trim($arData['SB_name'])) == 0)
 			$bError+=$this->obModules->AddNotify("SUBSCRIBE_NAME_ERROR");
+		if(!isset($arData['SB_active']))
+			$arData['SB_active']=0;
+		else
+			$arData['SB_active']=intval($arData['SB_active']);
 		/* Сохранение*/
 		if($bError==0)
 		{
 			try
 			{
-				if($id = $this->obNews->Save('SB_', $arData))
+				if($id = $this->obAPI->Newsletter()->Save('SB_', $arData))
 				{
 					/* Теперь остаётся сохранить выставленные уровни доступа */
 					if (is_array($_POST['SB_groupLevel']))
@@ -80,41 +89,37 @@ class CsubscribeAIindex extends CModuleAdmin
 						$groups_levels = $_POST['SB_groupLevel'];
 						if (count($groups_levels))
 							foreach ($groups_levels as $group_id => $group_levels)
-							{
 								if (count($group_levels))
 								{
 									$max_group_level = 10;
 									foreach ($group_levels as $group_level)
-									{
 										if ($group_level < $max_group_level)
 											$max_group_level = $group_level;
-									}
 									/* Формируем массив для записи */
-									$usergroups_levels_row = array('newsletter_id' => $id, 'usergroup_id' => $group_id, 'level' => $max_group_level);
+									$usergroups_levels_row = array(
+										'newsletter_id' => $id,
+										'usergroup_id' => $group_id,
+										'level' => $max_group_level
+									);
 
 									/* Параметры идентификации уровня доступа */
-									$ident_filter = array('newsletter_id' => $id, 'usergroup_id' => $group_id);
-
+									$arFilter = array('newsletter_id' => $id, 'usergroup_id' => $group_id);
 									/* Проверяем запись на существование */
-									$row = $this->obSubsUsergroupsLevels->GetRecord($ident_filter);
-									if (is_array($row) && count($row) > 0)
-										$this->obSubsUsergroupsLevels->Update($row['id'], $usergroups_levels_row);
-									elseif (!$this->obSubsUsergroupsLevels->Save("", $usergroups_levels_row))
+									if($row = $this->obAPI->Access()->GetRecord($arFilter))
+										$this->obAPI->Access()->Update($row['id'], $usergroups_levels_row);
+									elseif (!$this->obAPI->Access()->Save("", $usergroups_levels_row))
 										throw new CError("SUBSCRIBE_NEWSLETTER_ACCESS_SAVE_ERROR");
 								}
-							}
 					}
 				}
 				else
-				{
 					throw new CError('SUBSCRIBE_NEWSLETTER_SAVE_ERROR');
-				}
 				$this->obModules->AddNotify('SUBSCRIBE_NEWSLETTER_SAVE_OK','',NOTIFY_MESSAGE);
 				/* Осуществляем редирект после успешного сохранения */
 				if (array_key_exists('update', $_REQUEST))
-					CUrlParser::get_instance()->Redirect("admin.php?".CUrlParser::get_instance()->GetUrl(array('action')).'&action=edit&id='.$id);
+					$this->obUrl->Redirect("admin.php?".$this->obUrl->GetUrl(array('action')).'&action=edit&id='.$id);
 				else
-					CUrlParser::get_instance()->Redirect("admin.php?".CUrlParser::get_instance()->GetUrl(array('action','p')));
+					$this->obUrl->Redirect("admin.php?".$this->obUrl->GetUrl(array('action','p')));
 			}
 			catch(CError $e)
 			{
@@ -122,19 +127,15 @@ class CsubscribeAIindex extends CModuleAdmin
 			}
 		}
 		$data=$obNews->GetRecordFromPost('SB_',$_POST);
-		foreach ($usergroups_levels as $usergroup_level_key => $usergroup_level)
-		{
-			if ($usergroup_level['level'] == 0)
-				$usergroups_levels[$usergroup_level_key]['level'] = 5;
-		}
-		$access['usergroups_levels'] = $usergroups_levels;
-
-		$this->smarty->assign('data',$data);
-		$tihs->smarty->assign("access", $access);
-		return '_edit';
+		return $this->EditForm($data);
 	}
 
-	function EditForm($data=false)
+	/**
+	 * Метод выполняет подготовку данных для вывода формы редактирования темы подписки
+	 * @param mixed $data массив записи или false если нужно сформировать данные для новой записи
+	 * @return string название шаблона
+	 */
+	protected function EditForm($data=false)
 	{
 		if(!$data)
 		{
@@ -156,7 +157,7 @@ class CsubscribeAIindex extends CModuleAdmin
 			foreach($ug_levels as $ug_level)
 				$usergroups_levels[$ug_level['group_id']] = $ug_level;
 
-		if($real_ug_levels = $this->obSubsUsergroupsLevels->GetList(false, array('newsletter_id' => $data['id'])))
+		if($real_ug_levels = $this->obAPI->Access()->GetList(false, array('newsletter_id' => $data['id'])))
 			foreach ($real_ug_levels as $level_item)
 				$usergroups_levels[$level_item['usergroup_id']]['level'] = $level_item['level'];
 		else
@@ -169,85 +170,69 @@ class CsubscribeAIindex extends CModuleAdmin
 		return '_edit';
 	}
 
+	/**
+	 * Метод выполняет общие действия над темами рассылки
+	 */
+	protected function CommonActions()
+	{
+		if(isset($_POST['sel']['cat']) && is_array($_POST['sel']['cat']) && count($_POST['sel']['cat'])>0)
+		{
+			$arIds = array();
+			foreach ($_POST['sel']['cat'] as $key=>$val)
+				if($val==1) $arIds[]=intval($key);
+			$arIds=array_unique($arIds);
+			if($arIds=$this->obAPI->Newsletter()->GetList(false,array('->id'=>$arIds),false,array('id')))
+			{
+				$arIds=array_keys($arIds);
+				if (isset($_REQUEST['comdel']))
+					$this->obAPI->Newsletter()->DeleteItems(array('->id'=>$arIds));
+				elseif (isset($_REQUEST['comact']))
+					$this->obAPI->Newsletter()->Update($arIds, array('active' => "1"));
+				elseif (isset($_REQUEST['comdea']))
+					$this->obAPI->Newsletter()->Update($arIds, array('active' => "0"));
+				$this->obModules->AddNotify('SUBSCRIBE_NEWSLETTER_COMMON_OPERATION_OK',0,NOTIFY_MESSAGE);
+			}
+		}
+		$this->obUrl->Redirect("admin.php?".$this->obUrl->GetUrl(array()));
+	}
+
+	/**
+	 * Метод выполняет обработку запроса от пользователя и определяет выполняемую операцию
+	 * @return string имя шаблона для отображения
+	 */
 	function Run()
 	{
-		$action='';
-		if(isset($_REQUEST['action']))
-			$action=$_REQUEST['action'];
-
+		if($this->iAccessLevel>5)
+			throw new CAccessError('SUBSCRIBE_NOT_ACCESS_USERS');
+		$this->ParseAction();
 		$page='';
 		$data=false;
 		$id=0;
-		if(isset($_REQUEST['id'])) $id=intval($_REQUEST['id']);
-		switch($action)
+		if(isset($_REQUEST['id']))
+			$id=intval($_REQUEST['id']);
+		switch($this->sAction)
 		{
 			case "common":
-				$request_ids = array();
-				$input_array = $_POST;
-				if (count($input_array))
-					foreach ($input_array as $variable => $value)
-						if (preg_match("#^common_([0-9]+)$#", $variable, $subpatterns))
-							$request_ids[] = intval($subpatterns[1]);
-
-				if (count($request_ids) > 0)
-				{
-					if (isset($_REQUEST['comdel']))
-					{
-						/* Удаление*/
-						foreach ($request_ids as $id)
-						{
-							$obNews->Delete($id);
-						}
-					}
-					elseif (isset($_REQUEST['comact']))
-					{
-						/* Активация */
-						foreach ($request_ids as $id)
-							$obNews->Update($id, array('active' => "1"));
-					}
-					elseif (isset($_REQUEST['comdea']))
-					{
-						/* Деактивация */
-						foreach ($request_ids as $id)
-							$obNews->Update($id, array('active' => "0"));
-					}
-				}
-
-				/* Возвращаемся к списку опросов */
-				CUrlParser::Redirect("admin.php?" . $KS_URL->GetUrl(array()));
+				$this->CommonActions();
 			break;
-
 			case "edit":
-				if($data=$this->obNews->GetRecord(array('id'=>$id)))
-				{
-
-				}
-				else
-				{
-					throw new CError('SUBSCRIBE_NEWSLETTER_NOT_FOUND');
-				}
+				$data=$this->obAPI->Newsletter()->GetRecord(array('id'=>$id));
+				if(!$data) throw new CError('SUBSCRIBE_NEWSLETTER_NOT_FOUND');
 			case "new":
-				/* Новое */
 				$page=$this->EditForm($data);
 			break;
-
-			/* Сохранение */
 			case "save":
 				$page=$this->Save($id);
 			break;
-
-			/* Удаление */
 			case "delete":
-				/* Идентификатор */
-				$id = intval($_REQUEST['id']);
-
-
-				$obNews->Delete($id);
-
-				/* В случае успеха (или не успеха - как повезёт) делаем редирект */
-				CUrlParser::Redirect("admin.php?" . $KS_URL->GetUrl(array("ACTION", "id")));
+				if($arRecord=$this->obAPI->Newsletter()->GetById($id))
+				{
+					$this->obAPI->Newsletter()->Delete($arRecord['id']);
+					$this->obModules->AddNotify('SUBSCRIBE_NEWSLETTER_DELETE_OK',0,NOTIFY_MESSAGE);
+				}
+				else $this->obModules->AddNotify('SUBSCRIBE_NEWSLETTER_NOT_FOUND');
+				$this->obUrl->Redirect("admin.php?".$this->obUrl->GetUrl(array("action", "id")));
 			break;
-
 			default:
 				$page=$this->Table();
 			break;

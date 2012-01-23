@@ -1,5 +1,3 @@
-<script type="text/javascript" src="/js/catsubcat/admin.js"></script>
-{ShowEditor object="textarea[name=SB_description]" theme="advanced" path=$data.URL}
 <ul class="nav" id="navChain">
 	<li><a href="/admin.php"><img src="{#images_path#}/icons_menu/home.gif" alt="icon_home" height="13" width="13" />&nbsp;<span>{#home#}</span></a></li>
 	<li><a href="/admin.php?module=subscribe"><img src="{#images_path#}/icons_menu/arrow.gif" alt="icon_arrow" height="13" width="13" />&nbsp;<span>{#title#}</span></a></li>
@@ -52,11 +50,7 @@
 					</tr>
 					<tr>
 						<td>{Title field="active"}</td>
-						<td><select name="SB_active" style="width:30%" class="form_input">
-								<option value="1" {if $data.active==1}selected="selected"{/if}>{#active#}</option>
-								<option value="0" {if $data.active==0}selected="selected"{/if}>{#inactive#}</option>
-							</select>
-						</td>
+						<td><input type="checkbox" name="SB_active" value="1" {if $data.active==1}checked="checked"{/if}/></td>
 					</tr>
 				</table>
 			</div>
@@ -111,10 +105,4 @@
 	</div>
 </form>
 
-{strip}
-<dl class="def" style="background:#FFF6C4 url('{#images_path#}/big_icons/doc.gif') left 50% no-repeat;{if $smarty.cookies.showHelpBar==1}display:none;{/if}">
-<dt>{#title_edit#}</dt>
-<dd>{#hint_edit#}</dd>
-</dl>
-<div class="content_arrow_{if $smarty.cookies.showHelpBar==1}down{else}up{/if}" onclick="ToggleHelpBar(this)" style="cursor:pointer;">&nbsp;</div>
-{/strip}
+{include file='admin/common/hint.tpl' title=$smarty.config.title_edit description=$smarty.config.hint_edit icon="/big_icons/feedback.gif"}

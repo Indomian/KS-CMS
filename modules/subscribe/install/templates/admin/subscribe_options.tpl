@@ -83,10 +83,5 @@
     	</div>
    	</div>
 </form>
-{strip}
-<dl class="def" style="background:#FFF6C4 url('{#images_path#}/big_icons/settings.gif') left 50% no-repeat;{if $smarty.cookies.showHelpBar==1}display:none;{/if}">
-	<dt>{#title_options#}</dt>
-	<dd>{#hint_options#}</dd>
-</dl>
-<div class="content_arrow_{if $smarty.cookies.showHelpBar==1}down{else}up{/if}" onclick="ToggleHelpBar(this)" style="cursor:pointer;">&nbsp;</div>
-{/strip}
+
+{include file='admin/common/hint.tpl' title=$smarty.config.title_options description=$smarty.config.hint_options icon="/big_icons/settings.gif"}

@@ -80,7 +80,7 @@ class CUser extends CUsersCommon implements User
 		$this->is_login = false;
 
 		$this->IsValid();
-
+		$this->AddFileField('img');
 		$smarty->assign('USER', $this->userdata);
 		/* Вызов обработчика при инициализации объекта класса */
 		$onInitParams = $this->userdata;
@@ -483,7 +483,7 @@ class CUser extends CUsersCommon implements User
 	 * @param string $mytable Таблица пользователей
 	 * @return int Идентификационный номер сохранённого пользователя
 	 */
-	function Save($prefix = "KS_", $data = "", $mytable = "")
+	function Save($prefix = "KS_", $data = "")
 	{
 		global $KS_EVENTS_HANDLER;
 		/* Если мы не передаём данные для залогинивания непосредственно методу, то берём их из $_POST */
@@ -494,67 +494,59 @@ class CUser extends CUsersCommon implements User
 		/* Выполнение обработчика перед сохранением профиля пользователя */
 		if (!$KS_EVENTS_HANDLER->Execute('main', 'onBeforeSave', $onBeforeSaveParams))
 			throw new CError('MAIN_HANDLER_ERROR');
-
-		$this->AddFileField('img');
+	
 		$this->AddCheckField('title');
-		$this->obDB->begin();			// соединяемся с базой данных ЦМС
 		try
 		{
-			/* Читаем текущие настройки существующего пользователя */
-			if ( !empty($data[$prefix."id"]) && $data[$prefix."id"] > 0)
-				$previous_user_row = $this->GetRecord(array("id" => $data[$prefix."id"]));
+			/* Читаем текущие настройки существующего пользователя и заодно проверяем данные о пароле*/
+			if (isset($data[$prefix."id"]) && $data[$prefix."id"] > 0)
+			{
+				$arOldValue=$this->GetById($data[$prefix."id"]);
+				if(isset($data[$prefix.'password']) && isset($data[$prefix.'password_c']) && $data[$prefix.'password']=='')
+					unset($data[$prefix.'password']);
+			}
 			else
+			{
+				if(isset($data[$prefix.'password']))
+				{
+					if($data[$prefix.'password']=='')
+						throw new CDataError('MAIN_USER_PASSWORD_REQUIRED');
+				}
+				else
+					throw new CDataError('MAIN_USER_PASSWORD_REQUIRED');
 				$data[$prefix.'date_register']=time();
+			}
 
 			/* Сохраняем данные пользователя и получаем его id */
 			$nId = (!empty($data[$prefix."id"])) ? (int)$data[$prefix."id"] : 0;
 			$this->LogAction($nId,'Сохранение записи в БД',array($data));
 
-			if($res = parent::Save($prefix, $data, $mytable))
+			if($res = parent::Save($prefix, $data))
 			{
 				/* Избавляемся от префикса, чтобы в обработчике не заниматься проверкой */
+				$onSaveParams = $data;
 				if ($prefix != '')
-				{
 					foreach ($data as $data_key => $data_item)
-					{
-						$new_key = preg_replace("#^" . $prefix . "(.*)$#", "$1", $data_key);
-						$onSaveParams[$new_key] = $data_item;
-					}
-				}
-				else
-					$onSaveParams = $data;
-
+						$onSaveParams[preg_replace("#^".$prefix."#","",$data_key)] = $data_item;
 				if (!isset($onSaveParams["id"]) || $onSaveParams["id"] <= 0)
-				{
-					/* Устанавливаем id только что созданного пользователя */
 					$onSaveParams["new_user_id"] = $res;
-				}
 				else
-				{
-					/* Запоминаем предыдущие параметры юзера */
-					$onSaveParams["previous_user_row"] = $previous_user_row;
-				}
-
+					$onSaveParams["previous_user_row"] = $arOldValue;
 				if (!$KS_EVENTS_HANDLER->Execute('main', 'onSave', $onSaveParams))
 					throw new CError('MAIN_HANDLER_ERROR');
+				return $res;
 			}
 			else
-			{
 				throw new CError('MAIN_USER_SAVE_ERROR');
-			}
 		}
 		catch (CError $e)
 		{
-			$this->obDB->rollback();
 			throw $e;
 		}
 		catch (Exception $e)
 		{
-			$this->obDB->rollback();
 			throw new CError('MAIN_SYSTEM_ERROR',100,$e);
 		}
-		$this->obDB->commit();
-		return $res;
 	}
 
 	function Update($id,$arData,$bWhere=false)

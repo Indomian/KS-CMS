@@ -44,7 +44,7 @@
 		{if is_array($list) and count($list)>0}
 			{foreach from=$list item=oItem key=oKey name=fList}
 				<tr {if $smarty.foreach.fList.iteration is even}class="odd"{/if}>
-					<td><input type="checkbox" name="sel[cat][]" value="{$oItem.id}" class="checkItem"></th>
+					<td><input type="checkbox" name="sel[cat][{$oItem.id}]" value="1" class="checkItem"></th>
 					<td><a href="{get_url _CLEAR="CU_order.*" action=edit id=$oItem.id}">{$oItem.name}</a></td>
 					<td>{$oItem.description|truncate:100:""}</td>
 					<td>{$oItem.date_add|date_format:"%d.%m.%Y"}</td>
@@ -71,9 +71,9 @@
     <table class="layout">
     	<tr class="titles">
     		<td>{#selected#}
-    			<input type="submit" id="comdel" name="comdel" disabled value="{#delete#}" onclick="return confirm('{#delete_common_confirm#}');" />&nbsp;
-    			<input type="submit" id="comact" name="comact" disabled value="{#activate#}" />&nbsp;
-    			<input type="submit" id="comdea" name="comdea" disabled value="{#deactivate#}" />
+    			<input type="submit" id="comdel" name="comdel" disabled value="{#delete#}" class="check_depend" onclick="return confirm('{#delete_common_confirm#}');" />&nbsp;
+    			<input type="submit" id="comact" name="comact" disabled value="{#activate#}" class="check_depend"/>&nbsp;
+    			<input type="submit" id="comdea" name="comdea" disabled value="{#deactivate#}" class="check_depend"/>
     			<input type="hidden" id="action" name="action" value="common" />
     		</td>
     	</tr>
