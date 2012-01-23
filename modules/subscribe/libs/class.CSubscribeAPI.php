@@ -13,6 +13,7 @@
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 include_once MODULES_DIR.'/main/libs/class.CBaseAPI.php';
+include_once MODULES_DIR.'/subscribe/libs/class.CSimpleSender.php';
 
 /**
  * Класс обеспечивает высокоуровневые функции для модуля wave
@@ -25,6 +26,7 @@ class CSubscribeAPI extends CBaseAPI
 	private $obNewsletter;
 	private $obReleases;
 	private $obSubsUsergroupsLevels;
+	private $obSender;
 
 	/**
 	 * Метод заменяющий конструктор. Используется для инициализации.
@@ -36,6 +38,7 @@ class CSubscribeAPI extends CBaseAPI
 		$this->obNewsletter=false;
 		$this->obReleases=false;
 		$this->obSubsUsergroupsLevels=false;
+		$this->obSender=new CSimpleSender($this);
 	}
 
 	/**
@@ -102,7 +105,7 @@ class CSubscribeAPI extends CBaseAPI
 			$this->obSubsUsergroupsLevels= new CObject('subscribe_usergroups_levels');
 		return $this->obSubsUsergroupsLevels;
 	}
-	
+
 	/**
 	 * Метод возвращает список активных пользователей
 	 */
@@ -126,6 +129,20 @@ class CSubscribeAPI extends CBaseAPI
 	function GetEmailByNewsletter($iNewsletterId)
 	{
 		return $this->GetEmailByNewsletters(array($iNewsletterId));
+	}
+
+	/**
+	 * Метод выполняет подготовку рассылки и её отправку
+	 * @param $id - номер рассылки
+	 */
+	function PrepareAndSend($id)
+	{
+		if($arRelease=$this->Release()->GetRecord(array('id' => $id)))
+		{
+			$this->obSender->Prepare($arRelease);
+			if($this->obSender->Send())
+				$this->Release()->Update($id,array('send'=>1));
+		}
 	}
 
 	/**
@@ -160,6 +177,7 @@ class CSubscribeAPI extends CBaseAPI
 			return $users;
 		elseif(is_array($usersAnonim))
 			return $usersAnonim;
+		return false;
 	}
 
 	/**
@@ -192,4 +210,4 @@ class CSubscribeAPI extends CBaseAPI
 			throw new CError("SUBSCRIBE_MAIL_ALREADY_EXISTS",KS_ERROR_MAIN_ALREADY_EXISTS);
 		return $this->SubscribeUsers()->Save($prefix, $arData);
 	}
-} 
+}

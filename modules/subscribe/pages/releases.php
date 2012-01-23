@@ -170,44 +170,7 @@ class CsubscribeAIreleases extends CModuleAdmin
 			{
 				/* Отправка */
 				if (array_key_exists('send', $_REQUEST))
-				{
-					$newData=$this->obAPI->Release()->GetRecord(array('id' => $id));
-					if($newData['newsletter']!=-1)
-					{
-						$newData['emails']=$this->obAPI->GetEmailByNewsletter($newData['newsletter']);
-						$this->obMailSend->send($newData);
-					}
-					elseif(is_array($newData['groups']))
-					{
-						$newData['emails']=$this->obAPI->GetEmailByGroup($newData['groups']);
-						$this->obMailSend->send($newData);
-					}
-					elseif(is_array($newData['newsletters']) && is_array($newData['list']))
-					{
-						$newData['list']=array_unique($newData['list']);
-						$newData['newsletters']=$this->obAPI->GetEmailByNewsletters($newData['newsletters']);
-						foreach($newData['newsletters'] as $newsletter)
-							if(($key = array_search(trim($newsletter['email']),$newData['list']))!==false)
-								unset($newData['list'][$key]);
-						foreach($newData['list'] as $mail)
-							$mailList[]=array('email'=>$mail);
-						$newData['emails']=array_merge($newData['newsletters'],$mailList);
-						$this->obMailSend->send($newData);
-					}
-					elseif(is_array($newData['newsletters']))
-					{
-						$newData['emails']=$this->obAPI->GetEmailByNewsletters($newData['newsletters']);
-						$this->obMailSend->send($newData);
-					}
-					elseif(is_array($newData['list']))
-					{
-						foreach($newData['list'] as $mail)
-							$newData['emails'][]=array('email'=>$mail);
-						$obMailSend->send($newData);
-					}
-					$this->obAPI->Release()->Update($id,array('send'=>1));
-				}
-
+					$this->obAPI->PrepareAndSend($id);
 				/* Осуществляем редирект после успешного сохранения */
 				if (array_key_exists('update', $_REQUEST))
 					$this->obUrl->Redirect("admin.php?".$this->obUrl->GetUrl(array('ACTION')).'&action=edit&id='.$id);
@@ -225,7 +188,7 @@ class CsubscribeAIreleases extends CModuleAdmin
 			return $this->EditForm($data);
 		}
 	}
-	
+
 	function Run()
 	{
 		/* Чтение списка допустимых действий */
@@ -239,7 +202,7 @@ class CsubscribeAIreleases extends CModuleAdmin
 		{
 			case "common":
 				$this->CommonActions();
-			break;	
+			break;
 			case "edit":
 				$arData = $this->obAPI->Release()->GetRecord(array('id' => $id));
 			case "new":
@@ -254,7 +217,7 @@ class CsubscribeAIreleases extends CModuleAdmin
 			break;
 			default:
 				$page=$this->Table();
-			break;		
+			break;
 		}
 		return '_releases'.$page;
 	}

@@ -59,7 +59,7 @@ class CReleases extends CObject
 	{
 		if($data=parent::GetRecord($where))
 		{
-			if($data['recipients'] && $data['newsletter']==-1)
+			if($data['recipients'] && $data['newsletter']==0)
 			{
 				parse_str($data['recipients'],$res);
 				foreach($res as $key=>$elm)
