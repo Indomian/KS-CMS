@@ -92,20 +92,17 @@ if(array_key_exists('go',$_POST))
 			$KS_FS->CopyFile(MODULES_DIR.'/'.$module_name.'/install/js/'.$sFile,ROOT_DIR.JS_DIR.'/'.$module_name.'/'.$sFile,'');
 		}
 	}
+
+	$this->InstallResources($module_name);
+	
 	$this->AddNotify('SYSTEM_MODULE_INSTALL_OK',$arDescription['title'],NOTIFY_MESSAGE);
 }
 else
 {
 	//Если мы не выполняем работу то надо сообщить о настройках модуля перед установкой
-	$arFields=array(
-		'installTemplates'=>array(
-			'type'=>'checkbox',
-			'title'=>'Установить шаблоны виджетов',
-			'value'=>'1',
-		),
-	);
+	$arFields=array();
 	$arFields['text']=array(
 		'type'=>'label',
 		'title'=>$arDescription['description']
-		);
+	);
 }

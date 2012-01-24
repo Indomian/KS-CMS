@@ -2,72 +2,104 @@
 /*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
-class ConrtollerFile implements Controller {
+class ControllerFile implements Controller {
 	private $obModelUploadResult;
 	private $obModelFile;
 	private $obModelImage;
 	private $obFile;
+	private $obHelper;
+	private $obFileAPI;
 	
 	function __construct(){
 		global $ks_fs;
 		$this->obFile=$ks_fs;
-		$this->obModelImage=new ModelImage();
-		$this->obModelFile=new ModelFile();
-		$this->obModelUploadResult=new ModelUploadResult();
+		$this->obFileAPI=FileAPI::Instance();
+		$this->obHelper=Helper::Instance();
 	}
 
 	public function Open($sFile){
-		return $this->obModelDir->View();
+		if($sFile!=''){
+			$sPath=$this->obHelper->GetPath();
+			$arData=$this->obFileAPI->IsEditable($sFile);
+			if(!$arData['open'])
+				throw new CFileError('FM_EDIT_THE_FILE_IS_FORBIDDEN');
+			if($arData['type']=='image'){
+				$obModeImage=new ModelImage($sFile);
+				return $obModeImage->View();
+			}else{
+				$obModelFile=new ModelFile($sFile);
+				return $obModelFile->View();
+			}
+		}else{
+			throw new CFileError('FM_EDIT_THE_FILE_IS_FORBIDDEN');
+		}
 	}
 
-	public function Edit(){
-		
+	public function Edit($sFile){
+		if($sFile=='')
+			throw new CFileError('FM_EDIT_THE_FILE_IS_FORBIDDEN');
+		$sPath=$this->obHelper->GetPath();
+		$arData=$this->obFileAPI->IsEditable($sFile);
+		if(!$arData['open'])
+			throw new CFileError('FM_EDIT_THE_FILE_IS_FORBIDDEN');
+		if($arData['type']=='text'){
+			$this->obFileAPI->EditText($sPath.'/'.$sFile);
+		}
+		$arMessage=array('text'=>'FM_EDIT_COMLETE','code'=>2);
+		$obModelResult=new ModelResult($arMessage);
+		return $obModelResult->View();
 	}
 
 	public function Rename($sOldName){
-		$sNewName=(!empty($_POST['new_name'])) ? $_POST['new_name'] : '';
-		if(!$sOldName || $sOldName=='' || $sNewName=='')
-			throw new CFileError('FM_INCORRECT_DATA');
-		$this->obFile->Rename($sOldName, $sNewName);
-		return $this->obModelDir->View();
+		throw new CFileError('FM_NO_METHOD');
 	}
 
-	public function Delete($sPath){
-		$sPath=$this->ConcatPath($sPath);
-		if( $this->obFile->Remove($sPath) ){
-			return $this->obModelDir->View();
-		}
-		return $this->obModelDir->View();
+	public function Delete(array $sFile){
+		throw new CFileError('FM_NO_METHOD');
 	}
 
-	public function Copy($sPath){
-		$sPath=$this->GetPath().'/'.$sPath;
-		Buffer::Add($sPath,'copy');
-		return $this->obModelDir->View();
+	public function Copy(array $sFile){
+		throw new CFileError('FM_NO_METHOD');
 	}
 
-	public function Cut($sPath){
-		$sPath=$this->GetPath().'/'.$sPath;
-		Buffer::Add($sPath,'cut');
-		return $this->obModelDir->View();
+	public function Cut(array $sFile){
+		throw new CFileError('FM_NO_METHOD');
 	}
 
 	public function Paste(){
-		if($arData=Buffer::Get()){
-			$sCurrentPath=$this->GetPath();
-			$sMarker=(!empty($arData['marker'])) ? $arData['marker'] : 'copy';
-			$bResult=$this->obFile->DirCopy($arData['data'],$sCurrentPath);
-			if($bResult && $sMarker=='cut')
-				$this->obFile->Remove($arData['data']);
-		}
-		return $this->obModelDir->View();
+		throw new CFileError('FM_NO_METHOD');
 	}
 
 	public function Upload(){
-		return $this->obModelUploadForm->View();
+		$arFiles=$_FILES;
+		$arNames=(!empty($_POST['file_name'])) ? $_POST['file_name'] : array();
+		if(count($arFiles)<=0)
+			throw new CFileError('FM_UPLOAD_FILE_NOT_SELECTED');
+		$sPath=$this->obHelper->GetPath();
+		foreach($arFiles as $sKey=>$arValue){
+			$obFileUploader=new CFileUploader($sKey, __CLASS__);
+			$obFileUploader->SetRootDir($sPath);
+			$sNewName=(!empty($arNames[$sKey])) ? $arNames[$sKey] : $arValue['name'];
+			if(empty($sNewName))
+				continue;
+			$obFileUploader->Upload($sNewName, false);
+		}
+		$arMessage=array('text'=>'FM_UPLOAD_COMLETE','code'=>2);
+		$obModelResult=new ModelResult($arMessage);
+		return $obModelResult->View();
 	}
 
-	public function Download(){
+	public function Download($sFile){
+		if(!empty($sFile)){
+			$sPath=$this->obHelper->GetPath();
+			$sFile=$sPath.'/'.$sFile;
+			if(is_file($sFile))
+				$this->obFileAPI->DownloadFile($sFile);
+		}
+		return $this->obModelResult->View();
+	}
+
+	public function Cancel(){
 		throw CFileError('FM_NO_METHOD');
 	}
 }

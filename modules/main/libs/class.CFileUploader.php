@@ -174,6 +174,8 @@ class CFileUploader
 				$arFile['extension']=Translit($arFile['extension']);
 				$arFile['basename']=$arFile['filename'].'.'.$arFile['extension'];
 			}
+			if($arFile['dirname']=='.')
+				$arFile['dirname']='/';
 			if(!file_exists($this->sRootDir.$arFile['dirname']))
 			{
 				$KS_FS->makedir($this->sRootDir.$arFile['dirname']);

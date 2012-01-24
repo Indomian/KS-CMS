@@ -4,6 +4,7 @@ if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 include_once MODULES_DIR.'/main/libs/class.CFileSystem.php';
 /**
  * Класс CSimpleFs выполняет работу, со стандартной файловой системой. Является оберткой для функций пхп связанных с работой с СФ.
+ * @project ks-cms
  * @version 2.6
  * @since 17.10.2008
  * @author blade39 <blade39@kolosstudio.ru>,  D. Konev, <d.konev@kolosstudio.ru>
@@ -21,6 +22,7 @@ class CSimpleFs extends CFileSystem
 	{
 		if(!@mkdir($path,0755,true))
 			throw new CFileError('SYSTEM_CANT_CREATE_DIR',1,$path);
+
 		return true;
 	}
 
@@ -56,6 +58,7 @@ class CSimpleFs extends CFileSystem
 		$new = str_replace('//','/',$new);
 		if(!@rename($old,$new))
 			throw new CFileError('SYSTEM_CANT_RENAME',1,$old.' '.$new);
+
 		return true;
 	}
 
@@ -113,7 +116,7 @@ class CSimpleFs extends CFileSystem
 	 * Метод осуществляет копирование двух файлов
 	 * @param string - путь до файла, который копируется
 	 * @param string - путь, куда осуществляется копирование
-	 * @param string - абсолютный путь к корню файла
+	 * @param string - абсолютный путь
 	 * @return bool
 	 */
 	function CopyFile($from,$to,$absolute='')
@@ -121,7 +124,7 @@ class CSimpleFs extends CFileSystem
 		$from=$absolute.$from;
 		$to=$absolute.$to;
 		if(is_dir($from))
-			$this->DirCopy($from,$to);
+			return $this->DirCopy($from,$to);
 		else
 			return @copy($from, $to);
 	}
@@ -146,6 +149,17 @@ class CSimpleFs extends CFileSystem
 				$path.='/'.$oldpath[$i];
 		}
 		return $path;
+	}
+
+	/**
+	 * Функия возвразщает новый путь, сформированный из расхождений
+	 * @param string - старый путь
+	 * @param string - новый путь
+	 * @return string - строка результата
+	 */
+	function DiffPath($sOld,$sNew)
+	{
+
 	}
 
 	/**
@@ -193,8 +207,10 @@ class CSimpleFs extends CFileSystem
 			if ($dh = opendir($dir))
 			{
 				while (($dir_item = readdir($dh)) !== false)
+				{
 					if ($dir_item != "." && $dir_item != "..")
 						$dir_items[] = $dir_item;
+				}
 				closedir($dh);
 				if(count($dir_items)==0)
 					return false;

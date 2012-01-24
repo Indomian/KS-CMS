@@ -53,7 +53,7 @@ class CmainAIoptions extends CModuleAdmin
 			$sCachePath=KS_CACHE_DIR;
 		else
 			$sCacheDir=MODULES_DIR.'/main/cache/';
-		if($KS_FS->cleardir($sCacheDir))
+		if($KS_FS->ClearDir($sCacheDir))
 			$this->obModules->AddNotify('MAIN_OPTIONS_SYSTEM_CACHE_CLEARED','',NOTIFY_MESSAGE);
 		else
 			$this->obModules->AddNotify('MAIN_OPTIONS_SYSTEM_CACHE_CLEAR_ERROR');
@@ -65,7 +65,7 @@ class CmainAIoptions extends CModuleAdmin
 	function DropImagesCache()
 	{
 		global $KS_FS;
-		if(!$KS_FS->cleardir(UPLOADS_DIR.'/PicCache'))
+		if(!$KS_FS->ClearDir(UPLOADS_DIR.'/PicCache'))
 			$this->obModules->AddNotify('MAIN_PICTURE_CACHE_CLEAN_FAIL');
 		else
 			$this->obModules->AddNotify('MAIN_OPTIONS_IMAGES_CACHE_CLEARED','',NOTIFY_MESSAGE);

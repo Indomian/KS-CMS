@@ -15,14 +15,17 @@ class ControllerBase {
 	private $obControllerFile;
 	private $sAction;
 	private $sType;
-	private $sPath;
+	private $sFile;
+	private $obHelper;
 	
 	function __construct(){
 		$this->obControllerFile=new ControllerFile();
 		$this->obControllerDir=new ControllerDir($this->obControllerFile);
-		$this->sAction=(!empty($_REQUEST['action'])) ? strip_tags($_REQUEST['action']) : '';
-		$this->sType=(!empty($_REQUEST['type'])) ? strip_tags($_REQUEST['type']) : '';
-		$this->sPath=(!empty($_GET['fm_path'])) ? $_GET['fm_path'] : '';
+		$this->obHelper=Helper::Instance();
+		$this->sAction=(!empty($_REQUEST['a'])) ? strip_tags($_REQUEST['a']) : '';
+		$this->sType=(!empty($_REQUEST['t'])) ? strip_tags($_REQUEST['t']) : '';
+		$this->sFile=(!empty($_REQUEST['fm_file'])) ? $_REQUEST['fm_file'] : '';
+		$this->ParseCommonActions();
 	}
 	
 	static function Instance(){
@@ -32,31 +35,63 @@ class ControllerBase {
 	}
 	
 	public function Run(){
+		
 		switch($this->sAction){
 			case 'upload':
 				$obView=$this->SelectController()->Upload();
+				break;
 			case 'delete':
-				$obView=$this->SelectController()->Delete();
+				$arTitles=(!empty($_POST['title'])) ? $_POST['title'] : array();
+				$obView=$this->obControllerDir->Delete($arTitles);
+				break;
 			case 'copy':
-				$obView=$this->SelectController()->Copy($this->sPath);
+				$arTitles=(!empty($_POST['title'])) ? $_POST['title'] : array();
+				$obView=$this->SelectController()->Copy($arTitles);
+				break;
 			case 'cut':
-				$obView=$this->SelectController()->Cut();
+				$arTitles=(!empty($_POST['title'])) ? $_POST['title'] : array();
+				$obView=$this->SelectController()->Cut($arTitles);
+				break;
 			case 'paste':
 				$obView=$this->obControllerDir->Paste();
+				break;
 			case 'download':
-				$obView=$this->obControllerFile->Download();
+				$sFile=(!empty($_REQUEST['title'])) ? strip_tags($_REQUEST['title']) : '';
+				$obView=$this->obControllerFile->Download($sFile);
+				break;
 			case 'edit':
-				$obView=$this->SelectController()->Edit();
+				$obView=$this->SelectController()->Edit($this->sFile);
+				break;
+			case 'cancel':
+				$obView=$this->obControllerDir->Cancel();
+				break;
 			case 'open':
-				$obView=$this->ControllerDir->Open($this->GetPath());
 			default:
+				$obView=$this->SelectController()->Open($this->sFile);
+				break;
 		}
+		return $obView;
 	}
 	
 	public function SelectController(){
-		if($this->sType=='dir')
+		if($this->sType=='' || $this->sType=='dir')
 			return $this->obControllerDir;
 		else
 			return $this->obControllerFile;
+	}
+
+	public function ParseCommonActions(){
+		if(isset($_REQUEST['comdel']))
+			$this->sAction='delete';
+		elseif(isset($_REQUEST['comupl']))
+			$this->sAction='upload';
+		elseif(isset($_REQUEST['comсopy']))
+			$this->sAction='copy';
+		elseif(isset($_REQUEST['comcut']))
+			$this->sAction='cut';
+		elseif(isset($_REQUEST['compaste']))
+			$this->sAction='paste';
+		elseif(isset($_REQUEST['cancel']))
+			$this->sAction='cancel';
 	}
 }
