@@ -125,6 +125,8 @@ if (!defined("KS_MAIN_INIT"))
 	if($_SERVER['REQUEST_METHOD']=='POST')
 		if(array_key_exists('CU_ACTION',$_POST) && $_POST['CU_ACTION']=='login')
 			$USER->login();
+	if(isset($_REQUEST['CU_ACTION']) && $_REQUEST['CU_ACTION']=='logout')
+		$USER->logout();
 
 	$KS_MODULES->SetUser($USER);
 
