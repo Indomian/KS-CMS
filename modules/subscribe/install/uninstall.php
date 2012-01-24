@@ -33,7 +33,6 @@ if(array_key_exists('go',$_POST))
 		//Удаляем записи о дополнительных полях
 		$obFields=new CFields();
 		$obFields->DeleteItems(array('module'=>$module));
-		$this->UnInstallAllModuleFiles($module);
 		$obTpl=new _CEventTemplates();
 		$arNewTemplates=array(
 			'subscribe.message.tpl'=>array('file_id'=>'subscribe.message.tpl','title'=>'Шаблон сообщения рассылки'),
@@ -43,6 +42,14 @@ if(array_key_exists('go',$_POST))
 	}
 	//Удаляем запись о модуле
 	$this->DeleteItems(array('directory'=>$module));
+	//Удалить все файлы модуля
+	$this->UnInstallAllModuleFiles($module);
+	//Хак для двух вариантов версии 2.6 - текущей и старых билдов
+	if(method_exists($this,"UninstallResources"))
+		$this->UninstallResources($module);
+	elseif($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module.'/install/templates/resources/'))
+		foreach($arFiles as $sFile)
+			$KS_FS->Remove(ROOT_DIR.'/uploads/templates/admin/'.$sFile);
 	//Сообщаем что все ок
 	$this->AddNotify('SYSTEM_MODULE_UNINSTALL_OK',$arDescription['title'],NOTIFY_MESSAGE);
 }

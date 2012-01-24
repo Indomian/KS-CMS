@@ -104,9 +104,10 @@
 <div class="manage">
     <table class="layout">
     	<tr class="titles">
-    		<td>{#selected#}</td>
-    		<td><input type="submit" name="comdel" value="{#delete#}" onclick="return confirm('{#delete_common_confirm#}');"></td>
-    		<td><input type="submit" name="comact" value="{#activate#}"></td>
+    		<td>{#selected#}
+				<input type="submit" name="comdel" value="{#delete#}" onclick="return confirm('{#delete_common_confirm#}');">
+				<input type="submit" name="comact" value="{#activate#}">
+			</td>
     	</tr>
     </table>
 </div>

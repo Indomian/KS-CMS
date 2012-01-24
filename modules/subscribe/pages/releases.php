@@ -72,6 +72,7 @@ class CsubscribeAIreleases extends CModuleAdmin
 						$newsletters[$key]['select']=true;
 		$data['newsletters']=$newsletters;
 		$this->smarty->assign("data", $data);
+		$this->obModules->UseJavaScript('/subscribe/adminReleaseEdit.js');
 		return '_edit';
 	}
 
@@ -163,8 +164,6 @@ class CsubscribeAIreleases extends CModuleAdmin
 				throw new CError("SUBSCRIBE_FROM_FIELD_ERROR",0);
 			if (!IsEmail($arData['SB_from']))
 				throw new CError("SUBSCRIBE_MAIL_ERROR", 0, '"'.$arData['SB_from'].'"');
-			if (isset($arData['SB_to']) && $arData['SB_to']!='' && !IsEmail($arData['SB_to']) && $arData['SB_to'])
-				throw new CError("SUBSCRIBE_MAIL_ERROR", 0, '"'.$arData['SB_to'].'"');
 			/* Сохранение записи */
 			if($id = $this->obAPI->Release()->Save('SB_', $arData))
 			{

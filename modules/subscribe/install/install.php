@@ -73,6 +73,16 @@ if(array_key_exists('go',$_POST))
 	$this->AddAutoField('id');
 	$this->Save('',$arModule);
 	$this->InstallAllModuleFiles($module);
+	//Хак для двух вариантов версии 2.6 - текущей и старых билдов
+	if(method_exists($this,"InstallResources"))
+		$this->InstallResources($module);
+	elseif($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module.'/install/templates/resources/'))
+	{
+		if(!file_exists(ROOT_DIR.'/uploads/templates/admin/'))
+			$KS_FS->makedir(ROOT_DIR.'/uploads/templates/admin/');
+		foreach($arFiles as $sFile)
+			$KS_FS->CopyFile(MODULES_DIR.'/'.$module.'/install/templates/resources/'.$sFile,ROOT_DIR.'/uploads/templates/admin/'.$sFile);
+	}
 	$this->AddNotify('SYSTEM_MODULE_INSTALL_OK',$arDescription['title'],NOTIFY_MESSAGE);
 }
 else

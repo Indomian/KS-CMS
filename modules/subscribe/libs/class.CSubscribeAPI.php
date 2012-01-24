@@ -14,6 +14,7 @@ if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 include_once MODULES_DIR.'/main/libs/class.CBaseAPI.php';
 include_once MODULES_DIR.'/subscribe/libs/class.CSimpleSender.php';
+include_once MODULES_DIR.'/subscribe/libs/class.CSubUsers.php';
 
 /**
  * Класс обеспечивает высокоуровневые функции для модуля wave
@@ -194,6 +195,16 @@ class CSubscribeAPI extends CBaseAPI
 		$arSelect = array('users.email','users.title');
 		$arGroupBy=array('users.email');
 		return $this->SubscribeUsers()->GetList($arOrder,$arFilter,null,$arSelect,$arGroupBy);
+	}
+
+	/**
+	 * Метод выполняет генерацию кода подписки
+	 * @param $arUserData - массив описывающий подписчика, должны присутствовать ключи id, email
+	 * @return string - код активации подписки
+	 */
+	function GenSubscribeCode(array $arUserData)
+	{
+		 return md5($arUserData['id'].$arUserData['email'].$KS_MODULES->GetConfigVar('subscribe','code_salt','kolos'));
 	}
 
 	/**

@@ -14,9 +14,9 @@ if (!defined("KS_ENGINE")) die("Hacking attempt!");
 if($this->obUser->GetLevel($arModule['directory'])<=5)
 {
 	$this->AddMenuItem(MenuItem("SUBSCRIBE", $arModule['directory'],"module=".$arModule['directory'], $arModule["name"], "subscribe_newsletters"));
-	$this->AddMenuItem(MenuItem("SUBSCRIBE_MANAGEMENT", "SUBSCRIBE","module=".$arModule['directory'], $this->GetText('menu_managment'), "item.gif"), "SUBSCRIBE");
-	$this->AddMenuItem(MenuItem("SUBSCRIBE_RELEASES", "SUBSCRIBE","module=".$arModule['directory']."&page=releases", $this->GetText('menu_releases'), "item.gif"), "SUBSCRIBE");
-	$this->AddMenuItem(MenuItem("SUBSCRIBE_SUBSCRIBE", "SUBSCRIBE","module=".$arModule['directory']."&page=subscribe", $this->GetText('menu_subscribers'), "item.gif"), "SUBSCRIBE");
+	$this->AddMenuItem(MenuItem("SUBSCRIBE_MANAGEMENT", "SUBSCRIBE","module=".$arModule['directory'], $this->GetText('menu_managment'), "mail_box.png"), "SUBSCRIBE");
+	$this->AddMenuItem(MenuItem("SUBSCRIBE_RELEASES", "SUBSCRIBE","module=".$arModule['directory']."&page=releases", $this->GetText('menu_releases'), "email_go.png"), "SUBSCRIBE");
+	$this->AddMenuItem(MenuItem("SUBSCRIBE_SUBSCRIBE", "SUBSCRIBE","module=".$arModule['directory']."&page=subscribe", $this->GetText('menu_subscribers'), "vcard_edit.png"), "SUBSCRIBE");
 
 	if($this->obUser->GetLevel($arModule['directory'])==0)
 	{

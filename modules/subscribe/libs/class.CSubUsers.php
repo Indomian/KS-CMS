@@ -20,21 +20,28 @@ class CSubUsers extends CObject
 	}
 
 	/**
-	 * @todo Посмотреть что делает метод и зачем его назвали  как обычный
+	 * Метод выполняет сохранение подписок пользователя
+	 * @param $uin - номер пользователя в таблице subscribe_users
+	 * @param $arNewsletters array - массив номеров рассылок
 	 */
-	function Save($uin='',$newsletters='')
+	function SaveEx($uin,array $arNewsletters)
 	{
-		global $ks_db;
-		$del=" where uin='".$uin."'";
-		if($newsletters)
-		foreach($newsletters as $item)
+		$arFilter=array('uin'=>$uin);
+		$arNewIds=array_flip($arNewsletters);
+		if($arTmpList=$this->GetList(false,$arFilter))
 		{
-			if(!$res=$this->GetRecord(array('uin'=>$uin,'newsletter'=>$item)))
-			{
-				$ks_db->query("INSERT INTO ".PREFIX.$this->sTable."(uin,newsletter) VALUES ('$uin','$item')");
-			}
-			$del.=" AND newsletter!='".$item."'";
+			$arList=$arTmpList;
+			foreach($arTmpList as $key=>$arItem)
+				if(in_array($arItem['newsletter'],$arNewsletters))
+				{
+					unset($arList[$key]);
+					unset($arNewIds[$arItem['newsletter']]);
+				}
+			if(count($arList)>0)
+				$this->DeleteItems(array('->id'=>array_keys($arList)));
 		}
-		$ks_db->query("DELETE FROM ".PREFIX.$this->sTable.$del);
+		if(count($arNewIds)>0)
+			foreach($arNewIds as $id=>$nothing)
+				$this->Save('',array('uin'=>$uin,'newsletter'=>$id));
 	}
 }

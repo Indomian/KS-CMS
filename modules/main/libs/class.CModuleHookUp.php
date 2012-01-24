@@ -47,9 +47,7 @@ class CModuleHookUp extends CModuleManagment
 		 */
 		$sPath='';
 		if(array_key_exists('path',$_GET))
-		{
 			$sPath=$_GET['path'];
-		}
 		else
 		{
 			$arData=CUrlParser::ParseUrl($_SERVER['REQUEST_URI']);
@@ -57,10 +55,7 @@ class CModuleHookUp extends CModuleManagment
 			if(is_array($arData['params']))
 				$_GET=array_merge($_GET,$arData['params']);
 		}
-		if($sPath=='/')
-		{
-			$sPath='/index.html';
-		}
+		if($sPath=='/') $sPath='/index.html';
 		$this->arRequestData=array(
 			'path'=>$sPath,
 			'dirs'=>explode('/',$sPath)
@@ -69,13 +64,9 @@ class CModuleHookUp extends CModuleManagment
 		{
 			$this->arRequestData['page']=array_pop($this->arRequestData['dirs']);
 			if(strrpos($this->arRequestData['page'],'.')>0)
-			{
 				$this->arRequestData['text_ident']=substr($this->arRequestData['page'],0,strrpos($this->arRequestData['page'],'.'));
-			}
 			else
-			{
 				$this->arRequestData['text_ident']=$this->arRequestData['page'];
-			}
 		}
 		else
 		{
@@ -128,9 +119,7 @@ class CModuleHookUp extends CModuleManagment
 	function CurrentTextIdent()
 	{
 		if($this->IsPage())
-		{
 			return $this->arRequestData['text_ident'];
-		}
 		return false;
 	}
 
@@ -146,9 +135,7 @@ class CModuleHookUp extends CModuleManagment
 		{
 			$sPage=array_pop($arPath);
 			if(strrpos($this->arRequestData['page'],'.')>0)
-			{
 				$sPage=substr($sPage,0,strrpos($sPage,'.'));
-			}
 			foreach($arPath as $sElement)
 			{
 				if($bInModule && trim($sElement)=='') continue;
@@ -170,9 +157,7 @@ class CModuleHookUp extends CModuleManagment
 					return false;
 			}
 			if($sPage!='')
-			{
 				return $sPage==$this->CurrentTextIdent();
-			}
 		}
 		return true;
 	}

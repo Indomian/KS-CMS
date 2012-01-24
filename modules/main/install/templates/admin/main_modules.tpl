@@ -65,9 +65,10 @@
 <div class="manage">
     <table class="layout">
     	<tr class="titles">
-    		<td>{#selected#}:</td>
-    		<td><input type="submit" name="comact" value="{#activate#}"></td>
-    		<td><input type="submit" name="comdea" value="{#deactivate#}"></td>
+    		<td>{#selected#}:
+				<input type="submit" name="comact" value="{#activate#}">
+				<input type="submit" name="comdea" value="{#deactivate#}">
+			</td>
     	</tr>
     </table>
 </div>

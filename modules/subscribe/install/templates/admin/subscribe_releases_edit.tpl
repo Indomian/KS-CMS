@@ -45,10 +45,6 @@
 						<td>{Title field="release_from"}</td>
 						<td><input type="text" name="SB_from" value="{$data.from|htmlspecialchars:2:"UTF-8":false}" style="width:98%" class="form_input"/></td>
 					</tr>
-					<tr class="is_necessary_light">
-						<td>{Title field="release_to"}</td>
-						<td><input type="text" name="SB_to" value="{$data.to|htmlspecialchars:2:"UTF-8":false}" style="width:98%" class="form_input"/></td>
-					</tr>
 					<tr>
 						<td>{Title field="newsletter"}</td>
 						<td>
@@ -63,9 +59,9 @@
 				</table>
 			</div>
 		{/ksTab}
-		{ksTab NAME=$smarty.config.tabs_subscribes hide=1}
-			<div class="form" id="suscribes" {if $data.newsletter!=-1}style="visibility:hidden;"{/if}>
-				<table class="layout" id="list">
+		{ksTab NAME=$smarty.config.tabs_subscribes}
+			<div class="form">
+				<table class="layout">
 					<tr class="titles">
 						<th width=30%><h3>{#header_field#}</h3></th>
 						<th width=70%><h3>{#header_value#}</h3></th>
@@ -122,7 +118,7 @@
 		{/ksTab}
 	{/ksTabs}
 	<div class="form_buttons">
-		<div><input type="submit" name="send" value="{#send#}"/></div>
+		<div><input type="submit" name="send" class="send" value="{#send#}"/></div>
 		<div><input type="submit" class="save" value="{#save#}"/></div>
 	    <div><input type="submit" name="update" value="{#apply#}"/></div>
 	    <div><a href="{get_url _CLEAR="action id"}" class="cancel_button">{#cancel#}</a></div>
@@ -130,58 +126,3 @@
 </form>
 
 {include file='admin/common/hint.tpl' title=$smarty.config.title_edit description=$smarty.config.hint_edit icon="/big_icons/feedback.gif"}
-
-<script type="text/javascript" src="/js/catsubcat/admin.js"></script>
-<script type="text/javascript">
-	$(document).bind("InitCalendar",function()
-		{ldelim}
-		$("#date_add").datetimepicker(
-			{ldelim}
-				dateFormat:{#date_format#},
-				timeFormat:{#time_format#},
-				dayNames:{#days#},
-				dayNamesMin:{#daysMin#},
-				dayNamesShort:{#daysShort#},
-				monthNames:{#monthes#}
-			{rdelim}
-		);
-		$("#date_add_btn").click(function()
-			{ldelim}
-				$("#date_add").datetimepicker('show')
-			{rdelim}
-		);
-		{rdelim}
-	);
-	$(document).ready(function(){ldelim}
-		$(document).trigger("InitCalendar");
-		$('select[name=SB_newsletter]').change(function(){ldelim}
-			if($(this).val()>0)
-				$('ul.tabs2>[id$=_tab1]').hide();
-			else
-				$('ul.tabs2>[id$=_tab1]').show();
-		{rdelim});
-		$('textarea[name=SB_list]').click(function(){ldelim}
-			$('#news input[type=checkbox],#groups input[type=checkbox]').attr('checked',false);
-		{rdelim});
-		$('#allnews').click(function(){ldelim}
-			if($(this).attr('checked'))
-			{ldelim}
-				$('#news input[type=checkbox]').attr('checked',true);
-				$('textarea[name=SB_list]').val('');
-			{rdelim}
-		{rdelim});
-		$('#allgroups').click(function(){ldelim}
-			if($(this).attr('checked'))
-			{ldelim}
-				$('#groups input[type=checkbox]').attr('checked',true);
-				$('textarea[name=SB_list]').val('');
-			{rdelim}
-		{rdelim});
-		$('#news input[type=checkbox]').click(function(){ldelim}
-			$('#groups input[type=checkbox]').attr('checked',false);
-		{rdelim});
-		$('#groups input[type=checkbox]').click(function(){ldelim}
-			$('#news input[type=checkbox]').attr('checked',false);
-		{rdelim});
-	{rdelim});
-</script>

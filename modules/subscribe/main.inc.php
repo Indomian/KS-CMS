@@ -1,16 +1,17 @@
 <?php
 /**
- * CMS-remote
+ * Файл выполняет обработку запросов к модулю и выводит страницу оформления подписки
  * 
- * Created on 17.11.2008
+ * @since 24.01.2012
  *
- * Developed by Ilya Doroshko, BlaDe39 <blade39@kolosstudio.ru>
- * 
+ * @author BlaDe39 <blade39@kolosstudio.ru>
+ * @version 2.6
  */
-global $smarty,$KS_IND_dir;
+/*Обязательно вставляем во все файлы для защиты от взлома*/
+if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
-	include_once MODULES_DIR."/subscribe/widgets/function.Subscribe.php";
-	$output['main_content']= smarty_function_Subscribe($module_parameters,$smarty);
+if($this->CheckPath('/'))
+	$output['main_content']=$this->IncludeWidget('subscribe','Subscribe',$module_parameters);
+else
+	throw new CHTTPError('SYSTEM_PAGE_NOT_FOUND',404);
 
-
-?>

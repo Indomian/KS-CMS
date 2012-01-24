@@ -92,46 +92,46 @@ class CsubscribeAIsubscribe extends CModuleAdmin
 	protected function Save()
 	{
 		/* Параметры для сохранения */
-				$arData = $_POST;
-				/* Попытка сохранения данных */
-				try
-				{
-					/* Поле для автозаполнения */
-					if(!IsEmail($arData['SB_email']))
-						throw new CError("SUBSCRIBE_MAIL_ERROR", 0, '"'.$arData['SB_email'].'"');
+		$arData = $_POST;
+		/* Попытка сохранения данных */
+		try
+		{
+			/* Поле для автозаполнения */
+			if(!IsEmail($arData['SB_email']))
+				throw new CError("SUBSCRIBE_MAIL_ERROR", 0, '"'.$arData['SB_email'].'"');
 
-					if($arData['SB_id']<1)
-						$arData['SB_date_add']=time();
-					if(!isset($arData['SB_active']))
-						$arData['SB_active']=0;
-					else
-						$arData['SB_active']=intval($arData['SB_active']);
-					if(isset($arData['SB_date_active']) && $arData['SB_date_active']!='' && $arData['SB_active']==1)
-						$arData['SB_date_active']=strtotime($arData['SB_date_active']);
-					elseif($arData['SB_active']==1)
-						$arData['SB_date_active']=time();
-					else
-						$arData['SB_date_active']='';
-					if($id = $this->obAPI->SaveSubscribe('SB_', $arData))
-					{
-						$this->obAPI->Subscribers()->Save($id,$arData['SB_news']);
-						/* Осуществляем редирект после успешного сохранения */
-						if (array_key_exists('update', $_REQUEST))
-							$this->obUrl->Redirect("admin.php?".$this->obUrl->GetUrl(array('action')).'&action=edit&id='.$id);
-						else
-							$this->obUrl->Redirect("admin.php?".$this->obUrl->GetUrl(array('action','p')));
-					}
-					else
-						throw new CError('SUBSCRIBE_SUBSCRIBER_SAVE_ERROR');
-				}
-				catch(CError $e)
-				{
-					if($e->GetCode()==KS_ERROR_MAIN_ALREADY_EXISTS)
-						$e=new CError("MAIN_RECORD_ALREADY_EXISTS",0,$arData['SB_email']);
-					$data=$this->obAPI->SubscribeUsers()->GetRecordFromPost('SB_',$_POST);
-					$this->smarty->assign('last_error', $e);
-					return $this->EditForm($data);
-				}
+			if($arData['SB_id']<1)
+				$arData['SB_date_add']=time();
+			if(!isset($arData['SB_active']))
+				$arData['SB_active']=0;
+			else
+				$arData['SB_active']=intval($arData['SB_active']);
+			if(isset($arData['SB_date_active']) && $arData['SB_date_active']!='' && $arData['SB_active']==1)
+				$arData['SB_date_active']=strtotime($arData['SB_date_active']);
+			elseif($arData['SB_active']==1)
+				$arData['SB_date_active']=time();
+			else
+				$arData['SB_date_active']='';
+			if($id = $this->obAPI->SaveSubscribe('SB_', $arData))
+			{
+				$this->obAPI->Subscribers()->SaveEx($id,$arData['SB_news']);
+				/* Осуществляем редирект после успешного сохранения */
+				if (array_key_exists('update', $_REQUEST))
+					$this->obUrl->Redirect("admin.php?".$this->obUrl->GetUrl(array('action')).'&action=edit&id='.$id);
+				else
+					$this->obUrl->Redirect("admin.php?".$this->obUrl->GetUrl(array('action','p')));
+			}
+			else
+				throw new CError('SUBSCRIBE_SUBSCRIBER_SAVE_ERROR');
+		}
+		catch(CError $e)
+		{
+			if($e->GetCode()==KS_ERROR_MAIN_ALREADY_EXISTS)
+				$e=new CError("MAIN_RECORD_ALREADY_EXISTS",0,$arData['SB_email']);
+			$data=$this->obAPI->SubscribeUsers()->GetRecordFromPost('SB_',$_POST);
+			$this->smarty->assign('last_error', $e);
+			return $this->EditForm($data);
+		}
 	}
 
 	/**

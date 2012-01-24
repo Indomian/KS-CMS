@@ -1124,6 +1124,13 @@ input.button_script_add {
 		no-repeat;
 }
 
+.form_buttons .send {
+	padding-left: 27px;
+	background: #EDEDED
+		url('/uploads/templates/admin/images/icons2/email_to_friend.png') 8px 4px
+		no-repeat;
+}
+
 .form_buttons a.button {
 	width: 100px;
 	padding: 4px;
@@ -1137,17 +1144,7 @@ input.button_script_add {
 }
 
 .form_buttons a.cancel_button {
-	display: block;
-	text-align: center;
-	padding: 5px;
-	width: 90px;
-	font-family: tahoma;
-	font-size: 12px;
-	color: #70808D;
-	border: 1px solid #D2D2D2;
-	background: #EDEDED;
-	cursor: pointer;
-	text-decoration: none;
+	display: block;text-align: center;padding: 4px;margin-top:2px;width: 90px;font-family: tahoma;font-size: 12px;color: #70808D;border: 1px solid #D2D2D2;background: #EDEDED;cursor: pointer;text-decoration: none;
 }
 
 /*?=tabs

@@ -12,4 +12,3 @@ if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 require_once(MODULES_DIR . "/" . $arModule['directory'] . "/libs/class.CEmails.php");
 require_once(MODULES_DIR . "/" . $arModule['directory'] . "/libs/class.CReleases.php");
 require_once(MODULES_DIR . "/" . $arModule['directory'] . "/libs/class.CSubscribeAPI.php");
-require_once(MODULES_DIR . "/" . $arModule['directory'] . "/libs/class.CSubUsers.php");

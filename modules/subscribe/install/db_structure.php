@@ -87,14 +87,6 @@ $arStructure=array(
 			'Default'=>'',
 			'Extra'=>'',
 		),
-		'to'=>array(
-			'Field'=>'to',
-			'Type'=>'char(255)',
-			'Null'=>'NO',
-			'Key'=>'',
-			'Default'=>'',
-			'Extra'=>'',
-		),
 		'newsletter' => array(
 			'Field'	=>	'newsletter',
 			'Type'	=> 	'int(11) unsigned',
@@ -261,5 +253,13 @@ $arStructure=array(
 			'Default'=>	'0',
 			'Extra'	=>	'',
 		),
+		'code'=>array(
+			'Field'=>'code',
+			'Type'=>'char(32)',
+			'Null'=>'NO',
+			'Key'=>'',
+			'Default'=>'',
+			'Extra'=>'',
+		)
 	)
 );
