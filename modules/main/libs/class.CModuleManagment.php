@@ -62,6 +62,7 @@ abstract class CModuleManagment extends CObject
 
 	/**
 	 * Метод возвращает версию системы
+	 * @return string строка с версией системы
 	 */
 	function Version()
 	{
@@ -70,6 +71,7 @@ abstract class CModuleManagment extends CObject
 
 	/**
 	 * Метод возвращает полную информацию по версии системы
+	 * @return array массив с версией системы
 	 */
 	function GetVersionData()
 	{
@@ -80,7 +82,7 @@ abstract class CModuleManagment extends CObject
 	 * Метод "устанавливает" объект пользователя в систему, т.е. связывает
 	 * созданный объект пользователя и объект системы модуля
 	 */
-	function SetUser($obUser)
+	function SetUser(CUser $obUser)
 	{
 		$this->obUser=$obUser;
 	}
@@ -373,7 +375,7 @@ abstract class CModuleManagment extends CObject
 	 */
 	function Install($module)
 	{
-		global $smarty,$KS_FS;
+		global $smarty,$KS_FS,$KS_EVENTS_HANDLER;
 		if($this->IsModule($module)) throw new CModuleError("MAIN_MODULE_ALREADY_INSTALLED",0);
 		if(file_exists(MODULES_DIR.'/'.$module.'/install/install.php'))
 		{
@@ -389,15 +391,17 @@ abstract class CModuleManagment extends CObject
 			throw new CModuleError('MAIN_MODULE_CANT_INSTALL');
 	}
 
+	/**
+	 * Метод выполняет установку файлов ресурсов модуля
+	 * @param $module - имя модуля
+	 */
 	public function InstallResources($module)
 	{
 		global $KS_FS;
-		
 		if(!file_exists(MODULES_DIR.'/'.$module)) return false;
-		
 		if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module.'/install/templates/resources/'))
 		{
-			$sResourcesDir=TEMPLATES_DIR.'/admin/images/'.$module.'/';
+			$sResourcesDir=TEMPLATES_DIR.'/admin/';
 			if(!file_exists($sResourcesDir))
 				$KS_FS->makedir($sResourcesDir);
 			foreach($arFiles as $sFile)
@@ -439,7 +443,7 @@ abstract class CModuleManagment extends CObject
 	 */
 	function UnInstall($module)
 	{
-		global $smarty,$KS_FS;
+		global $smarty,$KS_FS,$KS_EVENTS_HANDLER;
 		if(!$this->IsModule($module)) throw new CModuleError("MAIN_MODULE_NOT_INSTALLED",0);
 		if(file_exists(MODULES_DIR.'/'.$module.'/install/uninstall.php'))
 		{

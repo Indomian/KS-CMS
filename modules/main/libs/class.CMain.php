@@ -212,33 +212,16 @@ class CObject extends CBaseList
 	{
 		$res=Array();
 		if(is_array($this->check_fields))
-		{
-		foreach ($this->check_fields as $field)
-		{
-			if (array_key_exists($field,$data))
-			{
-				if (is_array($data[$field]))
-				{
-					foreach ($data[$field] as $value)
-					{
-						$res[]="$field='$value'";
-					}
-				}
-				else
-				{
-					$res[]="$field='".$data[$field]."'";
-				}
-			}
-		}
-		}
+			foreach ($this->check_fields as $field)
+				if (array_key_exists($field,$data))
+					if (is_array($data[$field]))
+						foreach ($data[$field] as $value)
+							$res[]="$field='$value'";
+					else
+						$res[]="$field='".$data[$field]."'";
+		$result="";
 		if (count($res)>0)
-		{
 			$result=implode(' '.$this->checkMethod.' ',$res);
-		}
-		else
-		{
-			$result="";
-		}
 		return $result;
 	}
 
@@ -256,9 +239,7 @@ class CObject extends CBaseList
 
 		$table=$my_table;
 		if ($my_table=="")
-		{
 			$table=$this->sTable;
-		}
 		$arFields=$ks_db->GetTableFields($table,$prefix);
 		foreach($arFields as $key=>$field)
 		{
@@ -273,14 +254,10 @@ class CObject extends CBaseList
 			if ($prefix!="")
 			{
 				if (!(strpos($field['Field'],$prefix)===false))
-				{
 					$fields[$field['Field']]=Array('Type'=>strtolower($fType),'Size'=>$fSize,'Default'=>$field['Default']);
-				}
 			}
 			else
-			{
 				$fields[$field['Field']]=Array('Type'=>strtolower($fType),'Size'=>$fSize,'Default'=>$field['Default']);
-			}
 		}
 		return $fields;
 	}
@@ -292,24 +269,24 @@ class CObject extends CBaseList
 	 * @param $input - массив входных данных
 	 * @param $value - массив описывающий поле
 	 */
-	protected function _ParseField($prefix,$key,&$input,&$value)
+	protected function _ParseField($prefix,$key,array &$input,&$value)
 	{
-		global $ks_db;
-		/* Преобразование входных данных в соответствии с форматом полей таблицы для записи */
 		if (array_key_exists($prefix.$key, $input))
 		{
 			if (($value['Type'] == 'int')||($value['Type']=='smallint')||($value['Type']=='tinyint'))
 				$result = intval($input[$prefix . $key]);
-			if (($value['Type'] == 'char') || ($value['Type'] == 'varchar'))
-				$result = $ks_db->safesql(mb_substr($input[$prefix . $key], 0, $value['Size'],'UTF-8'));
-			if ($value['Type'] == 'text')
-				$result = $ks_db->safesql($input[$prefix . $key]);
-			if ($value['Type'] == 'float')
-				$result = $ks_db->safesql($input[$prefix . $key]);
-			if ($value['Type'] == 'enum')
-				$result = $ks_db->safesql($input[$prefix . $key]);
-			if ($value['Type'] == 'binary')
+			elseif (($value['Type'] == 'char') || ($value['Type'] == 'varchar'))
+				$result = $this->obDB->safesql(mb_substr($input[$prefix . $key], 0, $value['Size'],'UTF-8'));
+			elseif ($value['Type'] == 'text')
+				$result = $this->obDB->safesql($input[$prefix . $key]);
+			elseif ($value['Type'] == 'float')
+				$result = $this->obDB->safesql($input[$prefix . $key]);
+			elseif ($value['Type'] == 'enum')
+				$result = $this->obDB->safesql($input[$prefix . $key]);
+			elseif ($value['Type'] == 'binary')
 				$result = intval($input[$prefix . $key]);
+			elseif($value['Type']=='date' && preg_match('#^\d{4,4}-\d\d-\d\d$#',$input[$prefix.$key]))
+				$result = $this->obDB->safesql($input[$prefix . $key]);
 			return $result;
 		}
 		return false;

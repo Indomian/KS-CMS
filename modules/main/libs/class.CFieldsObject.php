@@ -31,17 +31,11 @@ class CFieldsObject extends CFilesObject
 		if($sModule!=false)
 		{
 			$this->sFieldsModule=$sModule;
-			//Подключаем работу с пользовательскими полями.
-			if(class_exists('CFields'))
-			{
-				$this->bFields=true;
-				$obFields=new CFields();
-				$this->arUserFields=$obFields->GetModuleFields($this->sFieldsModule,$this->sTable);
-				foreach($this->arUserFields as $item)
-				{
-					$this->arFields[]='ext_'.$item['title'];
-				}
-			}
+			$this->bFields=true;
+			$obFields=new CFields();
+			$this->arUserFields=$obFields->GetModuleFields($this->sFieldsModule,$this->sTable);
+			foreach($this->arUserFields as $item)
+				$this->arFields[]='ext_'.$item['title'];
 		}
 	}
 
@@ -52,33 +46,24 @@ class CFieldsObject extends CFilesObject
 	 * @param $input - массив входных данных
 	 * @param $value - массив описывающий поле
 	 */
-	protected function _ParseField($prefix,$key,&$input,&$value)
+	protected function _ParseField($prefix,$key,array &$input,&$value)
 	{
-		global $ks_db;
 		$sResult=false;
 		if ($value['Type']=='user_field')
 		{
 			if (array_key_exists($prefix.$key,$input))
+				$sResult=$this->obDB->safesql(CFieldsValues::ParseValue($value['Field'],$input[$prefix.$key],$prefix));
+			elseif (array_key_exists($prefix.$key,$_FILES))
 			{
-				$sResult=$ks_db->safesql(CFieldsValues::ParseValue($value['Field'],$input[$prefix.$key],$prefix));
-			}
-			if (array_key_exists($prefix.$key,$_FILES))
-			{
-				$isFile=$ks_db->safesql(CFieldsValues::ParseValue($value['Field'],$_FILES[$prefix.$key],$prefix));
+				$isFile=$this->obDB->safesql(CFieldsValues::ParseValue($value['Field'],$_FILES[$prefix.$key],$prefix));
 				if($isFile=='clear')
-				{
 					$sResult='';
-				}
 				elseif($isFile!='no')
-				{
 					$sResult=$isFile;
-				}
 			}
 		}
 		else
-		{
 			$sResult=parent::_ParseField($prefix,$key,$input,$value);
-		}
 		return $sResult;
 	}
 

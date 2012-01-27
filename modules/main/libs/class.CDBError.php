@@ -13,8 +13,6 @@
 /*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
-include_once MODULES_DIR.'/main/libs/class.CError.php';
-
 class CDBError extends CError
 {
 	private $query;

@@ -17,7 +17,7 @@ if (!defined('KS_MAIN_INIT'))
 {
 	/* Запускаем сессию */
 	require_once MODULES_DIR.'/main/libs/class.CSessionManager.php';
-
+	include_once MODULES_DIR.'/main/libs/class.CError.php';
 	/* Устанавливаем локаль */
 	setlocale(LC_ALL, "ru_RU.UTF-8");
 	setlocale(LC_NUMERIC, 'C');
@@ -68,7 +68,6 @@ if (!defined('KS_MAIN_INIT'))
 	$smarty->assign("templates_files_folder", SITE_TEMPLATES_DIR);
 
 	/* ошибки */
-	require_once MODULES_DIR.'/main/libs/class.CError.php';
 	set_error_handler(array('CError',"PhpErrorHandler"));
 
 	/* подключение класса-обработчика событий */

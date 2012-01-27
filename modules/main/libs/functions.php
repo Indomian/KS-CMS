@@ -340,18 +340,23 @@ function SaveToFile($filename,$varname,$data)
 		$result .= "\n";
   	}
   	$result .= ");\n";
-	$result .= "\n?>";
+	$result .= "\n";
 	$path=dirname($filename);
 	if(!file_exists($path))
-	{
 		if(!@mkdir($path,0755,true))
-		{
 			throw new CError("SYSTEM_DIR_CREATE_ERROR",1,$path);
-		}
-	}
 	$size = @file_put_contents($filename, $result);
 	if ($size == 0)
 		throw new CError("SYSTEM_FILE_WRITE_ERROR",0);
+	return $size;
+}
+
+/**
+ * Функция генерирует md5 хэш по данным сохранённым в массиве
+ */
+function ArrayHash($arData)
+{
+	return md5(json_encode($arData));
 }
 
 /**

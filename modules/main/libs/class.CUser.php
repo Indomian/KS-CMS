@@ -98,9 +98,7 @@ class CUser extends CUsersCommon implements User
 		{
 			/* Проверка адреса пользователя и имени его сессии */
 			if($_SESSION['USER_IP'] != $_SERVER['REMOTE_ADDR'])
-			{
 				$this->logout();
-			}
 			elseif(isset($_SESSION['cu_user']))
 			{
 				if (($_SESSION['cu_user'] - time()) > 0)
@@ -108,9 +106,7 @@ class CUser extends CUsersCommon implements User
 					/* Обновление времени жизни сессии пользователя */
 					$iUserID = $_SESSION['cu_user_id'];
 					if (!is_numeric($iUserID))
-					{
 						$this->logout();
-					}
 					else
 					{
 						/* Проверка залогиненного пользователя на активность */
@@ -130,9 +126,7 @@ class CUser extends CUsersCommon implements User
 								$this->OnSessionUpdate($arRow);
 							}
 							else
-							{
 								throw new CUserError('MAIN_USER_INACTIVE');
-							}
 						}
 						else
 						{
@@ -161,15 +155,9 @@ class CUser extends CUsersCommon implements User
 	function TryCookieLogin()
 	{
 		if(isset($_COOKIE['ks_token']) && IsHash($_COOKIE['ks_token']))
-		{
 			if($arUserRecord=$this->GetRecord(array('token'=>$_COOKIE['ks_token'])))
-			{
 				if($arUserRecord['last_ip']==$_SESSION['USER_IP'])
-				{
 					return $this->LoginByTitle($arUserRecord);
-				}
-			}
-		}
 	}
 
 	/**
@@ -321,7 +309,7 @@ class CUser extends CUsersCommon implements User
 			$_SESSION['USER_IP']=$_SERVER['REMOTE_ADDR'];
 			$this->is_login = true;
 			$this->obDB->query("UPDATE ks_users SET pwd_updated=0,number_of_log_tries=0,last_visit=".time()." WHERE id='".$this->obDB->safesql($arUser['id'])."'");
-			$onLoginParams = $this->userdata;
+			$onLoginParams = $arUser;
 			$KS_EVENTS_HANDLER->Execute('main', 'onLogin', $onLoginParams);
 			$this->OnSessionUpdate($arUser);
 			return true;

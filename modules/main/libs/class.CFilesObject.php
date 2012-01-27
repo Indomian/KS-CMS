@@ -71,55 +71,6 @@ class CFilesObject extends CObject
 	protected function _DoFileUpload($key)
 	{
 		throw new CError('SYSTEM_DERECATED');
-		global $KS_FS;
-		$sResult='';
-		if (array_key_exists($key, $_FILES))
-		{
-			if($_FILES[$key]['error']==UPLOAD_ERR_OK)
-			{
-				if($_FILES[$key]['size'] > 0)
-				{
-					$file_ext = substr($_FILES[$key]['name'], strrpos($_FILES[$key]['name'], "."));
-					if(!file_exists(UPLOADS_DIR.$this->sUploadPath))
-					{
-						$KS_FS->makedir(UPLOADS_DIR.$this->sUploadPath);
-					}
-					$filename = $this->sUploadPath.'/'.$this->_GenFileName($_FILES[$key]['name']);
-					$upload_to = UPLOADS_DIR.$filename;
-					move_uploaded_file($_FILES[$key]['tmp_name'], $upload_to);
-					chmod($upload_to, 0644);
-					$sResult = $filename;
-					$_SESSION[__CLASS__][$key]=$filename;
-				}
-				else
-				{
-					throw new CFileError('SYSTEM_UPLOAD_ZERO_SIZE');
-				}
-			}
-			elseif($_FILES[$key]['error']==UPLOAD_ERR_NO_FILE && array_key_exists($key,$_SESSION[__CLASS__]))
-			{
-				//Значит файл уже загружали и он лежит в папочки и прописан в сессии
-				$sResult=$_SESSION[__CLASS__][$key];
-			}
-			elseif($_FILES[$key]['error']==UPLOAD_ERR_NO_FILE)
-			{
-				$sResult='';
-			}
-			elseif($_FILES[$key]['error']==UPLOAD_ERR_INI_SIZE)
-			{
-				throw new CFileError('SYSTEM_UPLOAD_TOO_BIG');
-			}
-			else
-			{
-				throw new CFileError('SYSTEM_UPLOAD_FILE_ERROR',-1);
-			}
-		}
-		elseif(array_key_exists($key,$_SESSION[__CLASS__]))
-		{
-			//Значит файл уже загружали и он лежит в папочки и прописан в сессии
-			$sResult=$_SESSION[__CLASS__][$key];
-		}
-		return $sResult;
 	}
 
 	/**
@@ -143,18 +94,12 @@ class CFilesObject extends CObject
 			{
 				$obUploadManager=new CFileUploader($prefix.$field,$this->sTable);
 				if($obUploadManager->IsReady())
-				{
 					$arResult[$field]=$obUploadManager->Upload($this->sUploadPath.'/'.$this->_GenFileName($obUploadManager->GetFileName()),false);
-				}
 			}
 			elseif(isset($data[$prefix.$field]))
-			{
 				$arResult[$field]=$data[$prefix.$field];
-			}
 			else
-			{
 				$arResult[$field]='';
-			}
 		}
 		return $arResult;
 	}
@@ -179,7 +124,7 @@ class CFilesObject extends CObject
 	 * @param $input - массив входных данных
 	 * @param $value - массив описывающий поле
 	 */
-	protected function _ParseField($prefix,$key,&$input,&$value)
+	protected function _ParseField($prefix,$key,array &$input,&$value)
 	{
 		global $KS_FS;
 		$sResult=parent::_ParseField($prefix,$key,$input,$value);
@@ -195,14 +140,12 @@ class CFilesObject extends CObject
 				if($sResult)
 				{
 					//Если загрузили файл, пробуем заменить его
-					if($input[$prefix.'id']!='')
+					if(isset($input[$prefix.'id']))
 					{
 						$arItem=$this->GetRecord(array('id'=>$input[$prefix . 'id']));
 						if(is_array($arItem)&&($arItem['id']==$input[$prefix . 'id']) && $sResult!=$arItem[$key])
-						{
 							if (file_exists(UPLOADS_DIR.$arItem[$key])&&is_file(UPLOADS_DIR.$arItem[$key]))
 								unlink(UPLOADS_DIR.$arItem[$key]);
-						}
 					}
 				}
 			}
@@ -229,19 +172,12 @@ class CFilesObject extends CObject
 	 */
 	function DeleteItems($arFilter)
 	{
-		$arItems=$this->GetList(array('id'=>'asc'),$arFilter);
-		if(is_array($arItems)&&count($arItems)>0)
+		if($arItems=$this->GetList(array('id'=>'asc'),$arFilter))
 		{
 			foreach($arItems as $key=>$item)
-			{
 				foreach($this->arFileFields as $field)
-				{
 					if($item[$field]!='')
-					{
 						@unlink(UPLOADS_DIR.$item['img']);
-					}
-				}
-			}
 			return parent::DeleteItems($arFilter);
 		}
 		return false;

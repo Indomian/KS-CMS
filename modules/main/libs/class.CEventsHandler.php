@@ -4,7 +4,7 @@
  *
  * Класс выполняет код переданных обработчиков при возникновении определённых событий
  *
- * @filesource class.CEventsHandler.php
+ * @filesource main/libs/class.CEventsHandler.php
  * @author north-e <pushkov@kolosstudio.ru>
  * @version 0.1
  * @since 03.03.2009
@@ -12,22 +12,21 @@
 
  if (!defined('KS_ENGINE'))
 	die("Hacking attempt!");
- include_once('class.CError.php');			// Подключение класса ошибок
- include_once('class.CMain.php');
+ 
+include_once MODULES_DIR.'/main/libs/class.CMain.php';
 
- /**
-  * Класс CEventsHandler - класс, предназначенный для вызова обработчиков событий
-  *
-  * Добавлен метод для работы с файлом событий, установка и удаление обработчиков событий
-  *
-  * @author north-e <pushkov@kolosstudio.ru>, blade39 <blade39@kolosstudio.ru>
-  * @version 1.1
-  * @since 03.03.2009
-  */
+/**
+ * Класс CEventsHandler - класс, предназначенный для вызова обработчиков событий
+ *
+ * Добавлен метод для работы с файлом событий, установка и удаление обработчиков событий
+ *
+ * @author north-e <pushkov@kolosstudio.ru>, blade39 <blade39@kolosstudio.ru>
+ * @version 1.1
+ * @since 03.03.2009
+ */
 
- class CEventsHandler extends CBaseObject
- {
-
+class CEventsHandler extends CBaseObject
+{
 	/**
 	 * Имя конфигурационного файла событий
 	 *
@@ -86,6 +85,8 @@
 	 */
 	protected $actual_result;
 
+	protected $arIncludedFiles; ///Массив с кэшем подключенных файлов
+
 	/**
 	 * Конструктор объекта класса, осуществляет подключение файла с конфигурационным массивом
 	 * устанавливает значения полей по умолчанию
@@ -103,6 +104,7 @@
 			throw new CError("Unspecified constant path to modules");
 		$this->return_type = $return_type;			// Указываем тип данных, возвращаемых методом CEventsHandler::Execute()
 		$this->arModeStack=array();
+		$this->arIncludedFiles=array();
 		try
 		{
 			$this->LoadFromFile($config_file);
@@ -152,6 +154,11 @@
 		return false;
 	}
 
+	/**
+	 * Метод переключает режим работы класса
+	 * @param $mode particular - метод Execute возвращает массив результатов
+	 * выполнения различных обработчиков, overall - Общий результат выполнения всех обработчиков
+	 */
 	public function SetMode($mode)
 	{
 		if($mode=='particular') $this->return_type='particular'; else $this->return_type='overall';
@@ -174,51 +181,38 @@
 	 */
 	public function HasHandler($module,$event)
 	{
-		if(array_key_exists($module,$this->events))
+		if(array_key_exists($module,$this->events) && array_key_exists($event,$this->events[$module]))
 		{
-			if(array_key_exists($event,$this->events[$module]))
+			$arHandlers=$this->events[$module][$event];
+			$bHasFile=false;
+			$bHasFunc=false;
+			foreach($arHandlers as $arHandler)
 			{
-				$arHandlers=$this->events[$module][$event];
-				$bHasFile=false;
-				$bHasFunc=false;
-				foreach($arHandlers as $arHandler)
+				if (isset($arHandler['hFile']) && $arHandler['hFile']!='')
 				{
-					if (isset($arHandler['hFile']) && $arHandler['hFile']!='')
-					{
-						/* Полное имя файла-обработчика */
-						$hFileName = MODULES_DIR . '/' . $this->actual_module . '/events/' . $arHandler['hFile'];
-						if (file_exists($hFileName))
-						{
-							$bHasFile=true;
-						}
-						elseif(file_exists($arHandler['hFile']))
-						{
-							$bHasFile=true;
-						}
-					}
-					/* Указана функция-обработчик */
-					if (isset($arHandler['hFunc']))
-					{
-						if(is_array($arHandler['hFunc']))
-						{
-							if(is_object($arHandler['hFunc'][0]))
-							{
-								$bHasFunc = true;
-							}
-							elseif(is_string($arHandler['hFunc'][0]))
-							{
-								if(class_exists($arHandler['hFunc'][0]))
-									if(method_exists($arHandler['hFunc'][0], $arHandler['hFunc'][1]))
-										$bHasFunc = true;
-							}
-						}
-						elseif (function_exists($arHandler['hFunc']))
-						{
-							$bHasFunc = true;
-						}
-					}
-					if($bHasFile || $bHasFunc) return true;
+					/* Полное имя файла-обработчика */
+					$hFileName = MODULES_DIR . '/' . $this->actual_module . '/events/' . $arHandler['hFile'];
+					if (file_exists($hFileName))
+						$bHasFile=true;
+					elseif(file_exists($arHandler['hFile']))
+						$bHasFile=true;
 				}
+				/* Указана функция-обработчик */
+				if (isset($arHandler['hFunc']))
+				{
+					if(is_array($arHandler['hFunc']))
+					{
+						if(is_object($arHandler['hFunc'][0]))
+							$bHasFunc = true;
+						elseif(is_string($arHandler['hFunc'][0]))
+							if(class_exists($arHandler['hFunc'][0]))
+								if(method_exists($arHandler['hFunc'][0], $arHandler['hFunc'][1]))
+									$bHasFunc = true;
+					}
+					elseif (function_exists($arHandler['hFunc']))
+						$bHasFunc = true;
+				}
+				if($bHasFile || $bHasFunc) return true;
 			}
 		}
 		return false;
@@ -240,6 +234,7 @@
 	 */
 	function Execute($moduleName, $onEvent, &$hParams = false)
 	{
+		global $KS_MODULES;
 		/* Установка имён модуля и события, с которыми будет производиться работа
 		   После выполнения обработчиков по этим полям можно будет узнать последний модуль и последнее событие */
 		$this->actual_module = $moduleName;
@@ -276,23 +271,32 @@
 							$hFileExists = false;
 							$hFuncExists = false;
 							/* Указан файл-обработчик */
-							if (isset($handler['hFile']))
+							if(isset($handler['hFile'])&&strlen($handler['hFile'])>0)
 							{
-								if (strlen($handler['hFile']))
+								if(isset($handler['hModule'])&&strlen($handler['hModule'])>0&&IsTextIdent($handler['hModule']))
 								{
-									/* Полное имя файла-обработчика */
-									$hFileName = MODULES_DIR . '/' . $this->actual_module . '/events/' . $handler['hFile'];
+									if(!$KS_MODULES->IsActive($handler['hModule'])) continue;
+									$hFileName=MODULES_DIR.'/'.$handler['hModule'].'/events/'.$handler['hFile'];
+								}
+								else
+									$hFileName=MODULES_DIR.'/'.$this->actual_module.'/events/'.$handler['hFile'];
+								if(!in_array($hFileName,$this->arIncludedFiles))
+								{
 									if (file_exists($hFileName))
 									{
 										$hFileExists = true;
 										include_once($hFileName);	// Подключаем файл-обработчик, если не был подключен ранее
+										array_push($this->arIncludedFiles,$hFileName);
 									}
 									elseif(file_exists($handler['hFile']))
 									{
 										$hFileExists = true;
 										include_once($handler['hFile']);	// Подключаем файл-обработчик, если не был подключен ранее
+										array_push($this->arIncludedFiles,$hFileName);
 									}
 								}
+								else
+									$hFileExists = true;
 							}
 							/* Указана функция-обработчик */
 							if (isset($handler['hFunc']))
@@ -300,16 +304,11 @@
 								if(is_array($handler['hFunc']))
 								{
 									if(is_object($handler['hFunc'][0]))
-									{
 										$hFuncExists = true;
-									}
 									elseif(is_string($handler['hFunc'][0]))
-									{
 										if(class_exists($handler['hFunc'][0]))
 											if(method_exists($handler['hFunc'][0], $handler['hFunc'][1]))
 												$hFuncExists = true;
-									}
-
 									if($hFuncExists)
 									{
 										if (!is_array($hParams) && !$hParams)
@@ -335,7 +334,6 @@
 							if (!$hFileExists && !$hFuncExists)
 							{
 								throw new CError('SYSTEM_HANDLER_NOT_FOUND',1,(is_array($handler['hFunc'])?join(':',$handler['hFunc']):$handler['hFunc']).($handler['hFile']!=''?$handler['hFile']:''));
-								$hResult = true;
 							}
 							/* Проверка правильности результата выполнения файла-обработчика или функции-обработчика */
 							$handlers[$handlerKey]['executed'] = $hResult;
@@ -388,59 +386,60 @@
 	function SaveToFile($filename="")
 	{
 		if($filename=='')
-		{
 			$filename=CONFIG_DIR.'/events_config.php';
-		}
-
-		$sFilecontent="<?php\n".
-		"\n/**
-			 * Конфигурационный файл обработчиков событий
-			*
-			* В этом файле должен быть определён конфигурационный массив обработчиков событий \$KS_EVENTS,
-			* структура которого описана в классе CEventsHandler
-			*
-			* @filesource events_config.php
-			* @author north-e <pushkov@kolosstudio.ru>
-			* @version 0.1
-			* @since 03.03.2009
-			* Файл сгенерирован автоматически
-			*/\n".
-		'$KS_EVENTS = array'."\n(\n";
-		foreach($this->events as $module=>$arEvents)
+		$arEvents=array();
+		foreach($this->events as $module=>$arModuleEvents)
 		{
-			$sFilecontent.="'$module'=>array\n(\n";
-			foreach($arEvents as $sEvent=>$arActions)
+			if(is_array($arModuleEvents))
 			{
-				$sFilecontent.="'$sEvent'=>array\n(\n";
-				$arWasActions=array();
-				foreach($arActions as $arAction)
+				$arEvents[$module]=array();
+				foreach($arModuleEvents as $sEvent=>$arActions)
 				{
-					if(!array_key_exists('hSave',$arAction)&&!array_key_exists('bOnce',$arAction)&&(!in_array($arAction,$arWasActions)))
+					if(is_array($arActions))
 					{
-						$sFilecontent.="array('hFile'=>'".$arAction['hFile']."','hFunc'=>";
-						if(is_array($arAction['hFunc']))
+						$arEvents[$module][$sEvent]=array();
+						foreach($arActions as $sHash=>$arAction)
 						{
-							$sFilecontent.="array('".$arAction['hFunc'][0]."','".$arAction['hFunc'][1]."')";
+							if(isset($arAction['bOnce']) && $arAction['bOnce']) continue;
+							$arEvents[$module][$sEvent][$sHash]=$arAction;
 						}
-						else
-						{
-							$sFilecontent.="'".$arAction['hFunc']."'";
-						}
-						$sFilecontent.="),\n";
-						$arWasActions[]=$arAction;
 					}
 				}
-				$sFilecontent.="\n),\n";
 			}
-			$sFilecontent.="\n),\n";
 		}
-		$sFilecontent.=");";
-		return file_put_contents($filename,$sFilecontent);
+		return SaveToFile($filename,'$KS_EVENTS',$arEvents);
 	}
 
+	/**
+	 * Метод добавляет обработчик в очередь обработки
+	 * @param $module string - код модуля, к которому надо добавить обработчик
+	 * @param $event string - название события к которому добавляется обработчик
+	 * @param $arParams array - массив описывающий обработчик
+	 */
 	function AddStaticEvent($module,$event,$arParams)
 	{
-		//$arParams['hSave']=true;
-		$this->events[$module][$event][]=$arParams;
+		$sHash=ArrayHash($arParams);
+		$this->events[$module][$event][$sHash]=$arParams;
+	}
+
+	/**
+	 * Метод удаляет зарегистрированный обработчик
+	 * @param $module string - код модуля, к которому надо добавить обработчик
+	 * @param $event string - название события к которому добавляется обработчик
+	 * @param $arParams array - массив описывающий обработчик
+	 * @return boolean - true, если запись была удалена, false - если запись не найдена в списке событий
+	 */
+	function DeleteStaticEvent($module,$event,$arParams)
+	{
+		if(isset($this->events[$module][$event]) && is_array($this->events[$module][$event]))
+		{
+			$sHash=ArrayHash($arParams);
+			if(array_key_exists($sHash,$this->events[$module][$event]))
+			{
+				unset($this->events[$module][$event][$sHash]);
+				return true;
+			}
+		}
+		return false;
 	}
  }

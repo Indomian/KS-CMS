@@ -162,22 +162,3 @@
 </form>
 
 {include file='admin/common/hint.tpl' title=$smarty.config.title_edit description=$smarty.config.hint icon="/big_icons/people.gif"}
-
-<script type="text/javascript">
-{literal}
-$(document).bind("InitCalendar",function(){
-	$(".date_input").datetimepicker({{/literal}
-			dateFormat:{#date_format#},
-			timeFormat:{#time_format#},
-			dayNames:{#days#},
-			dayNamesMin:{#daysMin#},
-			dayNamesShort:{#daysShort#},
-			monthNames:{#monthes#}
-	{literal}});
-	$(".date_button").click(function(){
-		$(this).parent().children('.date_input').datetimepicker('show')
-	});
-});
-$(document).ready(function(){$(document).trigger("InitCalendar");});
-{/literal}
-</script>

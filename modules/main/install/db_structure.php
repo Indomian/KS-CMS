@@ -513,6 +513,22 @@ $arStructure=array(
 			'Default'=>'',
 			'Extra'=>'',
 		),
+		'auto'=>array(
+			'Field'=>'auto',
+			'Type'=>'tinyint(1)',
+			'Null'=>'NO',
+			'Key'=>'',
+			'Default'=>'1',
+			'Extra'=>'',
+		),
+		'external_id'=>array(
+			'Field'=>'external_id',
+			'Type'=>'int(11) unsigned',
+			'Null'=>'NO',
+			'Key'=>'',
+			'Default'=>'0',
+			'Extra'=>'',
+		)
 	),
 	'main_eventtemplates'=>array(
 		'id' => array(

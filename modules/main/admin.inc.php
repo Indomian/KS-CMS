@@ -30,7 +30,7 @@ if (!defined("KS_MAIN_INIT"))
 	 */
 	date_default_timezone_set('Europe/Moscow');
 	require_once MODULES_DIR.'/main/libs/class.CSessionManager.php';
-
+	include_once MODULES_DIR.'/main/libs/class.CError.php';
 	setlocale(LC_NUMERIC, 'C');
 	/* Полезные функции */
 	require_once "libs/functions.php";
@@ -77,7 +77,6 @@ if (!defined("KS_MAIN_INIT"))
 	$smarty->assign("templates_files_folder", SITE_TEMPLATES_DIR);
 
 	/* Подключение класса ошибок */
-	require_once "libs/class.CError.php";
 	set_error_handler(array('CError',"PhpErrorHandler"));
 
 	/* Подключение класса-обработчика событий */

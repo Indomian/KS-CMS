@@ -16,6 +16,8 @@ if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 require_once MODULES_DIR.'/main/libs/class.CMain.php';
 require_once MODULES_DIR.'/main/libs/class.CConfigParser.php';
 
+define('KS_ADMIN_ONE_PAGE_LIMIT',100);
+
 class CModuleAdmin extends CBaseAPI
 {
 	protected $module;
@@ -93,6 +95,8 @@ class CModuleAdmin extends CBaseAPI
 			$iCount=$this->obModules->GetConfigVar('main','admin_items_count',10);
 		if(array_key_exists('n',$_REQUEST) && $_REQUEST['n']>0)
 			$iCount=intval($_REQUEST['n']);
+		if($iCount>KS_ADMIN_ONE_PAGE_LIMIT)
+			$iCount=KS_ADMIN_ONE_PAGE_LIMIT;
 		return new CPages($iCount);
 	}
 

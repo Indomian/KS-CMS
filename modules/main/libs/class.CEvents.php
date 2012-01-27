@@ -16,7 +16,7 @@ include_once MODULES_DIR.'/main/libs/class.CMessage.php';
 
 /**
  * Класс обеспечивает управление очередью сообщений, её выполнение (рассылку) и переактивацию
- * @author blade39
+ * @author blade39 <blade39@kolosstudio.ru>
  */
 class CEvents extends CObject
 {
@@ -35,7 +35,7 @@ class CEvents extends CObject
 	 */
 	function Init()
 	{
-		if($arList=$this->GetList(false,array('status'=>'new'),$this->step))
+		if($arList=$this->GetList(false,array('status'=>'new','auto'=>1),$this->step))
 			$this->arList=$arList;
 	}
 
@@ -54,6 +54,7 @@ class CEvents extends CObject
 				else
 					$obj=new CMessage();
 				$obj->Run($item);
+				unset($obj);
 			}
 		}
 		catch (CError $e)

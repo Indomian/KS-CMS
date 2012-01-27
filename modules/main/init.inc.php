@@ -74,7 +74,6 @@ if (!defined("KS_MAIN_INIT"))
 	$smarty->assign("SEP_ident", (($ks_config["SEF_URL"] === "1") ? "text_ident" : "id"));
 
 	/* Подключение класса ошибок */
-	require_once "libs/class.CError.php";
 	set_error_handler(array('CError',"PhpErrorHandler"));
 
 	/* Подключение класса-обработчика событий */

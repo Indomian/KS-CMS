@@ -99,7 +99,7 @@ class CSimpleFs extends CFileSystem
 						if($ow > 0)
 						{
 							if(copy($srcfile, $dstfile))
-								touch($dstfile, filemtime($srcfile));
+								@touch($dstfile, filemtime($srcfile));
 							else
 								throw new CError("SYSTEM_UNABLE_COPY_FILE", 0, $srcfile);
 						}
@@ -248,16 +248,21 @@ class CSimpleFs extends CFileSystem
 	 */
 	function GetDirList($dir)
 	{
+		if(strrpos($dir,'/')===strlen($dir)-1)
+			$dir=substr($dir,0,-1);
 		$arList=array();
-		$list=$this->GetDirItems($dir);
-		foreach($list as $file)
+		if($list=$this->GetDirItems($dir))
 		{
-			if(is_dir($dir.'/'.$file))
-				$arList=array_merge($arList,$this->GetDirList($dir.'/'.$file));
-			elseif(is_file($dir.'/'.$file))
-				$arList[]=$dir.'/'.$file;
+			foreach($list as $file)
+			{
+				if(is_dir($dir.'/'.$file))
+					$arList=array_merge($arList,$this->GetDirList($dir.'/'.$file));
+				elseif(is_file($dir.'/'.$file))
+					$arList[]=$dir.'/'.$file;
+			}
+			return $arList;
 		}
-		return $arList;
+		return false;
 	}
 
 	/**

@@ -67,11 +67,10 @@ final class mysql_innodb extends CDBInterface
 		}
 		//пробуем выбрать бд для работы
 		if(!@mysql_select_db($ks_db_name, $this->ks_db_id)) {
-			if($show_error == 1) {
+			if($show_error == 1)
 				throw new CDBError(mysql_error(), mysql_errno());
-			} else {
+			else
 				return false;
-			}
 		}
 		//получаем номер версии
 		$this->iVersion = mysql_get_server_info();
@@ -325,7 +324,8 @@ final class mysql_innodb extends CDBInterface
 				($arFieldParams['Null']=='NO'?'NOT NULL':'NULL').' ';
 			if($arFieldParams['Extra']!='auto_increment')
 			{
-				$sLine.=($arFieldParams['Default']!=''?" DEFAULT '".$arFieldParams['Default']."' ":" DEFAULT ''");
+				if($arFieldParams['Type']!='date')
+					$sLine.=($arFieldParams['Default']!=''?" DEFAULT '".$arFieldParams['Default']."' ":" DEFAULT ''");
 			}
 			else
 			{
@@ -386,7 +386,8 @@ final class mysql_innodb extends CDBInterface
 				($arColumn['Null']=='NO'?'NOT NULL':'NULL').' ';
 			if($arColumn['Extra']!='auto_increment')
 			{
-				$query.=($arColumn['Default']!=''?" DEFAULT '".$arColumn['Default']."' ":" DEFAULT ''");
+				if($arColumn['Type']!='date')
+					$query.=($arColumn['Default']!=''?" DEFAULT '".$arColumn['Default']."' ":" DEFAULT ''");
 			}
 			else
 			{
@@ -430,7 +431,10 @@ final class mysql_innodb extends CDBInterface
 				$arColumn['Default']="0";
 			}
 			if($sType=='text') $arColumn['Default']='';
-			$query="ALTER TABLE ".PREFIX.$sTable." CHANGE COLUMN $sColumn $sColumn $sType ".($arColumn['Null']=='NO'?'NOT NULL':'NULL')." default '".$arColumn['Default']."'";
+			if($sType!='date')
+				$query="ALTER TABLE ".PREFIX.$sTable." CHANGE COLUMN $sColumn $sColumn $sType ".($arColumn['Null']=='NO'?'NOT NULL':'NULL')." default '".$arColumn['Default']."'";
+			else
+				$query="ALTER TABLE ".PREFIX.$sTable." CHANGE COLUMN $sColumn $sColumn $sType ".($arColumn['Null']=='NO'?'NOT NULL':'NULL');
 			$this->query($query);
 		}
 		catch (CError $e)
@@ -464,7 +468,8 @@ final class mysql_innodb extends CDBInterface
 				($arFieldParams['Null']=='NO'?'NOT NULL':'NULL').' ';
 			if($arFieldParams['Extra']!='auto_increment')
 			{
-				$query.=($arFieldParams['Default']!=''?" DEFAULT '".$arFieldParams['Default']."' ":" DEFAULT ''");
+				if($arFieldParams['Type']!='date')
+					$query.=($arFieldParams['Default']!=''?" DEFAULT '".$arFieldParams['Default']."' ":" DEFAULT ''");
 			}
 			else
 			{
@@ -567,11 +572,17 @@ final class mysql_innodb extends CDBInterface
 		return true;
 	}
 
+	/**
+	 * Метод возвращает суммарное время потраченное на запросы
+	 */
 	function GetTimeTaken()
 	{
 		return $this->MySQL_time_taken;
 	}
 
+	/**
+	 * Метод возвращает количество выполненных запросов к БД с момента создания объекта класса
+	 */
 	function GetQueriesCount()
 	{
 		return $this->query_num;

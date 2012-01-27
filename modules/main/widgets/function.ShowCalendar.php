@@ -18,6 +18,8 @@ function smarty_function_ShowCalendar($params,&$smarty)
 	if(!$KS_MODULES->HasJavaScript('/main/calendar.js',11))
 	{
 		$KS_MODULES->UseJavaScript('/main/calendar.js',11);
+		$KS_MODULES->UseJavaScript("/jquery/jquery.ui.js",12);
+		$KS_MODULES->UseJavaScript("/jquery/jquery.ui.datepicker.min.js",12);
 		$KS_MODULES->AddHeadString('<script type="text/javascript">dateStrings={
 			\'dateFormat\':'.$KS_MODULES->GetText('date_format').',
 			\'timeFormat\':'.$KS_MODULES->GetText('time_format').',
@@ -26,7 +28,14 @@ function smarty_function_ShowCalendar($params,&$smarty)
 			\'dayNamesShort\':'.$KS_MODULES->GetText('daysShort').',
 			\'monthNames\':'.$KS_MODULES->GetText('monthes').'};</script>');
 	}
-	$sResult='<div class="date_selector"><input type="text" readonly="readonly" name="'.$params['field'].'" value="'.((isset($params['value']) && $params['value']>0)?date('d.m.Y H:i',$params['value']):'').'" class="date_input" title="'.$params['title'].'"/><img src="'.$KS_MODULES->GetText('images_path').'/calendar/img.gif" title="'.$params['title'].'" align="absmiddle" class="date_button"/></div>';
+	if(isset($params['date_only']) && $params['date_only']=='Y')
+	{
+		$sResult='<div class="date_selector"><input type="text" readonly="readonly" name="'.$params['field'].'" value="'.((isset($params['value']) && $params['value']>0)?date('d.m.Y H:i',$params['value']):'').'" class="date_input" title="'.$params['title'].'"/><img src="'.$KS_MODULES->GetText('images_path').'/calendar/img.gif" title="'.$params['title'].'" align="absmiddle" class="date_button"/></div>';
+	}
+	else
+	{
+		$sResult='<div class="date_selector"><input type="text" readonly="readonly" name="'.$params['field'].'" value="'.((isset($params['value']) && $params['value']>0)?date('d.m.Y H:i',$params['value']):'').'" class="date_time_input" title="'.$params['title'].'"/><img src="'.$KS_MODULES->GetText('images_path').'/calendar/img.gif" title="'.$params['title'].'" align="absmiddle" class="date_button"/></div>';
+	}
 	return $sResult;
 }
 
