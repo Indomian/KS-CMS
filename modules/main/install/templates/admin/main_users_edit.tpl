@@ -84,16 +84,10 @@
 							<label for="groupidcb{$oItem.id}">{$oItem.title}</label>
 						</td>
 						<td>
-							<div class="date_selector">
-								<input type="text" name="CU_groups_from{$oItem.id}" readonly="readonly" {if $userdata.GROUPS[$oItem.id].date_start!=0}value="{$userdata.GROUPS[$oItem.id].date_start|date_format:"%d.%m.%Y %H:%M":""}"{else}value=""{/if} class="date_input"/>
-								<img src="{#images_path#}/calendar/img.gif" title="{#select_date#}" class="date_button"/>
-							</div>
+							{ShowCalendar field="CU_groups_from`$oItem.id`" title=$smarty.config.select_date value=$userdata.GROUPS[$oItem.id].date_start}
 						</td>
 						<td>
-							<div class="date_selector">
-								<input type="text" name="CU_groups_to{$oItem.id}" readonly="readonly" {if $userdata.GROUPS[$oItem.id].date_end!=0}value="{$userdata.GROUPS[$oItem.id].date_end|date_format:"%d.%m.%Y %H:%M":""}"{else}value=""{/if} class="date_input"/>
-								<img src="{#images_path#}/calendar/img.gif" id="f_trigger_c1{$oItem.id}" style="border: 0pt none ; cursor: pointer;" title="{#select_date#}" align="absmiddle" class="date_button"/>
-							</div>
+							{ShowCalendar field="CU_groups_to`$oItem.id`" title=$smarty.config.select_date value=$userdata.GROUPS[$oItem.id].date_end}
 						</td>
 					</tr>
 					{/foreach}
@@ -111,16 +105,10 @@
 					<tr>
 						<td>{Title field="blocked"}</td>
 						<td>
-							<div class="date_selector">
-								<input type="text" name="CU_blocked_from" readonly="readonly" {if $userdata.blocked_from!=0}value="{$userdata.blocked_from|date_format:"%d.%m.%Y %H:%M":""}"{else}value=""{/if} class="date_input"/>
-								<img src="{#images_path#}/calendar/img.gif" title="{#select_date#}" class="date_button"/>
-							</div>
+							{ShowCalendar field="CU_blocked_from" title=$smarty.config.select_date value=$userdata.blocked_from}
 						</td>
 						<td>
-							<div class="date_selector">
-								<input type="text" name="CU_blocked_till" readonly="readonly" {if $userdata.blocked_till!=0}value="{$userdata.blocked_till|date_format:"%d.%m.%Y %H:%M":""}"{else}value=""{/if} class="date_input"/>
-								<img src="{#images_path#}/calendar/img.gif" title="{#select_date#}" class="date_button"/>
-							</div>
+							{ShowCalendar field="CU_blocked_till" title=$smarty.config.select_date value=$userdata.blocked_till}
 						</td>
 					</tr>
 				</table>

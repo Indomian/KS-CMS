@@ -148,7 +148,7 @@ class CmainAIusers extends CModuleAdmin
 			//Проверка логина
 			if(strlen($_POST['CU_title'])==0)
 				$bError+=$this->obModules->AddNotify('MAIN_USERS_TITLE_REQUIRED');
-			elseif(!IsTextIdent($_POST['CU_title']))
+			elseif(!IsTextIdent($_POST['CU_title']) && !IsEmail($_POST['CU_title']))
 				$bError+=$this->obModules->AddNotify('MAIN_USERS_TITLE_WRONG');
 			elseif($_POST['CU_id']>0)
 			{

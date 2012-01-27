@@ -19,7 +19,9 @@ function smarty_function_ShowCalendar($params,&$smarty)
 	{
 		$KS_MODULES->UseJavaScript('/main/calendar.js',11);
 		$KS_MODULES->UseJavaScript("/jquery/jquery.ui.js",12);
-		$KS_MODULES->UseJavaScript("/jquery/jquery.ui.datepicker.min.js",12);
+		$KS_MODULES->UseJavaScript("/jquery/jquery-ui-timepicker-addon.js",13);
+		$KS_MODULES->UseJavaScript("/jquery/jquery-ui-datepicker-ru.js",15);
+		$KS_MODULES->UseJavaScript("/jquery/jquery-ui-timepicker-ru.js",15);
 		$KS_MODULES->AddHeadString('<script type="text/javascript">dateStrings={
 			\'dateFormat\':'.$KS_MODULES->GetText('date_format').',
 			\'timeFormat\':'.$KS_MODULES->GetText('time_format').',

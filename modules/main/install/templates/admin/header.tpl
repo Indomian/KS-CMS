@@ -6,7 +6,9 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<title>{#control_panel#} {$VERSION.TITLE}</title>
 		<link rel="stylesheet" href="/uploads/templates/admin/css/adminmain.css" type="text/css" />
-		<link rel="stylesheet" href="/uploads/templates/admin/css/ui.all.css" type="text/css" />
+		<link rel="stylesheet" href="/uploads/templates/admin/css/interface.css" type="text/css" />
+		<link rel="stylesheet" href="/uploads/templates/admin/css/thickbox.css" type="text/css" />
+		<link rel="stylesheet" href="/uploads/templates/admin/ui-lightness/ui.css" type="text/css" />
 		<script type="text/javascript" src="/js/jquery/jquery.js"></script>
 		<script type="text/javascript" src="/js/main/floatmessage.js"></script>
 		<script type="text/javascript" src="/js/main/admin.js"></script>
@@ -14,7 +16,6 @@
 		<script type="text/javascript" src="/js/tiny_mce/tiny_mce.js"></script>
 		<script type="text/javascript" src="/js/tiny_mce/jquery.tinymce.js"></script>
 		<!--[if lt IE 8]><link rel=stylesheet href="css/adminmain_ie.css"><![endif]-->
-		<script type="text/javascript" src="/js/jquery/ui.datetimepicker.js"></script>
 		<!-- header scripts -->
 		{MainHeadStrings}
 	</head>
