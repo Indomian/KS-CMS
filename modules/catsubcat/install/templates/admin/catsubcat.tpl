@@ -104,8 +104,8 @@
     			</a>
     		</div>
     	</td>
-		<td{$highlight}>{if $oItem.date_add}{$oItem.date_add|date_format:"%d.%m.%Y %H:%M"}{else}Неизвестно{/if}</td>
-		<td{$highlight}>{if $oItem.date_edit}{$oItem.date_edit|date_format:"%d.%m.%Y %H:%M"}{else}Неизвестно{/if}</td>
+		<td{$highlight}>{if $oItem.date_add}{$oItem.date_add|date_format:"%d.%m.%Y %H:%M"}{else}{#not_set#}{/if}</td>
+		<td{$highlight}>{if $oItem.date_edit}{$oItem.date_edit|date_format:"%d.%m.%Y %H:%M"}{else}{#not_set#}{/if}</td>
 		<td{$highlight}>{$oItem.orderation}</td>
     	<td align="center"{$highlight}>
     		<div style="width:80px;">

@@ -111,7 +111,7 @@ class CRestorable extends CFieldsObject
 	 * ключ не был выставлен, элемент удаляется в "корзину". Переопределяет
 	 * метод {@link CObject::DeleteItems() CObject::DeleteItems()}.
 	 */
-	function DeleteItems($arFilter)
+	function DeleteItems(array $arFilter)
 	{
 		if(!$this->ParseFilter($arFilter))
 			$arFilter['>deleted']="-1";

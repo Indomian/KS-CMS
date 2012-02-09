@@ -12,8 +12,8 @@
 
  if (!defined('KS_ENGINE'))
 	die("Hacking attempt!");
- 
-include_once MODULES_DIR.'/main/libs/class.CMain.php';
+
+include_once MODULES_DIR.'/main/libs/class.CBaseObject.php';
 
 /**
  * Класс CEventsHandler - класс, предназначенный для вызова обработчиков событий

@@ -2,7 +2,7 @@
 /*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
-include_once MODULES_DIR.'/main/libs/class.CTemplates.php';
+include_once MODULES_DIR.'/main/libs/class.CBaseList.php';
 /*
 CTemplates - управение шаблонами
 */
@@ -510,74 +510,3 @@ class CTemplates extends CBaseList
 		throw new CError("MAIN_TEMPLATE_WITH_FIRST_NAME_NOT_EXIST", 0, $sPath);
 	}
 }
-
-class CGlobalTemplates extends CObject
-{
-
-	function __construct($sTable='main_path_to_template')
-	{
-		parent::__construct($sTable);
-		$this->arFields=array('id','url_path','template_path','orderation','type','function1','function2');
-	}
-
-	function GetList($arOrder=false,$arFilter=false,$arLimit=false,$arSelect=false,$arGroupBy=false)
-	{
-		$arList=parent::GetList($arOrder,$arFilter,$arLimit,$arSelect);
-	    return $arList;
-	}
-
-	function Get($url)
-	{
-		global $ks_db;
-		$url=$ks_db->safesql($url);
-		$query="SELECT * FROM ".PREFIX."main_path_to_template WHERE url_path='$url'";
-		$ks_db->query($query);
-		if ($ks_db->num_rows()>0)
-		{
-			return $ks_db->get_row();
-		}
-	}
-
-	function Set($url,$template)
-	{
-		global $ks_db;
-		$obTemplates=new CTemplates();
-		if(!($arTemplates=$obTemplates->GetList())) throw new CError("MAIN_ERROR_SEARCH_TEMPLATES", 0);
-		if (in_array($template,$arTemplates))
-		{
-			$query="SELECT * FROM ".PREFIX."main_path_to_template WHERE url_path='$url'";
-			$ks_db->query($query);
-			if ($ks_db->num_rows()>0)
-			{
-				$query="UPDATE ".PREFIX."main_path_to_template SET template_path='$template' WHERE url_path='$url'";
-				$ks_db->query($query);
-				return true;
-			}
-			else
-			{
-				$query="INSERT INTO ".PREFIX."main_path_to_template(url_path, template_path) VALUES ('$url','$template')";
-				$ks_db->query($query);
-				return true;
-			}
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-	function Delete($url)
-	{
-		global $ks_db;
-		$query="DELETE FROM ".PREFIX."main_path_to_template WHERE url_path='$url'";
-		$ks_db->query($query);
-	}
-
-	function DeleteByTemplate($tpl)
-	{
-		global $ks_db;
-		$query="DELETE FROM ".PREFIX."main_path_to_template WHERE template_path='$tpl'";
-		$ks_db->query($query);
-	}
-}
-

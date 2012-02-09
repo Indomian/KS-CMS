@@ -1,6 +1,3 @@
-{if $addCalendar}
-<script type="text/javascript" src="/js/jquery/ui.datetimepicker.js"></script>
-{/if}
 <script type="text/javascript" src="/js/interfaces/filter.js"></script>
 <form action="{get_url _CLEAR="ff.* fm filter"}" method="POST" name="filter">
 	<input type="hidden" name="fm" value="POST"/>
@@ -42,17 +39,13 @@
 							<tr>
 								<td style="vertical-align:middle;">{#from#}</td>
 								<td>
-									<div class="date_selector">
-										<input type="text" id="ff{$oItem.FIELD}_1" readonly="readonly" name="ff{$oItem.FIELD|replace:".":"^"}[]" value="{$oItem.VALUE[0]|date_format:"%d.%m.%Y %H:%M"}" class="date_input"/>
-										<img src="{#images_path#}/calendar/img.gif" id="ff{$oItem.FIELD}_1_btn" title="{#select_date#}" align="absmiddle" class="date_button"/>
-									</div>
+									{assign var=fftitle value=$oItem.FIELD|replace:".":"^"}
+									{ShowCalendar field="ff`$fftitle`[]" title=$smarty.config.select_date value=$oItem.VALUE[0]}
 								</td>
 								<td style="vertical-align:middle;">{#to#}</td>
 								<td>
-									<div class="date_selector">
-										<input type="text" id="ff{$oItem.FIELD}_2" readonly="readonly" name="ff{$oItem.FIELD|replace:".":"^"}[]" value="{$oItem.VALUE[1]|date_format:"%d.%m.%Y %H:%M"}" class="date_input" title="{#select_date#}"/>
-										<img src="{#images_path#}/calendar/img.gif" id="ff{$oItem.FIELD}_2_btn" title="{#select_date#}" align="absmiddle" class="date_button"/>
-									</div>
+									{assign var=fftitle value=$oItem.FIELD|replace:".":"^"}
+									{ShowCalendar field="ff`$fftitle`[]" title=$smarty.config.select_date value=$oItem.VALUE[1]}
 								</td>
 							</tr>
 						</table>
@@ -75,21 +68,3 @@
 	</fieldset>
 </form>
 <div class="content_arrow_{if $hideFilter==0}down{else}up{/if}" style="cursor:pointer;" onclick="ToggleFilterPanel(this);"> </div>
-<script type="text/javascript">
-{literal}
-$(document).bind("InitCalendar",function(){
-	$(".date_input").datetimepicker({{/literal}
-			dateFormat:{#date_format#},
-			timeFormat:{#time_format#},
-			dayNames:{#days#},
-			dayNamesMin:{#daysMin#},
-			dayNamesShort:{#daysShort#},
-			monthNames:{#monthes#}
-	{literal}});
-	$(".date_button").click(function(){
-		$(this).parent().children('.date_input').datetimepicker('show')
-	});
-});
-$(document).ready(function(){$(document).trigger("InitCalendar");});
-{/literal}
-</script>

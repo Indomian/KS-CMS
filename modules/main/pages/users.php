@@ -99,26 +99,22 @@ class CmainAIusers extends CModuleAdmin
 		if($data==false)
 		{
 			$data=array('id'=>-1);
-			if (class_exists("CFields"))
-			{
-				/* Чтение пользовательских полей модуля users */
-				$obFields = new CFields();
-				$arFields = $obFields->GetList(array("id" => "asc"), array("module" => "users", "type" => $this->obUser->sTable));
-				if (is_array($arFields))
-					foreach($arFields as $item)
-						$data['ext_'.$item["title"]] = $item["default"];
-			}
+			/* Чтение пользовательских полей модуля users */
+			$obFields = new CFields();
+			$arFields = $obFields->GetList(array("id" => "asc"), array("module" => "users", "type" => $this->obUser->GetTable()));
+			if (is_array($arFields))
+				foreach($arFields as $item)
+					$data['ext_'.$item["title"]] = $item["default"];
 		}
 		elseif(array_key_exists('id',$data) && $data['id']>0)
 				$data["GROUPS"] = $this->obUser->GetAllGroups($data['id']);
 		$this->smarty->assign("groupslist",$this->obGroups->GetList());
 		$this->smarty->assign("userdata",$data);
-		if (class_exists("CFields"))
-		{
-			$obFields=new CFields();
-			$arFields=$obFields->GetList(Array("id"=>"asc"),Array("module"=>"users","type"=>$this->obUser->sTable));
-			$this->smarty->assign("addFields",$arFields);
-		}
+
+		$obFields=new CFields();
+		$arFields=$obFields->GetList(Array("id"=>"asc"),Array("module"=>"users","type"=>$this->obUser->GetTable()));
+		$this->smarty->assign("addFields",$arFields);
+
 		return '_edit';
 	}
 
@@ -274,7 +270,7 @@ class CmainAIusers extends CModuleAdmin
 					$arElements=$_POST['sel']['elm'];
 					if(in_array($this->obUser->ID(),$arElements))
 					{
-						$pos=array_search($this->obUsers->ID(),$arElements);
+						$pos=array_search($this->obUser->ID(),$arElements);
 						unset($arElements[$pos]);
 						$this->obModules->AddNotify("MAIN_OPERATIONS_NOT_APPLIED_YOUR_ACCOUNT",'');
 					}

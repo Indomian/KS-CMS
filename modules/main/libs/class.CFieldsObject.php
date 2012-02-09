@@ -1,15 +1,14 @@
 <?php
 /**
- * \file class.CFieldsObject.php
+ * @filesource main/libs/class.CFieldsObject.php
  * Класс для работы с пользовательскими полями
  * фактически имеет обновленную функцию save которая выполняет опереации перед сохранением данных
  * Файл проекта kolos-cms.
  *
- * Создан 19.06.2009
+ * @since 19.06.2009
  *
- * \author blade39
- * \version
- * \todo
+ * @author blade39 <blade39@kolosstudio.ru>
+ * @version 2.6
  */
 /*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
@@ -35,7 +34,10 @@ class CFieldsObject extends CFilesObject
 			$obFields=new CFields();
 			$this->arUserFields=$obFields->GetModuleFields($this->sFieldsModule,$this->sTable);
 			foreach($this->arUserFields as $item)
+			{
 				$this->arFields[]='ext_'.$item['title'];
+				CObject::$dbStructure[$this->sTable]['ext_'.$item['id']]=$item;
+			}
 		}
 	}
 
@@ -67,121 +69,31 @@ class CFieldsObject extends CFilesObject
 		return $sResult;
 	}
 
-	function Save($prefix='KS_',$data='')
+	/**
+	 * Метод возвращает список полей таблицы
+	 */
+	protected function GetTableFields()
 	{
-		global $ks_db,$KS_EVENTS_HANDLER, $KS_MODULES;
-		try
-		{
-			$ks_db->begin();
-			// 	Определяем таблицу с которой будем работать
-			$table=$this->sTable;
-			// Определяем данные с которыми будем работать
-			if ($data=='')
-				$input=$_REQUEST;
-			elseif(is_array($data))
-				$input=$data;
-			else
-				throw new CError ("MAIN_INCORRECT_DATA_FORMAT",999);
-			//Очищаем и подготавливаем массив полей
-			$data=array();
-			//Получаем список своих полей из таблицы
-			$fields=$this->_GetTableFields();
-			// Если есть доп поля то неплохо бы проверить и их
-			$arUserFields=$this->LoadUserFields();
-			foreach ($arUserFields as $field)
-			{
-				$fields['ext_'.$field['title']]=Array('Type'=>'user_field','Field'=>$field);
-			}
+		$arFields=parent::GetTableFields();
+		$arUserFields=$this->LoadUserFields();
+		foreach ($arUserFields as $field)
+			$arFields['ext_'.$field['title']]=Array('Type'=>'user_field','Field'=>$field);
+		return $arFields;
+	}
 
-			// Начинаем обход полей и сбор данных
-			foreach ($fields as $key=>$value)
-			{
-				$sValue=$this->_ParseField($prefix,$key,$input,$value);
-				if($sValue!==false)
-				{
-					$data[$key]=$sValue;
-				}
-			}
-			// Вызываем обработчик событий перед сохранением
-			if (!$KS_EVENTS_HANDLER->Execute('main', 'onBeforeFieldsObjectSave', $data)) throw new CError("MAIN_HANDLER_ERROR", 0, $KS_EVENTS_HANDLER->GetLastEvent());
-			if(array_key_exists('id',$data))
-			{
-				$query_select = "SELECT id FROM " . PREFIX . $table . " WHERE id = '" . $data['id'] . "' LIMIT 1";
-				$ks_db->query($query_select);
-				if ($ks_db->num_rows()>0)
-				{
-					$query = "";
-					foreach($data as $key=>$item)
-						$query .= "`$key` = '" . $item . "', ";
-					$query = chop($query, " ,");
-					$update_query = "UPDATE " . PREFIX . $table . " SET $query WHERE id = '" . $data['id'] . "'";
-					$ks_db->query($update_query);
-					$res = $data['id'];
-					if($res)
-						unset(CObject::$arCache[$this->sTable][$res]);
-					// Вызываем обработчик событий после сохранением
-					if (!$KS_EVENTS_HANDLER->Execute('main', 'onAfterFieldsObjectSave', $data))
-						throw new CError("MAIN_HANDLER_ERROR", 0, $KS_EVENTS_HANDLER->GetLastEvent());
-					$ks_db->commit();
-					return $res;
-				}
-			}
+	protected function _BeforeSave(&$arData)
+	{
+		global $KS_EVENTS_HANDLER;
+		if (!$KS_EVENTS_HANDLER->Execute('main', 'onBeforeFieldsObjectSave', $arData))
+			throw new CError("MAIN_HANDLER_ERROR", 0, $KS_EVENTS_HANDLER->GetLastEvent());
+		return true;
+	}
 
-			if(!array_key_exists('date_add',$data) && in_array('date_add',$this->arFields))
-				$data['date_add']=time();
-			if(!array_key_exists('date_edit',$data) && in_array('date_edit',$this->arFields))
-				$data['date_edit']=time();
-			$fields="";
-			$values="";
-			foreach($data as $key=>$item)
-			{
-				if (!in_array($key,$this->auto_fields))
-					{
-						$fields.=$key.",";
-						$values.="'$item',";
-					}
-			}
-			$fields=chop($fields," ,");
-			$values=chop($values," ,");
-			$check=$this->GenCheck($data);
-			if ($check!="")
-			{
-				$ks_db->query("SELECT id FROM ".PREFIX.$table." WHERE $check");
-				$numrows=$ks_db->num_rows();
-			}
-			else
-			{
-				$numrows=0;
-			}
-			if ($numrows>0)
-			{
-				throw new CError("MAIN_RECORD_ALREADY_EXISTS",KS_ERROR_MAIN_ALREADY_EXISTS,$this->check_fields);
-				$res=$_REQUEST[$prefix.'id'];
-			}
-			else
-			{
-				$query="INSERT INTO ".PREFIX.$table."($fields) VALUES ($values)";
-				$ks_db->query($query);
-				$res=$ks_db->insert_id();
-			}
-
-			// Вызываем обработчик событий после сохранением
-			if (!$KS_EVENTS_HANDLER->Execute('main', 'onAfterFieldsObjectSave', $data))
-				throw new CError("MAIN_HANDLER_ERROR", 0, $KS_EVENTS_HANDLER->GetLastEvent());
-			$ks_db->commit();
-			return $res;
-		}
-		catch(CError $e)
-		{
-			$ks_db->rollback();
-			throw $e;
-		}
-		catch(Exception $e)
-		{
-			$ks_db->rollback();
-			die();
-			throw new CError($e);
-		}
+	protected function _AfterSave(&$arData)
+	{
+		global $KS_EVENTS_HANDLER;
+		if (!$KS_EVENTS_HANDLER->Execute('main', 'onAfterFieldsObjectSave', $arData))
+			throw new CError("MAIN_HANDLER_ERROR", 0, $KS_EVENTS_HANDLER->GetLastEvent());
 	}
 
 	/**
@@ -216,13 +128,10 @@ class CFieldsObject extends CFilesObject
 	{
 		if(!is_array($this->arUserFields))
 		{
-			if (class_exists('CFields'))
-			{
-				$this->bFields=true;
-				$obFields=new CFields();
-				$this->arUserFields=$obFields->GetModuleFields($this->sFieldsModule,$this->sTable);
-				if(!is_array($this->arUserFields)) $this->arUserFields=array();
-			}
+			$this->bFields=true;
+			$obFields=new CFields();
+			$this->arUserFields=$obFields->GetModuleFields($this->sFieldsModule,$this->sTable);
+			if(!is_array($this->arUserFields)) $this->arUserFields=array();
 		}
 		return $this->arUserFields;
 	}

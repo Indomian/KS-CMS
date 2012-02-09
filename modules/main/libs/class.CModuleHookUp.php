@@ -295,9 +295,7 @@ class CModuleHookUp extends CModuleManagment
 	{
 		global $KS_URL;
 		if(!array_key_exists($arModule['directory'],$this->arModules))
-		{
 			$this->InitModule($arModule);
-		}
 		if(file_exists(MODULES_DIR.'/'.$arModule['directory'].'/main.inc.php') )
 		{
 			$module_main_file = MODULES_DIR . "/" . $arModule['directory'] . "/main.inc.php";

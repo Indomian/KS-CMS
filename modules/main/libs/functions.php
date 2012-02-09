@@ -61,8 +61,11 @@ function dec2any( $num, $base=62, $index=false ) {
 
 function String2Time($str)
 {
-	if(preg_match('#([0-9]{2,2})\.([0-9]{2,2})\.([0-9]{4,4}) ([0-9]{2,2}):([0-9]{2,2})#',$str,$time))
-		return mktime(intval($time[4]),intval($time[5]),0,intval($time[2]),intval($time[1]),intval($time[3]));
+	if(preg_match('#([0-9]{2,2})\.([0-9]{2,2})\.([0-9]{4,4})( ([0-9]{2,2}):([0-9]{2,2}))?#',$str,$time))
+		if(count($time)==4)
+			return mktime(0,0,1,intval($time[2]),intval($time[1]),intval($time[3]));
+		else
+			return mktime(intval($time[5]),intval($time[6]),0,intval($time[2]),intval($time[1]),intval($time[3]));
 	return false;
 }
 

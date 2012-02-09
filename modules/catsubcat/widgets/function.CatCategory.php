@@ -29,16 +29,16 @@ function smarty_function_CatCategory($params, &$smarty)
 	elseif(isset($params['text_ident']) && IsTextIdent($params['text_ident']))
 		$arFilter = array('text_ident' => $params['text_ident']);
 	$arFilter['active']=1;
-	if($data['main_content']= $obCategory->GetRecord($arFilter))
+	if($data= $obCategory->GetRecord($arFilter))
 	{
 		/* Неплохо бы добавить дату добавления в понятном формате, чтобы юзеры в Смарти не мучились :) */
-		$data['main_content']['date'] = date("d.m.Y", $data['main_content']['date_add']);
+		$data['date'] = date("d.m.Y", $data['date_add']);
 
 		//Проверка прав доступа
 		if($access_level>9) throw new CAccessError("SYSTEM_NOT_ACCESS_MODULE");
 		if($access_level>8)
 		{
-			if(!in_array($data['main_content']['access_view'],$USER->GetGroups()))
+			if(!in_array($data['access_view'],$USER->GetGroups()))
 			{
 				throw new CAccessError("CATSUBCAT_NOT_ACCESS_SECTION");
 			}
@@ -46,10 +46,10 @@ function smarty_function_CatCategory($params, &$smarty)
 		$smarty->assign('data', $data);
 		if(($KS_MODULES->GetConfigVar('catsubcat','set_title',1)==1)||($params['setPageTitle']=='Y'))
 		{
-			$sTitle=$data['main_content']['seo_title']!=''?$data['main_content']['seo_title']:$data['main_content']['title'];
+			$sTitle=$data['seo_title']!=''?$data['seo_title']:$data['title'];
 			$smarty->assign('TITLE',($sTitle!=''?$sTitle:$KS_MODULES->GetConfigVar('catsubcat','title_default','Текстовые страницы')));
-			$smarty->assign('DESCRIPTION',$data['main_content']['seo_description']);
-			$smarty->assign('KEYWORDS',$data['main_content']['seo_keywords']);
+			$smarty->assign('DESCRIPTION',$data['seo_description']);
+			$smarty->assign('KEYWORDS',$data['seo_keywords']);
 		}
 		return $KS_MODULES->RenderTemplate($smarty,'/catsubcat/CatCategory',$params['global_template'],$params['tpl']);
 	}

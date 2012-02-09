@@ -18,6 +18,14 @@ if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
  */
 abstract class CBaseAPI extends CBaseObject
 {
+	protected $obDB;
+	
+	function __construct()
+	{
+		global $ks_db;
+		$this->obDB=$ks_db;
+	}
+	
 	/**
 	 * Метод вычисляет значения каких ключей двух массивов отличаются друг от друга
 	 */
@@ -25,22 +33,16 @@ abstract class CBaseAPI extends CBaseObject
 	{
 		$arDifferent=array();
 		foreach($ar1 as $key=>$value)
-		{
 			if(array_key_exists($key,$ar2))
 			{
 				if($value!=$ar2[$key]) $arDifferent['both'][]=$key;
 				unset($ar2[$key]);
 			}
 			else
-			{
 				$arDifferent['infirst'][]=$key;
-			}
-		}
 		if(count($ar2)>0)
-		{
 			$arDifferent['insecond']=array_keys($ar2);
-		}
 		return $arDifferent;
 	}
 }
-?>
+

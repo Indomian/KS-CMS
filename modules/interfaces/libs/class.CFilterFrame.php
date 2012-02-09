@@ -1,5 +1,4 @@
 <?php
-
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 include_once MODULES_DIR.'/interfaces/libs/class.CFrame.php';
@@ -8,11 +7,11 @@ include_once MODULES_DIR.'/interfaces/libs/class.CFrame.php';
  * Класс выводит рамку для фильтрации списков. Автоматически определяет поля фильтрации по
  * переданным в запросе данным, может возвращать значения массива для фильтрации при использовании
  * функций потомков CObject::GetList().
+ * @todo определить видимость $arFields и скрыть по возможности
  */
-
 class CFilterFrame extends CFrame
 {
-	var $arFields; /*!<Список полей по которым осуществляется фильтрация. Содержит массив записей,
+	public $arFields; /*!<Список полей по которым осуществляется фильтрация. Содержит массив записей,
 					* структура записи такова:
 					* arRow=array(
 					* 'FIELD' -- имя поля для фильтрации, совпадает с именем поля в БД;
@@ -30,57 +29,36 @@ class CFilterFrame extends CFrame
 		global $smarty;
 		$this->arFields=array();
 		if(array_key_exists('fm',$_REQUEST))
-		{
 			$method=$_REQUEST['fm'];
-		}
 		else
-		{
 			$method='';
-		}
 		$arFrom=array();
 		if(strtolower($method)=='post')
-		{
-			//Ацкий чит из-за точки в пхп
 			foreach($_POST as $key=>$value)
-			{
 				$arFrom[str_replace('^','.',$key)]=$value;
-			}
-		}
 		else
 		{
-			//pre_print($_SERVER);
-			//Чит чтобы точки тоже бегали
-			//Исправление ошибки с сортировками дат
-			/** @todo: Переместить потом в CUrlParser */
 			$arGet=explode('&',$_SERVER['QUERY_STRING']);
 			foreach($arGet as $arOneGet)
 			{
 				$arItem=explode('=',$arOneGet);
 				$arItem[0]=urldecode($arItem[0]);
 				if(preg_match('#^(.*)\[(.*)\]$#i',$arItem[0],$matches))
-				{
 					$arFrom[$matches[1]][$matches[2]]=urldecode($arItem[1]);
-				}
 				else
-				{
 					if(count($arItem)==2)
 						$arFrom[urldecode($arItem[0])]=urldecode($arItem[1]);
-				}
 			}
 		}
 		$arMatches=array();
 
 		if(array_key_exists('filter',$arFrom) && ($arFrom['filter']==1)&&(!array_key_exists('fundo',$arFrom)))
-		{
 			foreach($arFrom as $key=>$value)
-			{
 				if(preg_match('/^ff([<>\w\._]+)$/',$key,$arMatches))
 				{
 					$arField=array('FIELD'=>$arMatches[1],'VALUE'=>$value,'TYPE'=>'STRING');
 					$this->AddField($arField);
 				}
-			}
-		}
 	}
 
 	/**
@@ -205,7 +183,6 @@ class CFilterFrame extends CFrame
 					if((strlen($value['VALUE'][0])>0)&&
 						(strlen($value['VALUE'][1])>0))
 					{
-
 						if(preg_match('#([0-9]{2,2})\.([0-9]{2,2})\.([0-9]{4,4}) ([0-9]{2,2}):([0-9]{2,2})#',$value['VALUE'][0],$time))
 							$arResult['>'.$key]=mktime(intval($time[4]),intval($time[5]),0,intval($time[2]),intval($time[1]),intval($time[3]));
 						if(preg_match('#([0-9]{2,2})\.([0-9]{2,2})\.([0-9]{4,4}) ([0-9]{2,2}):([0-9]{2,2})#',$value['VALUE'][1],$time))
@@ -218,9 +195,7 @@ class CFilterFrame extends CFrame
 				{
 					$arResult[$value['METHOD'].$key]="('".join("','",$value['VALUE'])."')";
 					foreach($value['VALUE'] as $key=>$val)
-					{
 						$KS_URL->Set('ff'.$key.'['.$key.']',$val);
-					}
 				}
 				elseif($value['METHOD']=='<>')
 				{

@@ -158,24 +158,12 @@
 					<td><input type="submit" name="act_drop_cache" value="{#action_drop_cache#}" class="button button_basket"/></td>
 				</tr>
 				<tr>
-					<td>{Title field="drop_images_cache"}</td>
-					<td><input type="submit" name="act_drop_images_cache" value="{#action_drop_images_cache#}" class="button button_basket"/></td>
-				</tr>
-				<tr>
-					<td>{Title field="drop_system_cache"}</td>
-					<td><input type="submit" name="act_drop_system_cache" value="{#action_drop_system_cache#}" class="button button_basket"/></td>
-				</tr>
-				<tr>
 					<td>{Title field="check_tables"}</td>
 					<td><input type="submit" name="act_check_tables" value="{#action_check_tables#}" class="button button_question"/></td>
 				</tr>
 				<tr>
-					<td>{Title field="update_language_files"}</td>
-					<td><input type="submit" name="act_update_lng" value="{#action_update_language_files#}" class="button button_reload"/></td>
-				</tr>
-				<tr>
-					<td>{Title field="update_templates"}</td>
-					<td><input type="submit" name="act_update_templates" value="{#action_update_templates#}" class="button button_copy"/></td>
+					<td>{Title field="rebuild_all"}</td>
+					<td><input type="submit" name="act_rebuild_all" value="{#action_rebuild_all#}" class="button button_reload"/></td>
 				</tr>
 			</table>
 		</div>

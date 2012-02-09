@@ -6,7 +6,6 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<title>{#control_panel#} {$VERSION.TITLE}</title>
 		<link rel="stylesheet" href="/uploads/templates/admin/css/adminmain.css" type="text/css" />
-		<link rel="stylesheet" href="/uploads/templates/admin/css/interface.css" type="text/css" />
 		<link rel="stylesheet" href="/uploads/templates/admin/css/thickbox.css" type="text/css" />
 		<link rel="stylesheet" href="/uploads/templates/admin/ui-lightness/ui.css" type="text/css" />
 		<script type="text/javascript" src="/js/jquery/jquery.js"></script>

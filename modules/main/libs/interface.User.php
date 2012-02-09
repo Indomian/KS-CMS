@@ -23,7 +23,7 @@ interface User
 	function GetUserVar($var);
 	function SetUserVar($var, $value);
 	function WriteUserVars();
-	function DeleteItems($arFilter);
+	function DeleteItems(array $arFilter);
 	function GetGroups($user_id=0);
  	function ID();
  	function Email();

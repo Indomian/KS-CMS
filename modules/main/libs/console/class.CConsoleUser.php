@@ -48,16 +48,7 @@ class CConsoleUser extends CUsersCommon implements User
 	{
 		global $smarty, $KS_EVENTS_HANDLER;
 
-		/*\todo Свести работу к одному классу */
-		if(IS_ADMIN)
-		{
-			$this->obModules=CAdminModuleManagment::get_instance();
-		}
-		else
-		{
-			global $KS_MODULES;
-			$this->obModules=$KS_MODULES;
-		}
+		$this->obModules=CAdminModuleManagment::get_instance();
 		$this->obSession=CSessionManager::get_instance();
 		$this->obLog=new CObject('users_log');
 
@@ -605,7 +596,7 @@ class CConsoleUser extends CUsersCommon implements User
 	 * @param array $arFilter Ассоциативный массив с параметром удаления пользователя: id => id_пользователя
 	 * @return int id удалённого пользователя
 	 */
-	function DeleteItems($arFilter)
+	function DeleteItems(array $arFilter)
 	{
 		global $KS_EVENTS_HANDLER;
 		$onBeforeDeleteParams['id'] = $arFilter['id'];

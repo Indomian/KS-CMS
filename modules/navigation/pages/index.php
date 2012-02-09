@@ -51,7 +51,7 @@ class CnavigationAIindex extends CModuleAdmin
 		// Выборка списка результата
 		$arSelect=Array('id','name','text_ident','description','script_name');
 		$arSortFields=Array('id','name','text_ident','description','script_name');
-		list($sOrderField,$sOrderDir)=$this->InitSort($arSortFields,$_REQUEST['order'],$_REQUEST['dir']);
+		list($sOrderField,$sOrderDir)=$this->InitSort($arSortFields);
 		$sNewDir=($sOrderDir=='desc')?'asc':'desc';
 		$arOrder=Array($sOrderField=>$sOrderDir);
 		if($arResult['ITEMS']=$this->oType->GetList($arOrder))
@@ -177,7 +177,9 @@ class CnavigationAIindex extends CModuleAdmin
 					CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl(Array('ACTION','CSC_catid')));
 				}
 				else
+				{
 					$this->obModules->AddNotify('NAVIGATION_MENU_TYPE_NOT_FOUND');
+				}
 			break;
 			default:
 				$page=$this->Table();

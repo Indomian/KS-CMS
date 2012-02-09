@@ -43,13 +43,9 @@ function ShowTabs(ulname)
 	{
 		var oTab=oList.childNodes[i];
 		if(oTab.className.indexOf('hide')>-1)
-		{
 			oTab.className=oTab.className.replace('hide','visible');
-		}
 		else
-		{
 			oTab.className=oTab.className.replace('visible','hide');
-		}
     }
 	return true;
 }

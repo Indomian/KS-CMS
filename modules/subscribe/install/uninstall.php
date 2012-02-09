@@ -33,7 +33,7 @@ if(array_key_exists('go',$_POST))
 		//Удаляем записи о дополнительных полях
 		$obFields=new CFields();
 		$obFields->DeleteItems(array('module'=>$module));
-		$obTpl=new _CEventTemplates();
+		$obTpl=new CObject('main_eventtemplates');
 		$arNewTemplates=array(
 			'subscribe.message.tpl'=>array('file_id'=>'subscribe.message.tpl','title'=>'Шаблон сообщения рассылки'),
 			'subscribe.activate.tpl'=>array('file_id'=>'subscribe.activate.tpl','title'=>'Подтверждение подписки'),

@@ -46,9 +46,7 @@ class CError extends Exception
 			$arTrace=$this->getTrace();
 			$text.='<table border="1"><tr><td>#</td><td>File</td><td>Line</td><td>function</td></tr>';
 			foreach($arTrace as $i=>$arRow)
-			{
 				$text.='<tr><td>'.$i.'</td><td>'.$arRow['file'].'</td><td>'.$arRow['line'].'</td><td>'.$arRow['function'].'</td></tr>';
-			}
 			$text.='</table>';
 		}
 		if(!IS_ADMIN&&is_object($smarty))
@@ -57,18 +55,12 @@ class CError extends Exception
 			$smarty->assign('text',$this->error_text);
 			$smarty->assign('code',$code);
 			if($smarty->template_exists($global_template.'/main/'.$this->errorTpl))
-			{
 				return $smarty->fetch($global_template.'/main/'.$this->errorTpl).$text;
-			}
 			elseif($smarty->template_exists('.default/main/'.$this->errorTpl))
-			{
 				return $smarty->fetch('.default/main/'.$this->errorTpl).$text;
-			}
 		}
 		else
-		{
 			$msg=$this->GetErrorText();
-		}
 		return $this->_error_form($msg." ".$this->error_text,$this->getCode()).$text;
 	}
 

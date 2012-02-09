@@ -487,47 +487,60 @@ function adminOnShowLoginWindow(e,data)
 		document.location="/admin.php";
 	});
 }
-
-$(document).ready(function()
-{
-	$('input.checkall').click(function(){
-		$('input.checkItem').attr('checked',$(this).attr('checked'));
-		if($('input.checkItem:checked').length>0)
-			$('input.check_depend').attr('disabled',false);
-		else
-			$('input.check_depend').attr('disabled',true);
+(function(){
+	/**
+	 * Функция устанавливает обработчики кликов по checkbox в таблицах
+	 */
+	function SetTableChecks()
+	{
+		$('input.checkall').click(function(){
+			if($(this).attr('checked'))
+				$('input.checkItem').attr('checked',true);
+			else
+				$('input.checkItem').attr('checked',false);
+			if($('input.checkItem:checked').length>0)
+				$('input.check_depend').attr('disabled',false);
+			else
+				$('input.check_depend').attr('disabled',true);
+		})
+		$('input.checkItem').click(function(){
+			if($('input.checkItem:checked').length>0)
+				$('input.check_depend').attr('disabled',false);
+			else
+				$('input.check_depend').attr('disabled',true);
+			if($('input.checkItem').length==$('input.checkItem:checked').length)
+				$('input.checkall').attr('checked',true);
+			else
+				$('input.checkall').attr('checked',false);
+		})
+		$('input.check_depend').attr('disabled',true)
+	}
+	
+	$(document).ready(function()
+	{
+		SetTableChecks();
+		//Прикольные навигационные цепочки
+		$('a.hasDropDown').mouseover(
+			function(e)
+			{
+				$(this).parent().children('div.navDropDown').show();
+				e.preventDefault();
+			}
+		);
+		$('div.navDropDown').mouseleave(
+			function(e)
+			{
+				$(this).hide();
+				e.preventDefault();
+			}
+		);
+		setTimeout("adminAskServer()",10000);
+		$('a.menu_toggle').click(_KS_CMS_ADMIN.menu.toggleMenu);
+		$('div.helpbar').click(_KS_CMS_ADMIN.content.toggelHint);
+		$('#topError').ajaxError(function(event, jqXHR, ajaxSettings, thrownError){
+			$(this).html('Ошибка при выполнении Ajax запроса<br/>'+jqXHR.responseText).show();
+			HideLoading();
+		});
 	});
-
-	$('input.checkItem').click(function(){
-		if($('input.checkItem:checked').length>0)
-			$('input.check_depend').attr('disabled',false);
-		else
-			$('input.check_depend').attr('disabled',true);
-	});
-
-	$('input.check_depend').attr('disabled',true);
-
-	//Прикольные навигационные цепочки
-	$('a.hasDropDown').mouseover(
-		function(e)
-		{
-			$(this).parent().children('div.navDropDown').show();
-			e.preventDefault();
-		}
-	);
-	$('div.navDropDown').mouseleave(
-		function(e)
-		{
-			$(this).hide();
-			e.preventDefault();
-		}
-	);
-	setTimeout("adminAskServer()",10000);
-	$('a.menu_toggle').click(_KS_CMS_ADMIN.menu.toggleMenu);
-	$('div.helpbar').click(_KS_CMS_ADMIN.content.toggelHint);
-	$('#topError').ajaxError(function(event, jqXHR, ajaxSettings, thrownError){
-		$(this).html('Ошибка при выполнении Ajax запроса<br/>'+jqXHR.responseText).show();
-		HideLoading();
-	});
-});
+})();
 

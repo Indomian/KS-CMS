@@ -67,7 +67,6 @@ function GetAllList($arOrder,$arFilter,$arLimit,$arTables,$arFilds=false)
 		unset($arFilter['TYPE']);
 	}
 	$arSelect=Array('id','title','description','content','orderation','text_ident','parent_id','date_add','date_edit','active','deleted');
-	$arCSelect=array_merge($arSelect,array('access_edit','access_view','access_create'));
 	if($bCat) $arResult['CATEGORIES']=$obCategory->Count($arFilter);
 	if($bElm) $arResult['ELEMENTS']=$obElement->Count($arFilter);
 	$arResult['TOTAL']=$arResult['CATEGORIES']+$arResult['ELEMENTS'];
@@ -76,16 +75,12 @@ function GetAllList($arOrder,$arFilter,$arLimit,$arTables,$arFilds=false)
 	if ($from<$arResult['CATEGORIES']&&$bCat)
 	{
 		$arLimit=array($from,$count);
-		$arCategories=$obCategory->GetList($arOrder,$arFilter,$arLimit,$arCSelect);
+		$arCategories=$obCategory->GetList($arOrder,$arFilter,$arLimit,$arSelect);
 		if(is_array($arCategories))
 		{
 			foreach($arCategories as $arRow)
 			{
 				$arRow['TYPE']='cat';
-				//Устанавливаем какими правами обладает текущий пользователь
-				if(in_array($arRow['access_view'],$USER->GetGroups())) $arRow['ACCESS']['view']=1;
-				if(in_array($arRow['access_edit'],$USER->GetGroups())) $arRow['ACCESS']['edit']=1;
-				if(in_array($arRow['access_create'],$USER->GetGroups())) $arRow['ACCESS']['create']=1;
 				$arResult['ITEMS'][]=$arRow;
 			}
 			$arResult['SELECTED']=count($arCategories);
@@ -105,15 +100,12 @@ function GetAllList($arOrder,$arFilter,$arLimit,$arTables,$arFilds=false)
 			$count=$arLimit[1];
 		}
 		$arLimit=array($from,$count);
-		$arElements=$obElement->GetList($arOrder,$arFilter,$arLimit,$arCSelect);
+		$arElements=$obElement->GetList($arOrder,$arFilter,$arLimit,$arSelect);
 		if(is_array($arElements))
 		{
 			foreach($arElements as $arRow)
 			{
 				$arRow['TYPE']='elm';
-				//Устанавливаем какими правами обладает текущий пользователь
-				if(in_array($arRow['access_view'],$USER->GetGroups())) $arRow['ACCESS']['view']=1;
-				if(in_array($arRow['access_edit'],$USER->GetGroups())) $arRow['ACCESS']['edit']=1;
 				$arResult['ITEMS'][]=$arRow;
 			}
 			$arResult['SELECTED']+=count($arElements);

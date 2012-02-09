@@ -45,7 +45,7 @@ var DD_belatedPNG = {
 			this.screenStyleSheet = screenStyleSheet;
 			
 			/* Add a print-media stylesheet, for preventing VML artifacts from showing up in print (including preview). */
-			/* Thanks to Rï¿½mi Prï¿½vost for automating this! */
+			/* Thanks to Rémi Prévost for automating this! */
 			printStyleSheet = document.createElement('style');
 			printStyleSheet.setAttribute('media', 'print');
 			document.documentElement.firstChild.insertBefore(printStyleSheet, document.documentElement.firstChild.firstChild);

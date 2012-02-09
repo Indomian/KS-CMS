@@ -67,25 +67,25 @@ function smarty_function_CatElement($params, &$smarty)
 	$obElement=new CElement();
 	/* обратились к элементу */
 	$arElmFilter['active']=1;
-	if($data['main_content'] = $obElement->GetRecord($arElmFilter))
+	if($data = $obElement->GetRecord($arElmFilter))
 	{
 		/* Неплохо бы добавить дату добавления в понятном формате, чтобы юзеры в Смарти не мучились :) */
-		$data['main_content']['date'] = date("d.m.Y", $data['main_content']['date_add']);
+		$data['date'] = date("d.m.Y", $data['date_add']);
 
 		//Проверка прав доступа
 		if($access_level>8) throw new CAccessError("CATSUBCAT_NOT_VIEW_ELEMENTS");
 		if($access_level>7)
 		{
-			if(!in_array($data['main_content']['access_view'],$USER->GetGroups()))
+			if(!in_array($data['access_view'],$USER->GetGroups()))
 			{
 				throw new CAccessError("CATSUBCAT_NOT_VIEW_ELEMENT");
 			}
 		}
 		if($sUrl=='')
 		{
-			$sUrl='/'.$data['main_content']['text_ident'].'.html';
+			$sUrl='/'.$data['text_ident'].'.html';
 			$obCategory=new CCategory();
-			$parent_id=$data['main_content']['parent_id'];
+			$parent_id=$data['parent_id'];
 			$i=0;
 			while(($i<30)&&($parent_id!=0))
 			{
@@ -100,25 +100,25 @@ function smarty_function_CatElement($params, &$smarty)
 		}
 		else
 		{
-			$sUrl.='/'.$data['main_content']['text_ident'].'.html';
+			$sUrl.='/'.$data['text_ident'].'.html';
 		}
 		$smarty->assign('data', $data);
 		$smarty->assign('url',$sUrl);
 		if(array_key_exists('addToNavChain',$params) && $params['addToNavChain']=='Y' && $KS_MODULES->IsActive('navigation'))
-			CNNavChain::get_instance()->Add( $data['main_content']['title'],$sUrl);
+			CNNavChain::get_instance()->Add( $data['title'],$sUrl);
 		if($params['setPageTitle']=='Y')
 		{
-			$sTitle=$data['main_content']['seo_title']!=''?$data['main_content']['seo_title']:$data['main_content']['title'];
+			$sTitle=$data['seo_title']!=''?$data['seo_title']:$data['title'];
 			$smarty->assign('TITLE',($sTitle!=''?$sTitle:$KS_MODULES->GetConfigVar('catsubcat','title_default','Текстовые страницы')));
-			$smarty->assign('DESCRIPTION',$data['main_content']['seo_description']);
-			$smarty->assign('KEYWORDS',$data['main_content']['seo_keywords']);
+			$smarty->assign('DESCRIPTION',$data['seo_description']);
+			$smarty->assign('KEYWORDS',$data['seo_keywords']);
 		}
 		$sResult=$KS_MODULES->RenderTemplate($smarty,'/catsubcat/CatElement',$params['global_template'],$params['tpl']);
 		/* Шаблон найдем, можно увеличить количество показов страницы на единицу */
-		if(!isset($_COOKIE['cscp'.$data['main_content']['id']]) || $_COOKIE['cscp'.$data['main_content']['id']]!='1')
+		if(!isset($_COOKIE['cscp'.$data['id']]) || $_COOKIE['cscp'.$data['id']]!='1')
 		{
-			$obElement->Update($data['main_content']['id'],array('views_count'=>intval($data['main_content']['views_count']) + 1));
-			setcookie('cscp'.$data['main_content']['id'],1,time()+30000);
+			$obElement->Update($data['id'],array('views_count'=>intval($data['views_count']) + 1));
+			setcookie('cscp'.$data['id'],1,time()+30000);
 		}
 		return $sResult;
 	}

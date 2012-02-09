@@ -77,7 +77,7 @@ class CcatsubcatAIoptions extends CModuleAdmin
 		}
 		$arAccess['levels']=$arRes;
 
-		if ($_POST['action']=='save')
+		if (isset($_POST['action']) && $_POST['action']=='save')
 		{
 			$bad=array('\\',"'",'"',"?>","<?",".",",");
 			try

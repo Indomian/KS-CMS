@@ -12,21 +12,16 @@
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 include_once MODULES_DIR.'/main/libs/class.CTemplates.php';
-
-class _CEventTemplates extends CObject
-{
-	function __construct()
-	{
-		parent::__construct('main_eventtemplates');
-		$this->arFields=array('id','file_id','title','address','copy');
-	}
-}
+include_once MODULES_DIR.'/main/libs/class.CObject.php';
 
 class CEventTemplates extends CTemplates
 {
+	private $obTemplates;
+
 	function __construct()
 	{
 		$this->sTemplatesPath=ROOT_DIR.'/templates/admin/eventTemplates/';
+		$this->obTemplates=new CObject('main_eventtemplates');
 	}
 
 	function _ParseItem(&$item)
@@ -42,119 +37,87 @@ class CEventTemplates extends CTemplates
 		$sPath=$this->sTemplatesPath;
 		$sContent='';
 		if(!preg_match('#^[\w\d\.]+\.tpl#',$tpl))
-		{
 			throw new CError("MAIN_FAIL_EDIT_TEMPLATE_NAME");
-		}
 		if (file_exists($sPath.$tpl))
 		{
 			$hFile=@fopen($sPath.$tpl,"r");
 			if ($hFile)
 			{
 				while(!feof($hFile))
-				{
 					$sContent.=fgets($hFile);
-				}
 				fclose($hFile);
-				$ob=new _CEventTemplates();
-				if($data=$ob->GetRecord(array('file_id'=>$tpl)))
+				if($data=$this->obTemplates->GetRecord(array('file_id'=>$tpl)))
 				{
 					$data['content']=$sContent;
 					return $data;
 				}
 				else
-				{
 					throw new CError("MAIN_TEMPLATE_NOT_REGISTERED");
-				}
 			}
 			else
-			{
 				throw new CError("MAIN_NOT_READ_TEMPLATE");
-			}
 		}
 		else
-		{
 			throw new CError("MAIN_TEMPLATE_NOT_FOUND");
-		}
 	}
 
 	function Delete($id)
 	{
-		global $ks_db;
-		$ob=new _CEventTemplates();
-		$ks_db->begin();
+		$this->obDB->begin();
 		try
 		{
-			$ob->DeleteItems(array('file_id'=>$id));
+			$this->obTemplates->DeleteItems(array('file_id'=>$id));
 			if(!@unlink($this->sTemplatesPath.$id))
-			{
 				throw new CError("SYSTEM_FILE_NOT_FOUND");
-			}
 		}
 		catch (CError $e)
 		{
-			$ks_db->rollback();
+			$this->obDB->rollback();
 			throw $e;
 		}
-		$ks_db->commit();
+		$this->obDB->commit();
 	}
 
 	function SaveTemplate($name='',$scheme='index')
 	{
-		global $ks_db;
-		$ks_db->begin();
+		$this->obDB->begin();
 		try
 		{
-			$ob=new _CEventTemplates();
-			$ob->AddCheckField('file_id');
-			$ob->AddAutoField('id');
-			if(!$ob->Save('KS_'))
+			if(!$this->obTemplates->GetRecord(array('file_id'=>$_POST['KS_file_id'])))
 			{
-				throw new CError("DB_MYSQL_WRITE_ERROR");
-			}
-			$sPath=$this->sTemplatesPath;
-        	$sTemplate=$_POST['template_file'];
-        	if(ini_get('magic_quotes_gpc')==1)
-			{
-				$sTemplate=stripslashes($sTemplate);
-			}
-	        if (!file_exists($sPath))
-        	{
-	        	mkdir($sPath);
-        	}
-        	if(!preg_match('#^[\w\d\.]+\.tpl#',$_POST['KS_file_id']))
-			{
-				throw new CError("MAIN_FAIL_EDIT_TEMPLATE_NAME");
-			}
-		    if ((!file_exists($sPath.$_POST['KS_file_id']))||is_writable($sPath.$_POST['KS_file_id']))
-        	{
-		       	$hFile=@fopen($sPath.$_POST['KS_file_id'],"w");
-		       	if ($hFile)
-	       		{
-		       		if (!fwrite($hFile,$sTemplate))
-		       		{
-	       				throw new CError("SYSTEM_NOT_WRITE_TO_FILE", 0, '.template.tpl');
-	       			}
-	       			else
-	       			{
-		       			return 0;
-		       		}
-	       		}
+				if(!$this->obTemplates->Save('KS_'))
+					throw new CError("DB_MYSQL_WRITE_ERROR");
+				$sPath=$this->sTemplatesPath;
+	        	$sTemplate=$_POST['template_file'];
+	        	if(ini_get('magic_quotes_gpc')==1)
+					$sTemplate=stripslashes($sTemplate);
+		        if (!file_exists($sPath))
+		        	mkdir($sPath);
+	        	if(!preg_match('#^[\w\d\.]+\.tpl#',$_POST['KS_file_id']))
+					throw new CError("MAIN_FAIL_EDIT_TEMPLATE_NAME");
+			    if ((!file_exists($sPath.$_POST['KS_file_id']))||is_writable($sPath.$_POST['KS_file_id']))
+	        	{
+			       	$hFile=@fopen($sPath.$_POST['KS_file_id'],"w");
+			       	if ($hFile)
+			       	{
+			       		if (!fwrite($hFile,$sTemplate))
+		       				throw new CError("SYSTEM_NOT_WRITE_TO_FILE", 0, '.template.tpl');
+			       	}
+		       		else
+		       			throw new CError("SYSTEM_NOT_OPEN_WRITE_TO_FILE");
+		    	}
 	       		else
-	       		{
-	       			throw new CError("SYSTEM_NOT_OPEN_WRITE_TO_FILE");
-	       		}
-	    	}
-       		else
-       		{
-	       		throw new CError("SYSTEM_FILE_NOT_FOUND_OR_NOT_WRITABLE");
-    	   	}
+		       		throw new CError("SYSTEM_FILE_NOT_FOUND_OR_NOT_WRITABLE");
+			}
+			else
+				throw new CError("MAIN_TEMPLATE_ALREADY_EXISTS");
 		}
 		catch (CError $e)
 		{
-			$ks_db->rollback();
+			$this->obDB->rollback();
 			throw $e;
 		}
-		$ks_db->commit();
+		$this->obDB->commit();
 	}
 
 	/**

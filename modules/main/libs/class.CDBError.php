@@ -38,11 +38,11 @@ class CDBError extends CError
 		$arTrace=$this->getTrace();
 		foreach($arTrace as $item=>$arFunction)
 		{
-			$errorText.='В файле: '.$arFunction['file']."\n";
+			if(isset($arFunction['file'])) $errorText.='В файле: '.$arFunction['file']."\n";
 			if(array_key_exists('class',$arFunction) && ($arFunction['class']!=''))
 				$errorText.=$arFunction['class'].$arFunction['type'].$arFunction['function'].'() - строка '.$arFunction['line'];
 			else
-				$errorText.=$arFunction['function'].'() - строка '.$arFunction['line'];
+				$errorText.=$arFunction['function'].'() - строка '.(isset($arFunction['line'])?$arFunction['line']:' неизвестно');
 			$errorText.="\n".'----------------------------------------------------'."\n";
 		}
 		if(KS_LOG_DB_ERRORS)

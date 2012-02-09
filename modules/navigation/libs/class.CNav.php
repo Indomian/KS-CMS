@@ -8,20 +8,9 @@ class CNavTypes extends CFilesObject
 	/**
 	 * Конструктор класса типов навигации
 	 */
-	function __construct($sTable="navigation_menu_types")
+	function __construct($sTable="navigation_menu_types",$sUploadPath='/navigation')
 	{
-		parent::__construct($sTable);
-		$this->arFields=Array('id','text_ident','name','description','script_name','active');
-		//$this->sTable="navigation_menu_types";
-		$this->items=0;
-		$this->visible=-1;
-		$this->pages=Array();
-	}
-
-	function GetById($id)
-	{
-		$id=intval($id);
-		return $this->GetRecord(array('id'=>$id));
+		parent::__construct($sTable,$sUploadPath);
 	}
 
 	function GetByTextIdent($text_ident)
@@ -29,28 +18,23 @@ class CNavTypes extends CFilesObject
 		return $this->GetRecord(array('text_ident' => $text_ident));
 	}
 
+	/**
+	 * Метод возвращает список типов меню
+	 * @param $arOrder
+	 * @param $arFilter
+	 */
 	function GetScriptList($arOrder=false,$arFilter=false)
 	{
 		if(file_exists(MODULES_DIR.'/navigation/menu_scripts/.description.php'))
-		{
 			include MODULES_DIR.'/navigation/menu_scripts/.description.php';
-		}
 		$sScriptsPath=MODULES_DIR.'/navigation/menu_scripts/';
 		$arNotTemplates=Array('.','..','admin','cache','configs','templates_c','.description.php');
 		$arResult=array();
 		if (is_dir($sScriptsPath))
-		{
 			if ($hDir = @opendir($sScriptsPath))
-	   		{
 	       		while (($file = readdir($hDir)) !== false)
-	        	{
 	        		if (!in_array($file,$arNotTemplates))
-	        		{
 	        			$arResult[]=Array('title'=>$arDescription[$file],'value'=>substr($file,0,strlen($file)-4));
-	        		}
-	        	}
-	      	}
-		}
 		return $arResult;
 	}
 
@@ -83,24 +67,17 @@ class CNavTypes extends CFilesObject
 		return $this->arMenuType;
 	}
 
-	function Delete($id)
+	/**
+	 * Метод выполняет удаление типов меню вместе с пунктами
+	 * @param $arFilter
+	 */
+	function DeleteItems(array $arFilter)
 	{
-		$this->DeleteByIds(Array($id));
-	}
-
-	function DeleteByIds($ids)
-	{
-		global $ks_db;
-		if (is_array($ids))
+		if($arItems=$this->GetList(false,$arFilter))
 		{
-			foreach($ids as $item)
-			{
-				$query="DELETE FROM ".PREFIX."navigation_menu_elements WHERE type_id='".intval($item)."'";
-				$ks_db->query($query);
-			}
-			$where=join('\', \'',$ids);
-			$query="DELETE FROM ".PREFIX.$this->sTable." WHERE id IN ('".$where."')";
-			$ks_db->query($query);
+			$obMenus=new CNavElement();
+			$obMenus->DeleteItems(array('->type_id'=>array_keys($arItems)));
+			parent::DeleteItems($arFilter);
 		}
 	}
 }
@@ -115,54 +92,15 @@ class CNavElement extends CFieldsObject
 		parent::__construct($sTable,$sUploadPath,$sModule);
 	}
 
-	function GetById($id)
-	{
-		$id=intval($id);
-		return $this->GetRecord(Array('id'=>$id));
-	}
-
-	function Delete($id)
-	{
-		$this->DeleteByIds(Array($id));
-	}
-
-	function DeleteByIds($ids)
-	{
-		global $ks_db;
-		if (is_array($ids))
-		{
-			$where=join('\', \'',$ids);
-			if(count($ids)>0)
-			{
-				$this->DeleteItems(array('->id'=>'('.$where.')'));
-			}
-		}
-	}
-
 	/**
 	 * @copydoc CObject::DeleteItems
 	 * Также удаляет все подчиненные элементы
 	 */
-
-	function DeleteItems($arFilter)
+	function DeleteItems(array $arFilter)
 	{
-		global $ks_db;
-		$sWhere=$this->_GenWhere($arFilter);
-		$sWhere=preg_replace('# [a-z_\-]+\.#i',' ',$sWhere);
-		if (strlen($sWhere)>0)
-		{
-			if($arList=$this->GetList(array('id'=>'asc'),$arFilter))
-			{
-				foreach($arList as $item)
-				{
-					$this->DeleteItems(array('parent_id'=>$item['id']));
-				}
-			}
-			$query="DELETE FROM ".PREFIX.$this->sTable.$sWhere;
-			$ks_db->query($query);
-			return true;
-		}
-		return false;
+		if($arList=$this->GetList(array('id'=>'asc'),$arFilter))
+			$this->DeleteItems(array('->parent_id'=>array_keys($arList)));
+		return parent::DeleteItems($arFilter);
 	}
 
 	/**

@@ -41,9 +41,7 @@
 			<col/>
 			<tr>
 				{if $shortMode!='Y'}
-				<th width="0%">
-					<input type="checkbox" name="sel[ALL]" value="ALL" onClick="checkAll(this.form,this.checked)">
-				</th>
+				<th width="0%"><input type="checkbox" name="sel[ALL]" value="ALL" class="checkall"></th>
 				{/if}
 				{TableHead field="id" order=$order}
 				{TableHead field="title" order=$order}
@@ -55,7 +53,7 @@
 			<tr {if $smarty.foreach.fList.iteration is even}class="odd"{/if}>
 				{if $shortMode!='Y'}
 				<td>
-					<input type="checkbox" name="sel[elm][]" value="{$oItem.id}"/>
+					<input type="checkbox" name="sel[elm][]" value="{$oItem.id}" class="checkItem"/>
 					<input type="hidden" name="title[{$oItem.id}]" value="{$oItem.title}"/>
 				</td>
 				{/if}
@@ -95,9 +93,9 @@
 			<tr class="titles">
 				<td>
 					{#selected#}
-					<input type="submit" name="comdel" value="{#delete#}" onclick="return confirm('{#delete_common_confirm#}');">
-					<input type="submit" name="comact" value="{#activate#}">
-					<input type="submit" name="comdea" value="{#deactivate#}">
+					<input type="submit" name="comdel" value="{#delete#}" onclick="return confirm('{#delete_common_confirm#}');" class="check_depend" disabled="disabled"/>
+					<input type="submit" name="comact" value="{#activate#}" class="check_depend" disabled="disabled"/>
+					<input type="submit" name="comdea" value="{#deactivate#}" class="check_depend" disabled="disabled"/>
 				</td>
 			</tr>
 		</table>

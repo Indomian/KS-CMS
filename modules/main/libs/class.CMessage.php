@@ -21,7 +21,6 @@ class CMessage extends CObject
 	function __construct($sTable='main_events',$id=0)
 	{
 		parent::__construct($sTable);
-		$this->arFields=array('id','title','content','date_add','date_end','author','address','format', 'encoding', 'name_to', 'email_from', 'status','type');
 		$this->sType='plain';
 	}
 
@@ -171,20 +170,12 @@ class CEmailMessage extends CMessage
 			}
 			if(!$res)
 			{
-				if($data['id']!=0)
-				{
-					$newdata=array('id'=>$data['id'],'date_end'=>time(),'status'=>'error');
-					$this->Save('',$newdata);
-				}
+				$this->Update($data['id'],array('date_end'=>time(),'status'=>'error'));
 				throw new CError("MAIN_SEND_ERROR");
 			}
 			else
 			{
-				if($data['id']!=0)
-				{
-					$newdata=array('id'=>$data['id'],'date_end'=>time(),'status'=>'done');
-					$this->Save('',$newdata);
-				}
+				$this->Update($data['id'],array('date_end'=>time(),'status'=>'done'));
 			}
 		}
 		catch (CError $e)

@@ -9,16 +9,16 @@ include_once MODULES_DIR.'/interfaces/libs/class.CInterface.php';
  */
 class CTabs extends CInterface
 {
-	var $version;
-	var $tabs;
-	var $jsIncluded;
+	private $version;
+	private $tabs;
+	private $jsIncluded;
 	private $iTimeStart;
 	private $tabsStack;
 
 	function __construct()
 	{
 		global $smarty;
-		$this->version=1;
+		$this->version=2;
 		$smarty->register_block("ksTabs", array($this,"_smarty_begin_tabs"));
 		$smarty->register_block("ksTab", array($this,"_smarty_add_tab"));
 		$smarty->register_block("ksRoll",array($this,"_smarty_add_roll"));
@@ -49,26 +49,17 @@ class CTabs extends CInterface
 		{
 			if(!is_array($this->tabs['ITEMS'])) return '';
 			$KS_MODULES->UseJavaScript('/interfaces/tabs.js',12);
-			//$header='<script type="text/javascript" src="/js/interfaces/tabs.js"></script>'."\n";
 			$header='<ul class="'.$params['head_class'].' clear_after" id="'.$tabsname.'">';
 	       	if(count($this->tabs['ITEMS'])==1)
-        	{
         		$sClass=' class="one" ';
-        	}
         	else
-        	{
         		$sClass='';
-        	}
         	$bHideTabs=$smarty->get_template_vars('isLight')==1;
         	$bHasHidden=false;
         	$bUserTab=false;
         	if(preg_match('#^'.$params['NAME'].'_[0-9]{10,10}_tab([0-9]+)$#i',$_COOKIE['lastSelectedTab'],$matches))
-        	{
         		if($matches[1]<=count($this->tabs['ITEMS']))
-        		{
         			$bUserTab=true;
-        		}
-        	}
         	//Проверяем не оказалась ли открываемая вкладка невидимой
         	if($bHideTabs)
         	{
@@ -76,15 +67,12 @@ class CTabs extends CInterface
         		foreach ($this->tabs['ITEMS'] as $sName=>$arItem)
         		{
         			if($arItem['hide']>0)
-        			{
         				if(preg_match('#^'.$params['NAME'].'_[0-9]{10,10}_tab'.$i.'$#i',$_COOKIE['lastSelectedTab']))
-						{
 							$bUserTab=false;
-						}
-        			}
         			$i++;
 				}
         	}
+        	if(isset($params['skipCookie']) && $params['skipCookie']=='Y') $bUserTab=false;
         	$arActiveTab=array();
         	$i=0;
         	foreach ($this->tabs['ITEMS'] as $sName=>$arItem)
@@ -95,7 +83,7 @@ class CTabs extends CInterface
         			$bHasHidden=true;
         		}
         		else $sStyle="";
-				if(preg_match('#^'.$params['NAME'].'_[0-9]{10,10}_tab'.$i.'$#i',$_COOKIE['lastSelectedTab']))
+				if(!(isset($params['skipCookie']) && $params['skipCookie']=='Y') && preg_match('#^'.$params['NAME'].'_[0-9]{10,10}_tab'.$i.'$#i',$_COOKIE['lastSelectedTab']))
 				{
 					if($sStyle!='')
 					{
@@ -163,19 +151,12 @@ class CTabs extends CInterface
 		{
 			$arResult['content']=$content;
 			$arResult['name']=$params['NAME'];
+			$arResult['SELECTED']=0;
 			if ($params['selected']==1)
-			{
 				$arResult['SELECTED']=1;
-			}
-			else
-			{
-				$arResult['SELECTED']=0;
-			}
 			$arResult['content']='<div class="'.$params['class'].'" id="'.$this->tabs['NAME'].'_tab'.intval($this->tabs['COUNT']).'cont" #DISPLAY#>'.$content.'</div>';
 			if($params['onActivate']!='')
-			{
 				$arResult['ONACTIVATE']=$params['onActivate'];
-			}
 			$arResult['hide']=intval($params['hide']);
 			$this->tabs['ITEMS'][$params['NAME']]=$arResult;
 			$this->tabs['COUNT']++;

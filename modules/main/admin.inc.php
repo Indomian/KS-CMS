@@ -90,7 +90,7 @@ if (!defined("KS_MAIN_INIT"))
 	require_once "libs/class.CSimpleFs.php";
 	$KS_FS = new CSimpleFs();
 	/* Подключение и опрос модулей */
-	require_once "libs/class.CMain.php";
+	require_once "libs/class.CObject.php";
 	require_once "libs/class.CModuleHookUp.php";
 
 	$KS_MODULES=CAdminModuleManagment::get_instance();

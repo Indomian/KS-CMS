@@ -82,7 +82,7 @@ class CcatsubcatAIbasket extends CModuleAdmin
 		if($iPage<1) $iPage=1;
 		$arSortFields=Array('id','title','text_ident','date_add','date_edit','orderation','active','views_count');
 		//Определяем порядок сортировки записей
-		list($sOrderField,$sOrderDir)=$this->InitSort($arSortFields,$_REQUEST['order'],$_REQUEST['dir']);
+		list($sOrderField,$sOrderDir)=$this->InitSort($arSortFields);
 		$sNewDir=($sOrderDir=='desc')?'asc':'desc';
 		$arSort=array($sOrderField=>$sOrderDir);
 

@@ -1,44 +1,33 @@
 <?php
+/**
+ * В файле содержится класс для управления дополнительными полями системы
+ *
+ * @filesource main/libs/class.CFields.php
+ * @author blade39 <blade39@kolosstudio.ru>
+ * @version 2.6
+ */
+/*Обязательно вставляем во все файлы для защиты от взлома*/
+if(!defined('KS_ENGINE')) die("Hacking attempt!");
 
-if( !defined('KS_ENGINE') )
-{
-  die("Hacking attempt!");
-}
+include_once MODULES_DIR.'/main/libs/class.CObject.php';
 
-include_once MODULES_DIR.'/main/libs/class.CMain.php';
-
-/*
-KS ENGINE
-
-File: /catsubcat/libs/class.CFields.php
-Original Code by BlaDe39
-http://kolos-studio.ru/
-(c) 2008
-
-Назначение: Управление полями (создание редактрирование удаление)
-*/
-
+/**
+ * Класс обеспечивает управление дополнительными полями системы
+ * @author blade39 <blade39@kolosstudio.ru>
+ */
 class CFields extends CObject
 {
     static protected $arUserFields;	/*!<Массив с описанием пользовательских полей различных модулей и типов*/
     static protected $bInit;
 
+    /**
+     * @todo Прокомментировать
+     * @param $sTable
+     */
 	function __construct($sTable='main_fields')
 	{
 		global $smarty;
 		parent::__construct($sTable);
-		$this->arFields=Array(
-			'id',
-			'title',
-			'description',
-			'script',
-			'module',
-			'type',
-			'orderation',
-			'default',
-			'option_1',
-			'option_2',
-		);
 		if(!self::$bInit)
 		{
 			$sName="CFields";
@@ -48,6 +37,10 @@ class CFields extends CObject
 		}
 	}
 
+	/**
+	 * @todo прокомментировать
+	 * @param unknown_type $params
+	 */
 	static function _showField($params)
 	{
 		if(!array_key_exists('prefix',$params)) $params['prefix']='CSC_';
@@ -59,11 +52,14 @@ class CFields extends CObject
 			return $sResult;
 		}
 		else
-		{
 			return "Не найден обработчик поля";
-		}
 	}
 
+	/**
+	 * @todo Прокомментировать
+	 * @param unknown_type $params
+	 * @return string|string
+	 */
 	static function _configField($params)
 	{
 		if($params['prefix']=='') $params['prefix']='CSC_';
@@ -86,10 +82,40 @@ class CFields extends CObject
 	{
 		$key=$this->_GenFilterHash($arFilter);
 		if(!array_key_exists($key,self::$arUserFields))
-		{
 			self::$arUserFields[$key]=parent::GetRecord($arFilter);
-		}
 		return self::$arUserFields[$key];
+	}
+
+	/**
+	 * Метод получает список полей для указанной таблицы или для
+	 * таблицы стандартной для данного класса
+	 * @param string $prefix префикс названия полей которые надо получить, пустой по умолчанию
+	 * @param string $my_table название таблицы для которой надо получить список полей, если пустой
+	 * то значение для текущего класса
+	 * @return array массив со списком полей, где ключи - названия полей, значения - описание поля.
+	 */
+	function GetFieldsList($prefix="")
+	{
+		$arFields=$this->obDB->GetTableFields($this->sTable,$prefix);
+		foreach($arFields as $key=>$field)
+		{
+			$fType=$field['Type'];
+			$lpos=strpos($fType,'(');
+			if ($lpos>0)
+			{
+				$fSize=substr($fType,$lpos+1,strlen($fType)-$lpos);
+				$fSize=chop($fSize,')');
+				$fType=substr($fType,0,$lpos);
+			}
+			if ($prefix!="")
+			{
+				if (!(strpos($field['Field'],$prefix)===false))
+					$fields[$field['Field']]=Array('Type'=>strtolower($fType),'Size'=>$fSize,'Default'=>$field['Default']);
+			}
+			else
+				$fields[$field['Field']]=Array('Type'=>strtolower($fType),'Size'=>$fSize,'Default'=>$field['Default']);
+		}
+		return $fields;
 	}
 
 	/**
@@ -99,29 +125,26 @@ class CFields extends CObject
 	 */
 	function MoveField($from,$to)
 	{
-		global $ks_db;
+		pre_print($from);
+		pre_print($to);
+		die();
 		$arToFields=$this->GetFieldsList("ext_",$to['type']);
 		if(is_array($arToFields)&&array_key_exists('ext_'.$to['title'],$arToFields))
-		{
 			throw new CError("MAIN_DUPLICATE_TABLE_FIELD",241);
-		}
 		if($from['type']==$to['type']) throw new CError("MAIN_NOT_MOVE_FIELD_ITSELF",242);
 		$arFromFields=$this->GetFieldsList('ext_',$from['type']);
 		if(!array_key_exists('ext_'.$from['title'],$arFromFields))
-		{
 			throw new CError("MAIN_NO_TABLE_FIELDS",243);
-		}
 		$sType=$arFromFields['ext_'.$from['title']]['Type'];
 		if($arFromFields['ext_'.$from['title']]['Size']>0)
-		{
 			$sType.='('.$arFromFields['ext_'.$from['title']]['Size'].')';
-		}
 		$sValue=$arFromFields['ext_'.$from['title']]['Default'];
 		try
 		{
+			$this->obDB->AddColumn();
 			$query="ALTER TABLE ".PREFIX.$to['type']." ADD COLUMN ext_".$to['title']." $sType NOT NULL DEFAULT '".$sValue."'";
 		//	Добавляем новое поле
-			$ks_db->query($query);
+			$this->obDB->query($query);
 			//Удаляем старое
 			$query="ALTER TABLE ".PREFIX.$from['type'].' DROP COLUMN ext_'.$from['title'];
 			$ks_db->query($query);

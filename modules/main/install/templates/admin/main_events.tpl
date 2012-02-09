@@ -83,9 +83,9 @@
     		<td>
     			<div style="width:80px; text-align: right;">
     				{if $oItem.status=='error'}
-	    				<a href="{get_url _CLEAR="CU_order.*" ACTION=activate id=$oItem.id}" title="{#activate#}"><img src="{#images_path#}/icons_menu/email_template.gif" alt="{#activate#}" title="{#activate#}" /></a>
+	    				<a href="{get_url _CLEAR="CU_order.*" action=activate id=$oItem.id}" title="{#activate#}"><img src="{#images_path#}/icons_menu/email_template.gif" alt="{#activate#}" title="{#activate#}" /></a>
 	    			{/if}
-	    			<a href="{get_url _CLEAR="CU_order.*" ACTION=delete id=$oItem.id}"><img src="{#images_path#}/icons2/delete.gif" alt="{#delete#}" title="{#delete#}" /></a>
+	    			<a href="{get_url _CLEAR="CU_order.*" action=delete id=$oItem.id}"><img src="{#images_path#}/icons2/delete.gif" alt="{#delete#}" title="{#delete#}" /></a>
     			</div>
     		</td>
 		</tr>

@@ -50,9 +50,7 @@ class CUser extends CUsersCommon implements User
 
 		/*\todo Свести работу к одному классу */
 		if(IS_ADMIN)
-		{
 			$this->obModules=CAdminModuleManagment::get_instance();
-		}
 		else
 		{
 			global $KS_MODULES;
@@ -129,20 +127,14 @@ class CUser extends CUsersCommon implements User
 								throw new CUserError('MAIN_USER_INACTIVE');
 						}
 						else
-						{
 							throw new CUserError('MAIN_USER_BLOCKED');
-						}
 					}
 				}
 				else
-				{
 					$this->TryLogout();
-				}
 			}
 			else
-			{
 				$this->TryCookieLogin();
-			}
 		}
 		catch (CUserError $e)
 		{
@@ -275,13 +267,9 @@ class CUser extends CUsersCommon implements User
 	function GenHash($id)
 	{
 		if(is_numeric($id))
-		{
 			$arUser=$this->GetRecord(array('id'=>$id));
-		}
 		else
-		{
 			$arUser=$id;
-		}
 		if($arUser['email']!='' && $arUser['id']>0) return md5($arUser['id'].$arUser['email']);
 		return false;
 	}
@@ -346,7 +334,7 @@ class CUser extends CUsersCommon implements User
 			$sLogin = $_REQUEST['CU_LOGIN'];
 		if( !$sPassword )
 			$sPassword = $_REQUEST['CU_PASSWORD'];
-			
+
 		$username = $this->obDB->safesql($sLogin);			// Имя пользователя
 		$password = $this->obDB->safesql($sPassword);		// Пароль
 		$onBeforeLoginParams = array('username' => $username, 'password' => $password);
@@ -455,86 +443,37 @@ class CUser extends CUsersCommon implements User
 		return in_array(1,$arGroups);
 	}
 
-	/**
-	 * Метод сохраняет нового пользователя или изменяет данные в профиле существующего
-	 *
-	 * @version 1.1
-	 * @since 07.05.2009
-	 *
-	 * 1. Добавлена фильтрация префикса полей перед вызовом обработчика onSave
-	 * 2. Исправлены ошибки, связанные с формированием параметров для обработчика onSave
-	 *
-	 * Удалена вся лишняя фигня
-	 *
-	 * @param string $prefix Префикс полей пользователя
-	 * @param array $data Массив полей (параметров) пользователя, которые нужно сохранить
-	 * @param string $mytable Таблица пользователей
-	 * @return int Идентификационный номер сохранённого пользователя
-	 */
-	function Save($prefix = "KS_", $data = "")
+	protected function _BeforeSave(&$arData)
 	{
 		global $KS_EVENTS_HANDLER;
-		/* Если мы не передаём данные для залогинивания непосредственно методу, то берём их из $_POST */
-		if($data == "")
-			$data = $_POST;
-
-		$onBeforeSaveParams = $data;
-		/* Выполнение обработчика перед сохранением профиля пользователя */
-		if (!$KS_EVENTS_HANDLER->Execute('main', 'onBeforeSave', $onBeforeSaveParams))
+		if (!$KS_EVENTS_HANDLER->Execute('main', 'onBeforeUserSave', $arData))
 			throw new CError('MAIN_HANDLER_ERROR');
-	
-		$this->AddCheckField('title');
-		try
+		if(isset($arData["id"]) && $arData["id"] > 0)
 		{
-			/* Читаем текущие настройки существующего пользователя и заодно проверяем данные о пароле*/
-			if (isset($data[$prefix."id"]) && $data[$prefix."id"] > 0)
+			$arOldValue=$this->GetById($arData["id"]);
+			if(isset($arData['password']) && isset($arData['password_c']) && $arData['password']=='')
+				unset($arData['password']);
+		}
+		else
+		{
+			if(isset($arData['password']))
 			{
-				$arOldValue=$this->GetById($data[$prefix."id"]);
-				if(isset($data[$prefix.'password']) && isset($data[$prefix.'password_c']) && $data[$prefix.'password']=='')
-					unset($data[$prefix.'password']);
-			}
-			else
-			{
-				if(isset($data[$prefix.'password']))
-				{
-					if($data[$prefix.'password']=='')
-						throw new CDataError('MAIN_USER_PASSWORD_REQUIRED');
-				}
-				else
+				if($arData['password']=='')
 					throw new CDataError('MAIN_USER_PASSWORD_REQUIRED');
-				$data[$prefix.'date_register']=time();
-			}
-
-			/* Сохраняем данные пользователя и получаем его id */
-			$nId = (!empty($data[$prefix."id"])) ? (int)$data[$prefix."id"] : 0;
-			$this->LogAction($nId,'Сохранение записи в БД',array($data));
-
-			if($res = parent::Save($prefix, $data))
-			{
-				/* Избавляемся от префикса, чтобы в обработчике не заниматься проверкой */
-				$onSaveParams = $data;
-				if ($prefix != '')
-					foreach ($data as $data_key => $data_item)
-						$onSaveParams[preg_replace("#^".$prefix."#","",$data_key)] = $data_item;
-				if (!isset($onSaveParams["id"]) || $onSaveParams["id"] <= 0)
-					$onSaveParams["new_user_id"] = $res;
-				else
-					$onSaveParams["previous_user_row"] = $arOldValue;
-				if (!$KS_EVENTS_HANDLER->Execute('main', 'onSave', $onSaveParams))
-					throw new CError('MAIN_HANDLER_ERROR');
-				return $res;
 			}
 			else
-				throw new CError('MAIN_USER_SAVE_ERROR');
+				throw new CDataError('MAIN_USER_PASSWORD_REQUIRED');
+			$arData['date_register']=time();
 		}
-		catch (CError $e)
-		{
-			throw $e;
-		}
-		catch (Exception $e)
-		{
-			throw new CError('MAIN_SYSTEM_ERROR',100,$e);
-		}
+		$this->LogAction($nId,'Сохранение записи в БД',array($arData));
+		return true;
+	}
+
+	protected function _AfterSave(&$arData)
+	{
+		global $KS_EVENTS_HANDLER;
+		if (!$KS_EVENTS_HANDLER->Execute('main', 'onSave', $arData))
+			throw new CError('MAIN_HANDLER_ERROR');
 	}
 
 	function Update($id,$arData,$bWhere=false)
@@ -556,13 +495,9 @@ class CUser extends CUsersCommon implements User
 	{
 		if(!is_array($this->arUserVars)) $this->arUserVars=array();
 		if(is_string($var) && array_key_exists($var,$this->arUserVars))
-		{
 			return $this->arUserVars[$var];
-		}
 		else
-		{
 			return null;
-		}
 	}
 
 	/**
@@ -582,9 +517,7 @@ class CUser extends CUsersCommon implements User
 	function WriteUserVars()
 	{
 		if($this->bUpdateVars && $this->IsLogin())
-		{
 			$this->Update($this->ID(),array('user_vars'=>json_encode($this->arUserVars)));
-		}
 	}
 
 	/**
@@ -593,7 +526,7 @@ class CUser extends CUsersCommon implements User
 	 * @param array $arFilter Ассоциативный массив с параметром удаления пользователя: id => id_пользователя
 	 * @return int id удалённого пользователя
 	 */
-	function DeleteItems($arFilter)
+	function DeleteItems(array $arFilter)
 	{
 		global $KS_EVENTS_HANDLER;
 		$onBeforeDeleteParams['id'] = $arFilter['id'];

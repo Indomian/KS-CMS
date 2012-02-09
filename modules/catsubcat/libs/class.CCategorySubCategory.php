@@ -96,33 +96,6 @@ class CCategorySubCategory extends CRestorable
 		return parent::_GenWhere($arFilter,$method,$step);
 	}
 
-	/**
-	 * Метод удаляет элементы, при этом проверяется ключ удаления и если
-	 * ключ не был выставлен, элемент удаляется в "корзину". Переопределяет
-	 * метод {@link CObject::DeleteItems() CObject::DeleteItems()}.
-	 */
-	function DeleteItems($arFilter)
-	{
-		if(!$this->ParseFilter($arFilter))
-			$arFilter['>deleted']="-1";
-		$arItems=$this->GetList(array('id'=>'asc'),$arFilter);
-		if(is_array($arItems)&&count($arItems)>0)
-		{
-			foreach($arItems as $key=>$item)
-			{
-				if($item['deleted']>0)
-				{
-					if($item['img']!='')
-					{
-						@unlink(ROOT_DIR.'/uploads/'.$item['img']);
-					}
-				}
-			}
-			return parent::DeleteItems($arFilter);
-		}
-		return false;
-	}
-
 	function SetLimits($num)
 	{
 		global $ks_db;

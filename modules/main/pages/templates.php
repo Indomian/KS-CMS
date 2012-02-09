@@ -49,9 +49,8 @@ class CmainAItemplates extends CModuleAdmin
 						$this->obGlobalTpl->Save("",$arItem);
 			if(isset($_POST['delete']) && is_array($_POST['delete']))
 				$obTpl->DeleteByIds(array_keys($_POST['delete']));
-			$this->obModules->AddNotify('MAIN_TEMPLATES_LINKS_SAVED',0,NOTIFY_MESSAGE);
-			$KS_URL=CUrlParser::get_instance();
-			$KS_URL->Redirect($KS_URL->GetUrl());
+			$this->obModules->AddNotify('MAIN_TEMPLATES_LINKS_SAVED','',NOTIFY_MESSAGE);
+			$this->obUrl->Redirect("admin.php?module=main&page=templates");
 		}
 		catch (CError $e)
 		{
@@ -81,6 +80,7 @@ class CmainAItemplates extends CModuleAdmin
 
 	function Run()
 	{
+		$this->ParseAction();
 		$page='';
 		switch($this->sAction)
 		{
@@ -107,7 +107,7 @@ class CmainAItemplates extends CModuleAdmin
 				$this->smarty->assign('tdId',$_GET['tdId']);
 				$this->smarty->assign('id',$_GET['id']);
 				$result = array('tdId' => $_GET['tdId'],'id' => $_GET['id']);
-				$result['html'] = $smarty->fetch('admin/main_templates_ajax.tpl');
+				$result['html'] = $this->smarty->fetch('admin/main_templates_ajax.tpl');
 				echo json_encode($result);
 				die();
 			break;
@@ -117,6 +117,7 @@ class CmainAItemplates extends CModuleAdmin
 			default:
 				$page=$this->Table();
 		}
+		$this->obModules->UseJavaScript('/main/admin_templates.js',12);
 		return '_templates'.$page;
 	}
 }

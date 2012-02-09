@@ -13,7 +13,7 @@
 /*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
-abstract class CTextParser extends CObject
+abstract class CTextParser extends CFilesObject
 {
 	abstract function Parse($text);
 	abstract function Convert($text);

@@ -104,7 +104,7 @@ final class mysql_innodb extends CDBInterface
 			$this->mysql_error_num = mysql_errno();
 			throw new CDBError($this->mysql_error, $this->mysql_error_num, $query);
 		}
-		
+
 		/*Запись запроса в лог, запись времени его исполнения в лог*/
 		$this->add2log($query,$this->get_real_time() - $time_before);
 		$this->MySQL_time_taken += $this->get_real_time() - $time_before;
@@ -286,25 +286,19 @@ final class mysql_innodb extends CDBInterface
 	public function GetTableFields($sTable,$sPrefix='')
 	{
 		$res=$this->query('DESCRIBE '.PREFIX.$sTable);
+		$arTable=array();
 		if(@mysql_num_rows($res)>0)
-		{
-			$arTable=array();
 			while($arRow=@mysql_fetch_assoc($res))
 			{
 				if($sPrefix!='')
 				{
 					if(preg_match('#^'.$sPrefix.'#i',$arRow['Field']))
-					{
 						$arTable[$arRow['Field']]=$arRow;
-					}
 				}
 				else
-				{
 					$arTable[$arRow['Field']]=$arRow;
-				}
 			}
 			return $arTable;
-		}
 		throw new CDBError('SYSTEM_TABLE_NOT_FOUND',1,$sTable);
 	}
 

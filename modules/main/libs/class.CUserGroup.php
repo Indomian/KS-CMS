@@ -20,12 +20,17 @@ class CUserGroup extends CUsersCommon
 		parent::__construct($sTable,$sUploadPath,$sModule);
 	}
 
-	function DeleteItems($arFilter)
+	/**
+	 * Метод обеспечивает удаление групп пользователей, при этом также удаляются связные данные
+	 * @param $arFilter
+	 */
+	function DeleteItems(array $arFilter)
 	{
 		if($arGroups=$this->GetList(array('id'=>'asc'),$arFilter))
 		{
 			$this->obLinks->DeleteItems(array('->group_id'=>array_keys($arGroups)));
 			return parent::DeleteItems($arFilter);
 		}
+		return false;
 	}
 }

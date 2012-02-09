@@ -70,7 +70,7 @@ class CError extends Exception
  	/**
  	 * Статический метод, используется для обработки обычных ошибок пхп
  	 */
- 	function PhpErrorHandler($errno, $errstr, $errfile, $errline)
+ 	static function PhpErrorHandler($errno, $errstr, $errfile, $errline)
  	{
  		switch ($errno)
  		{

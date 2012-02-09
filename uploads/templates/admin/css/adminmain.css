@@ -958,6 +958,7 @@ input.button_script_add {
 	float: right;
 	text-align: right;
 	width: 49%;
+	margin-top: 5px;
 }
 
 .pages_nav a {
@@ -1049,15 +1050,11 @@ input.button_script_add {
 
 /*?=form
 ------------------- */
-.form {
-	background: #fff;
-	border: solid #E5E5E5;
-	border-width: 0 1px 1px;
-}
+.form {background: #fff;border: solid #E5E5E5;border-width: 0 1px 1px;}
 
-.form td,.form th {
-	padding: 8px;
-}
+.form td,.form th {padding: 8px;}
+
+.form tr.tr_selected td {background:#CCFFC4;}
 
 .form td {
 	vertical-align: top;
@@ -1071,14 +1068,10 @@ input.button_script_add {
 }
 
 .form_input {
-	width: 200px;
-	padding: 4px;
-	font-family: tahoma;
-	font-size: 12px;
-	color: #70808D;
-	border: 1px solid #D2D2D2;
-	background: #fff;
+	width: 200px;padding: 4px;font-family: tahoma;font-size: 12px;color: #70808D;border: 1px solid #D2D2D2;background: #fff;
 }
+
+select.form_input{padding:3px 4px;}
 
 .form_textarea {
 	width: 98%;
@@ -1131,6 +1124,13 @@ input.button_script_add {
 		no-repeat;
 }
 
+.form_buttons .ok {
+	padding-left: 20px;
+	background: #EDEDED
+		url('/uploads/templates/admin/images/icons2/accept.png') 8px 3px
+		no-repeat;
+}
+
 .form_buttons a.button {
 	width: 100px;
 	padding: 4px;
@@ -1144,7 +1144,7 @@ input.button_script_add {
 }
 
 .form_buttons a.cancel_button {
-	display: block;text-align: center;padding: 4px;margin-top:2px;width: 90px;font-family: tahoma;font-size: 12px;color: #70808D;border: 1px solid #D2D2D2;background: #EDEDED;cursor: pointer;text-decoration: none;
+	display: block;text-align: center;padding: 4px;width: 90px;font-family: tahoma;font-size: 12px;color: #70808D;border: 1px solid #D2D2D2;background: #EDEDED;cursor: pointer;text-decoration: none;
 }
 
 /*?=tabs
@@ -2086,27 +2086,10 @@ select.loading {
 	color: #ccc !important;
 }
 
-div.date_selector {
-	width: 200px;
-	padding: 4px;
-	font-family: tahoma;
-	font-size: 12px;
-	color: #70808D;
-	border: 1px solid #D2D2D2;
-	background: white;
-}
-
-div.date_selector input.date_input {
-	border: 0px none;
-	padding: 0;
-	width: 170px;
-}
-
-div.date_selector img.date_button {
-	float: right;
-	border: 0pt none;
-	cursor: pointer;
-}
+/* Выбор даты */
+div.date_selector {width: 155px;padding:0;border: 1px solid #D2D2D2;background:white;vertical-align:top;}
+div.date_selector input{border: 0px none;padding:4px;width:118px;font-family: tahoma;font-size: 12px;color: #70808D;height:15px;margin:0px;background:white;}
+div.date_selector button{border:0px none;background-color:white;margin:0;float:right;}
 
 td.icons_list label {
 	display: block;
@@ -2180,3 +2163,10 @@ div.ajaxLoad
 	background:#ff5500;
 	display:block;
 }
+
+.ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
+.ui-timepicker-div dl { text-align: left; }
+.ui-timepicker-div dl dt { height: 25px; margin-bottom: -25px; }
+.ui-timepicker-div dl dd { margin: 0 10px 10px 65px; }
+.ui-timepicker-div td { font-size: 90%; }
+.ui-tpicker-grid-label { background: none; border: none; margin: 0; padding: 0; }

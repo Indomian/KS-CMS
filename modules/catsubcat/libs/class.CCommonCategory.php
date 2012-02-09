@@ -372,7 +372,7 @@ class CCommonCategory extends CCategorySubCategory
 	 * @param $arFilter array - массив фильтрующий элементы подлежащие удалению
 	 * @return boolean - в зависимости от результата выполнения операции
 	 */
-	function DeleteItems($arFilter)
+	function DeleteItems(array $arFilter)
 	{
 		if(!$this->ParseFilter($arFilter))
 			$arFilter['>deleted']='-1';

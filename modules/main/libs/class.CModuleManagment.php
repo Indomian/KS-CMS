@@ -1,7 +1,7 @@
 <?php
 
-include_once MODULES_DIR.'/main/libs/class.CMain.php';
-include_once MODULES_DIR.'/main/libs/class.CTemplates.php';
+include_once MODULES_DIR.'/main/libs/class.CObject.php';
+include_once MODULES_DIR.'/main/libs/class.CGlobalTemplates.php';
 include_once MODULES_DIR.'/main/libs/class.CConfigParser.php';
 include_once MODULES_DIR.'/main/libs/class.CUrlParser.php';
 
@@ -357,15 +357,34 @@ abstract class CModuleManagment extends CObject
 			foreach($arFiles as $sFile)
 				$KS_FS->CopyFile(MODULES_DIR.'/'.$module_name.'/install/templates/events/'.$sFile,SYS_TEMPLATES_DIR.'/admin/eventTemplates/'.$sFile,'');
 		}
-		//Устанавливаем скрипты модуля
-		if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/js/'))
+		$this->InstallJSFiles($module_name);
+	}
+
+	/**
+	 * Метод устанавливает все яваскрипт файлы модуля, скрипты модуля main устанавливаются в корень каталога JS!
+	 */
+	function InstallJSFiles($module_name)
+	{
+		global $KS_FS;
+		if($this->IsActive($module_name))
 		{
-			if(!file_exists(ROOT_DIR.JS_DIR))
-				$KS_FS->makedir(ROOT_DIR.JS_DIR);
-			if(!file_exists(ROOT_DIR.JS_DIR.'/'.$module_name.'/'))
-				$KS_FS->makedir(ROOT_DIR.JS_DIR.'/'.$module_name.'/');
-			foreach($arFiles as $sFile)
-				$KS_FS->CopyFile(MODULES_DIR.'/'.$module_name.'/install/js/'.$sFile,ROOT_DIR.JS_DIR.'/'.$module_name.'/'.$sFile,'');
+			if(!file_exists(MODULES_DIR.'/'.$module_name)) return false;
+			//Устанавливаем скрипты модуля
+			if($arFiles=$KS_FS->GetDirItems(MODULES_DIR.'/'.$module_name.'/install/js/'))
+			{
+				if(!file_exists(ROOT_DIR.JS_DIR))
+					$KS_FS->makedir(ROOT_DIR.JS_DIR);
+				if($module_name=='main')
+					foreach($arFiles as $sFile)
+						$KS_FS->CopyFile(MODULES_DIR.'/'.$module_name.'/install/js/'.$sFile,ROOT_DIR.JS_DIR.'/'.$sFile,'');
+				else
+				{
+					if(!file_exists(ROOT_DIR.JS_DIR.'/'.$module_name.'/'))
+						$KS_FS->makedir(ROOT_DIR.JS_DIR.'/'.$module_name.'/');
+					foreach($arFiles as $sFile)
+						$KS_FS->CopyFile(MODULES_DIR.'/'.$module_name.'/install/js/'.$sFile,ROOT_DIR.JS_DIR.'/'.$module_name.'/'.$sFile,'');
+				}
+			}
 		}
 	}
 
@@ -408,7 +427,7 @@ abstract class CModuleManagment extends CObject
 				$KS_FS->CopyFile(MODULES_DIR.'/'.$module.'/install/templates/resources/'.$sFile,$sResourcesDir.$sFile,'');
 		}
 	}
-	
+
 	/**
 	 * Метод выполняет удаление всех файлов указанного модуля из соответствующих каталогов,
 	 */
@@ -466,12 +485,17 @@ abstract class CModuleManagment extends CObject
 	 */
 	function InitModule($module_name)
 	{
-		if(!array_key_exists($module_name,$this->arModules) && $arModule=$this->GetRecord(array('active'=>1,'directory'=>$module_name)))
+		if(!array_key_exists($module_name,$this->arModules))
 		{
-			$this->IncludeModule($arModule);
-			return $this->arModules;
+			if($arModule=$this->GetRecord(array('active'=>1,'directory'=>$module_name)))
+			{
+				$this->IncludeModule($arModule);
+				return $this->arModules;
+			}
+			else
+				return false;
 		}
-		return false;
+		return $this->arModules;
 	}
 
 	/**

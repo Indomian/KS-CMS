@@ -48,7 +48,7 @@ class CmainAIeventtemplates extends CModuleAdmin
 
 	function Table()
 	{
-		$ob=new _CEventTemplates();
+		$ob=new CObject('main_eventtemplates');
 		$arRealTemplates=array();
 		if($arRealTemplates=$this->GetTemplatesFiles())
 			$arRealTemplates=array_keys($arRealTemplates);
