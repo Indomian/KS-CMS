@@ -40,12 +40,10 @@ class CcatsubcatAIindex extends CModuleAdmin
 		if (class_exists('CFields'))
 		{
 			$obFields=new CFields();
-			if($arFields=$obFields->GetList(Array('id'=>'asc'),Array('module'=>$this->module,'type'=>$this->obEditable->sTable)))
+			if($arFields=$obFields->GetList(Array('id'=>'asc'),Array('module'=>$this->module,'type'=>$this->obEditable->GetTable())))
 			{
 				foreach($arFields as $item)
-				{
 					$arDefaults['ext_'.$item['title']]=$item['default'];
-				}
 				$this->smarty->assign('addFields',$arFields);
 			}
 		}

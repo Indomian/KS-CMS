@@ -25,11 +25,21 @@ class CCommonCategory extends CCategorySubCategory
 {
 	static $arCategories;
 	static $arCatPath;
+	protected $obElement;
 
-	function __construct($tables = '',$sElementsTable = '')
+	function __construct($sTable,$sUploadPath='',$sModule=false,IStorage $obStorage, $obElement)
 	{
-		parent::__construct($tables,$sElementsTable);
-		$this->AddFileField('img');
+		parent::__construct($sTable,$sUploadPath,$sModule,$obStorage);
+		$this->obElement=$obElement;
+	}
+
+	/**
+	 * Метод выполняет установку объекта категории для элемента
+	 * @param $obElement
+	 */
+	function SetElement(CCommonElement $obElement)
+	{
+		$this->obElement=$obElement;
 	}
 
 	/**
@@ -68,12 +78,8 @@ class CCommonCategory extends CCategorySubCategory
 		{
 			$sUrl='';
 			foreach($arResult as $arItem)
-			{
 				if($arItem['text_ident']!='')
-				{
 					$sUrl.=$arItem['text_ident'].'/';
-				}
-			}
 			return $sUrl;
 		}
 		return '';
@@ -298,21 +304,26 @@ class CCommonCategory extends CCategorySubCategory
 
 	/**
 	 * Метод считает количество вложенных в раздел элементов
+	 * @todo Обобщить, т.к. сейчас много лишней и связанной с кэтсубкэтом работы
 	 */
 	function GetChildrenCount($id,$arOrder,$onlycount=false)
 	{
-		global $ks_db;
-		$id=intval($id);
-		$sOrder=$this->_GenOrder($arOrder);
-		$query="SELECT id,parent_id,title,text_ident,description FROM ".PREFIX.$this->sTable." WHERE parent_id='$id' AND parent_id!=id AND active='1'".$sOrder;
-		$res=$ks_db->query($query);
 		$arResult=array();
-		if($ks_db->num_rows($res)>0)
+		$arFilter=array(
+			'parent_id'=>$id,
+			'?!parent_id'=>'id',
+			'active'=>1
+		);
+		$arSelect=array(
+			'id','parent_id','title','text_ident','description'
+		);
+		if($arList=$this->GetList($arOrder,$arFilter,false,$arSelect))
 		{
-			while($arRow=$ks_db->get_row($res))
+			foreach($arList as $arRow)
 			{
 				try
 				{
+					if(!isset($arRow['count'])) $arRow['count']=0;
 					$arRow['count']+=$this->GetChildrenCount($arRow['id'],$arOrder,true);
 					$arResult[]=$arRow;
 				}
@@ -322,14 +333,15 @@ class CCommonCategory extends CCategorySubCategory
 				}
 			}
 		}
-		$query="SELECT COUNT(id) as cnt FROM ".PREFIX.$this->sElTable." WHERE parent_id='$id' AND active='1'";
-		$res=$ks_db->query($query);
-		if($ks_db->num_rows($res)>0)
+		if($onlycount)
 		{
-			$arRow=$ks_db->get_row($res);
-			$count=$arRow['cnt'];
+			$arFilter=array(
+				'parent_id'=>$id,
+				'active'=>1
+			);
+			$count=$this->obElement->Count($arFilter);
+			return $count;
 		}
-		if($onlycount) return $count;
 		return $arResult;
 	}
 
@@ -341,28 +353,12 @@ class CCommonCategory extends CCategorySubCategory
 	 */
 	function GetById($id)
 	{
-		$arResult=$this->GetRecord(array('id'=>$id));
-		if(is_array($arResult))
-		{
+		if($arResult=$this->GetRecord(array('id'=>$id)))
 			if ($id!=0)
-			{
 				$arResult['URL']=$this->GetFullPath($arResult['parent_id']).$arResult['text_ident'].'/';
-			}
 			else
-			{
 				$arResult['URL']=$this->GetFullPath($arResult['parent_id']);
-			}
-		}
 		return $arResult;
-	}
-
-	/**
-	 * @todo Добавить документацию
-	 */
-	function FilterBeforeDelete($item)
-	{
-		if($item==0) return 0;
-		return 1;
 	}
 
 	/**
@@ -374,16 +370,11 @@ class CCommonCategory extends CCategorySubCategory
 	 */
 	function DeleteItems(array $arFilter)
 	{
-		if(!$this->ParseFilter($arFilter))
-			$arFilter['>deleted']='-1';
-		$obElement=new CCommonElement($this->sTable,$this->sElTable);
-		$arItems=$this->GetList(array('id'=>'asc'),$arFilter);
-		if(is_array($arItems)&&count($arItems)>0)
+		if($arItems=$this->GetList(array('id'=>'asc'),$arFilter))
 		{
 			foreach($arItems as $key=>$item)
 			{
-				if($item['deleted']>0) $arMyFilter=array('parent_id'=>$item['id'],'>deleted'=>-1);
-				else $arMyFilter=array('parent_id'=>$item['id'],'deleted'=>'0');
+				$arMyFilter=array('parent_id'=>$item['id']);
 				$arList=$this->GetExpandedTree($arMyFilter);
 				if (is_array($arList)&&($arList!=0)&&(count($arList)>0))
 				{

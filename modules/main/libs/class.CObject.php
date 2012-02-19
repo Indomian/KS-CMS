@@ -40,6 +40,7 @@ class CObject extends CBaseList
 	protected $sTable;		/*!<таблица с которой работает данный класс.*/
 	protected $arTables;/*!<список таблиц участвующих в следующем запросе.*/
 	protected $arJoinTables;/*!<массив таблиц участвующих в объединении типа join.*/
+	protected $sPrefix; /*!<используется для хранения префикса имени поля при сохранении записи
 	/**
 	 * @var $obDB - указатель на объект класса $ks_db осуществляющего связь с базой данных
 	 */
@@ -166,6 +167,7 @@ class CObject extends CBaseList
 	 */
 	protected function _PrepareData($arInput,$sPrefix='')
 	{
+		$this->sPrefix=$sPrefix;
 		$arResult = array();
 		$arFields=$this->GetTableFields();
 		foreach ($arFields as $key => $value)
@@ -864,7 +866,11 @@ class CObject extends CBaseList
 		$arTableStructure=CObject::$dbStructure[$this->sTable];
 		$arFields=array();
 		foreach($arTableStructure as $sField=>$arField)
-			if(preg_match('#^([a-z]+)\s*\((\d+)\)( unsigned)?$#i',$arField['Type'],$matches))
+			if(!isset($arField['Type']))
+				$arFields[$sField] = array('Type' => 'char', 'Size' => '255');
+			elseif(preg_match('#^enum#i',$arField['Type']))
+				$arFields[$sField] = array('Type' => 'enum', 'Size' => '255');
+			elseif(preg_match('#^([a-z]+)\s*\((\d+)\)( unsigned)?$#i',$arField['Type'],$matches))
 				$arFields[$sField] = array('Type' => strtolower($matches[1]), 'Size' => intval($matches[2]));
 		return $arFields;
 	}

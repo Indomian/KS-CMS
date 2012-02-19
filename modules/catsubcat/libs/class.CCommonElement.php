@@ -20,48 +20,21 @@ require_once MODULES_DIR.'/catsubcat/libs/class.CCategorySubCategory.php';
  */
 class CCommonElement extends CCategorySubCategory
 {
-	static private $__arUserFields;
+	protected $obCategory;
 
-	function __construct($sCategoryTable="",$sElementsTable='')
+	function __construct($sTable,$sUploadPath='',$sModule=false,IStorage $obStorage, $obCategory)
 	{
-		parent::__construct($sElementsTable,$sCategoryTable);
-		$this->AddFileField('img');
+		parent::__construct($sTable,$sUploadPath,$sModule,$obStorage);
+		$this->obCategory=$obCategory;
 	}
 
 	/**
-	 * Метод восстанавливает запись, в случае если раздел в котором находился элемент
-	 * удален - выводит сообщение о необходимости восстановления этого раздела
+	 * Метод выполняет установку объекта категории для элемента
+	 * @param $obCategory
 	 */
-	function RestoreItems($arFilter)
+	function SetCategory(CCommonCategory $obCategory)
 	{
-		if(!$this->ParseFilter($arFilter))
-			$arFilter['>deleted']='0';
-		$obCategory=new CCategory($this->sElTable,$this->sTable);
-		$arItems=$this->GetList(array('id'=>'asc'),$arFilter);
-		if(is_array($arItems)&&count($arItems)>0)
-		{
-			$arCats=array();
-			foreach($arItems as $key=>$item)
-			{
-				$arCats[]=$item['parent_id'];
-			}
-			if(count($arCats)>0)
-			{
-				$arCategory=$obCategory->GetList(array('id'=>'asc'),array('->id'=>"(".join(',',$arCats).')','>deleted'=>-1));
-				if(is_array($arCategory)&&count($arCategory)>0)
-				{
-					foreach($arCategory as $arRow)
-					{
-						if($arRow['deleted']>0)
-						{
-							$obCategory->RestoreItems(array('id'=>$arRow['id'],'childs'=>'N'));
-						}
-					}
-				}
-			}
-			return parent::RestoreItems($arFilter);
-		}
-		return false;
+		$this->obCategory=$obCategory;
 	}
 
 	/**
@@ -73,83 +46,36 @@ class CCommonElement extends CCategorySubCategory
 		return 'e'.$arRecord['id'];
 	}
 
-	function GetParents($id)
-	{
-		echo "<pre>";
-		print_r(parent::element_info(Array('element'=>$this->sTable,'catsubcat'=>$this->sCatTable),intval($id),true,0,'text_ident'));
-		echo "</pre>";
-	}
-
 	/**
 	 *	\copydoc CObject::GetRecord()
 	 */
 	function GetRecord($arFilter=false)
 	{
-		global $ks_db;
-		if(KS_RELEASE!=1) $ks_db->add2log(__METHOD__.' at '.__LINE__.' in '.__FILE__);
-		$arResult=$arFilter;
-		$arResult['?'.$this->sElTable.'.id']=$this->sTable.'.parent_id';
+		if(!$arFilter) return false;
+		if(KS_RELEASE!=1) $this->obDB->add2log(__METHOD__.' at '.__LINE__.' in '.__FILE__);
+		if(!is_null($this->obCategory))
+			$arFilter['?'.$this->obCategory->GetTable().'.id']=$this->sTable.'.parent_id';
 		//Генерируем строку поиска
-		$sWhere=$this->_GenWhere($arResult);
+		$sWhere=$this->_GenWhere($arFilter);
 		if(strlen($sWhere)>0)
 		{
 			//Формируем запрос
-			$query="SELECT ".$this->arTables[$this->sElTable].".id as parent_id";
-			//Получаем список полей внутренних
-			//Исправление бага с работой с доп полями
-			$arFields=$this->arFields;
-			foreach($arFields as $sField)
+			$arSelect=$this->arFields;
+			if(!is_null($this->obCategory))
 			{
-				$query.= " ,".$this->arTables[$this->sTable].".$sField";
+				$arCatFields=$this->obCategory->GetFields();
+				foreach($arCatFields as $sField)
+					if($sField!='id') $arSelect[$this->obCategory->GetTable().'.'.$sField]='CAT_'.$sField;
 			}
-			//Получаем список полей раздела
-			$arCatFields=$this->_GetTableFields($this->sElTable);
-			foreach($arCatFields as $sField=>$arField)
+			if($arList=$this->GetList(false,$arFilter,1,$arSelect))
 			{
-				if($sField=='id') continue;
-				$query.= " ,".$this->arTables[$this->sElTable].".$sField as CAT_$sField";
-			}
-			$query.="  FROM ".$this->_GenFrom()." $sWhere LIMIT 1";
-			//echo $query;
-			$res=$ks_db->query($query);
-			if($ks_db->num_rows($res)>0)
-			{
-				$arRow=$ks_db->get_row($res);
-				$this->_ParseItem($arRow);
-				return $arRow;
+				$arItem=array_pop($arList);
+				if(!is_null($this->obCategory))
+					$arItem['URL']=$this->obCategory->GetFullPath($arItem['parent_id']).$arItem['text_ident'].'.html';
+				return $arItem;
 			}
 		}
 		return false;
-	}
-
-	function BuildPath(&$arResult)
-	{
-	    $res[]=$arResult['text_ident'];
-	    if (is_array($arResult['cat_info']))
-	    {
-	    	$subArray=$arResult['cat_info'];
-			while($subArray!=0)
-			{
-				if($subArray['text_ident']!='')
-				{
-					$res[]=$subArray['text_ident'];
-				}
-					$subArray=$subArray['parents'][0];
-
-			}
-		}
-		if(count($res)>0) return join('/',array_reverse($res));
-	}
-
-	/**
-	 * Метод возращает запись по номеру, также генерирует путь к этой записи в ПЧ.
-	 */
-	function GetById($id)
-	{
-		$obCategory=new CCommonCategory($this->sElTable,$this->sTable);
-		$arResult=$this->GetRecord(array('id'=>$id));
-		$arResult['URL']=$obCategory->GetFullPath($arResult['parent_id']).$arResult['text_ident'].'.html';
-		return $arResult;
 	}
 }
 

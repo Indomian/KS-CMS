@@ -249,18 +249,14 @@ function smarty_function_WavePosts($params,&$subsmarty)
 		$arFilter=array_merge($arFilter,$params['filter']);
 
 	$arSelect=$obPostsAPI->Posts()->GetFields();
-	$arSelect[$USER->sTable.'.title']='author_name';
-	$arSelect[$USER->sTable.'.id']='author_id';
-	$arFilter['<?user_id']=$USER->sTable.'.id';
+	$arSelect[$USER->GetTable().'.title']='author_name';
+	$arSelect[$USER->GetTable().'.id']='author_id';
+	$arFilter['<?user_id']=$USER->GetTable().'.id';
 
 	$arPosts=$obPostsAPI->GetWave($params['hash'],$params['order'],$arFilter,$arSelect,$obPages);
 	if(!$USER->IsLogin())
-	{
 		if($KS_MODULES->GetConfigVar('wave','use_captcha',0)==1)
-		{
 			$subsmarty->assign('use_captcha',1);
-		}
-	}
 	$subsmarty->assign('fields',$obPostsAPI->GetFormFields());
 	$subsmarty->assign('posts',$arPosts);
 	$subsmarty->assign('data',$arData);

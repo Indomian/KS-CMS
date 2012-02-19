@@ -1,37 +1,39 @@
 <?php
 /**
- * @file class.CElement.php
+ * @filesource catsubcat/libs/class.CElement.php
  * Контейнер для класса CElement
  * Файл проекта kolos-cms.
  *
  * Создан 25.02.2010
  *
  * @author blade39 <blade39@kolosstudio.ru>
- * @version 2.5.5
+ * @version 2.6
  */
 /*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 require_once MODULES_DIR.'/catsubcat/libs/class.CCommonElement.php';
 require_once MODULES_DIR.'/catsubcat/libs/class.CElementLinks.php';
+require_once MODULES_DIR.'/catsubcat/libs/class.CCatsubcatAPI.php';
 
 /**
  * Класс обработки элементов для модуля production
  * Наследуется от класса модуля CCommonElement, перекрывается конструктор.
 
-* @version 2.5.5
+* @version 2.6
  *
  * BlaDe39 Убран лишний код, переделана передача параметров для наследования
  */
-class CElement extends CCommonElement
+final class CElement extends CCommonElement
 {
 	private $obLinks;
+	private $arLinks; /**Массив кодов разделов к которым привязана запись*/
 
-	function __construct($sCategoryTable="catsubcat_catsubcat",$sElementsTable='catsubcat_element')
+	function __construct($obCategory=NULL)
 	{
-		$this->sFieldsModule='catsubcat';
-		parent::__construct($sCategoryTable,$sElementsTable);
+		parent::__construct('catsubcat_element','/catsubcat','catsubcat',CCatsubcatAPI::get_instance()->Storage(), $obCategory);
 		$this->obLinks=new CElementLinks('catsubcat_links');
+		$this->AddFileField('img');
 		$this->obLinks->AddAutoField('id');
 	}
 
@@ -41,42 +43,44 @@ class CElement extends CCommonElement
 	 */
 	function GetRecord($arFilter=false)
 	{
-		$arData=parent::GetRecord($arFilter);
-		if(is_array($arData)&&($arData['id']>0))
+		if($arData=parent::GetRecord($arFilter))
 		{
-			$arLinks=$this->obLinks->GetList(array('id'=>'asc'),array('element_id'=>$arData['id']));
 			$arData['links']=array();
-			if(is_array($arLinks)&&count($arLinks)>0)
-			{
+			if($arLinks=$this->obLinks->GetList(array('id'=>'asc'),array('element_id'=>$arData['id'])))
 				foreach($arLinks as $arItem)
-				{
 					$arData['links'][]=$arItem['category_id'];
-				}
-			}
 		}
 		return $arData;
 	}
 
 	/**
-	 * Перекрытие метода сохранения записи для обновления привязок записи к разделам
+	 * Метод выполняет подготовку данных для сохранения методом Save
+	 * @param $arFields
+	 * @param $arInput
+	 * @param $sPrefix
 	 */
-	function Save($prefix='CSC_',$data=false)
+	protected function _PrepareData($arInput,$sPrefix='')
 	{
-		if($data==false) $data=$_POST;
-		$id=parent::Save($prefix,$data);
-		if($id>0)
-		{
-			$this->obLinks->DeleteItems(array('element_id'=>$id));
-			if(isset($data[$prefix.'links']) && is_array($data[$prefix.'links'])&&count($data[$prefix.'links'])>0)
+		$this->arLinks=false;
+		$arResult=parent::_PrepareData($arInput,$sPrefix);
+		if(isset($arInput[$sPrefix.'links']) && is_array($arInput[$sPrefix.'links'])&&count($arInput[$sPrefix.'links'])>0)
+			$this->arLinks=$arInput[$sPrefix.'links'];
+		return $arResult;
+	}
+
+	/**
+	 * Метод выполняется после сохранения записи и обновляет привязки записи к разделам
+	 * @param unknown_type $arData
+	 */
+	protected function _AfterSave(&$arData)
+	{
+		$this->obLinks->DeleteItems(array('element_id'=>$arData['id']));
+		if(is_array($this->arLinks))
+			foreach($this->arLinks as $cat_id)
 			{
-				foreach($data[$prefix.'links'] as $cat_id)
-				{
-					$arData=array('category_id'=>$cat_id,'element_id'=>$id);
-					$this->obLinks->Save('',$arData);
-				}
+				$arLink=array('category_id'=>$cat_id,'element_id'=>$arData['id']);
+				$this->obLinks->Save($arLink);
 			}
-		}
-		return $id;
 	}
 
 	/**
@@ -123,4 +127,4 @@ class CElement extends CCommonElement
 		return parent::Count($arFilter,$fGroup);
 	}
 }
-?>
+
