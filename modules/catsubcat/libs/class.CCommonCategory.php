@@ -391,54 +391,15 @@ class CCommonCategory extends CCategorySubCategory
 							$arDelFilter=array('id'=>$id['id'],'deleted'=>'0');
 						}
 						parent::DeleteItems($arDelFilter);
-						$obElement->DeleteItems($arSubFilter);
+						if(!is_null($this->obElement))
+							$this->obElement->DeleteItems($arSubFilter);
 					}
 				}
-				$obElement->DeleteItems($arMyFilter);
+				if(!is_null($this->obElement))
+					$this->obElement->DeleteItems($arMyFilter);
 			}
 			return parent::DeleteItems($arFilter);
 		}
 	}
-
-	/**
-	 * Метод производит восстановление раздела и всех вложенных в него записей
-	 */
-	function RestoreItems($arFilter)
-	{
-		if(!$this->ParseFilter($arFilter))
-			$arFilter['>deleted']='0';
-		$obElement=new CElement($this->sTable,$this->sElTable);
-		$bChilds=$arFilter['childs']=='N';
-		unset($arFilter['childs']);
-		$arItems=$this->GetList(array('id'=>'asc'),$arFilter);
-		if(is_array($arItems)&&count($arItems)>0)
-		{
-			parent::RestoreItems($arFilter);
-			foreach($arItems as $key=>$item)
-			{
-				$arParent=$this->GetRecord(array('id'=>$item['parent_id'],'>deleted'=>'-1'));
-				if(is_array($arParent))
-				{
-					if($arParent['deleted']>0)
-					{
-						$this->RestoreItems(array('id'=>$item['parent_id'],'childs'=>'N'));
-					}
-				}
-				if(!$bChilds)
-				{
-					$arList=$this->GetExpandedTree(array('parent_id'=>$item['id'],'>deleted'=>'0'));
-					if (is_array($arList)&&($arList!=0)&&(count($arList)>0))
-					{
-						foreach ($arList as $id)
-						{
-							$this->RestoreItems(array('id'=>$id['id']));
-							$obElement->RestoreItems(array('parent_id'=>$id['id'],'>deleted'=>'0'));
-						}
-					}
-					$obElement->RestoreItems(array('parent_id'=>$item['id'],'>deleted'=>'0'));
-				}
-			}
-		}
-	}
 }
-?>
+

@@ -7,5 +7,4 @@
 {/if}
 {$data.content}
 <div style="clear:both;"><!-- --></div>
-{widget name="wave" action="WavePosts" hash="catelement`$data.id`"}
 {/strip}

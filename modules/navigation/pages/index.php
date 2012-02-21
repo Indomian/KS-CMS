@@ -92,7 +92,7 @@ class CnavigationAIindex extends CModuleAdmin
 			}
 			if(!IsTextIdent($_POST['CSC_text_ident']))
 				$bError+=$this->obModules->AddNotify('NAVIGATION_MENU_TEXT_IDENT_WRONG');
-			if($this->oType->GetRecord(array('text_ident'=>$_POST['CSC_text_ident'])))
+			if($this->oType->GetRecord(array('!id'=>$_POST['CSC_id'],'text_ident'=>$_POST['CSC_text_ident'])))
 				$bError+=$this->obModules->AddNotify('NAVIGATION_MENU_TEXT_IDENT_ALREADY');
 			if($bError==0)
 			{

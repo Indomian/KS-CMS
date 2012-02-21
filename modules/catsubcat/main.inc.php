@@ -1,10 +1,9 @@
 <?php
-
 /**
  * Главный файл модуля текстовых страниц
  *
- * @author DoTJ
- * @version 0.1
+ * @author blade39 <blade39@kolosstudio.ru>
+ * @version 2.6
  * @since 25.03.2008
  */
 
@@ -13,7 +12,7 @@ if (!defined("KS_ENGINE"))
 	die("Hacking attempt!");
 
 /* Глобальные переменные */
-global $USER, $KS_MODULES, $CCatsubcat, $global_template, $smarty;
+global $USER, $global_template, $smarty;
 
 /* Идентификатор модуля */
 $module = "catsubcat";
@@ -26,7 +25,7 @@ if ($access_level >= 10)
 $smarty->plugins_dir[] = MODULES_DIR . "/" . $module . "/widgets/";
 
 /* Чтение конфигурации модуля */
-$module_config = $KS_MODULES->GetConfigArray($module);
+$module_config = $this->GetConfigArray($module);
 
 /* Путь к корню модуля */
 $root_path = $this->GetSitePath($module);
@@ -69,22 +68,12 @@ if (count($arDirs) > $iBase)
 		{
 			$arFilter['parent_id'] = $arCategory['id'];
 			$sUrl .= $arCategory['text_ident'] . "/";
-			if ($module_config['show_nav_chain'] == "1")
-			{
-				if ($this->IsActive("navigation"))
-					CNNavChain::get_instance()->Add( $arCategory['title'],$sUrl);
-			}
-
-			/* Проверка прав доступа */
-			if ($access_level > 8)
-				if(!in_array($arCategory['access_view'], $arUserGroups))
-					throw new CAccessError("CATSUBCAT_NOT_ACCESS_SECTION");
+			if ($module_config['show_nav_chain'] == "1" && $this->IsActive("navigation"))
+				CNNavChain::get_instance()->Add( $arCategory['title'],$sUrl);
 			$module_parameters['parent_id'] = $arCategory['id'];
 		}
 		else
-		{
 			throw new CHTTPError("SYSTEM_SECTION_NOT_FOUND", 404);
-		}
 	}
 }
 /* Определение виджета для подключения в качестве контента страницы */
@@ -92,18 +81,18 @@ if($this->IsPage() && $this->CurrentTextIdent()!='index')
 {
 	/* Элемент каталога */
 	$module_parameters['text_ident'] = $this->CurrentTextIdent();
-	$module_parameters['setPageTitle']=$KS_MODULES->GetConfigVar('catsubcat','set_title',1)==1?'Y':'N';
+	$module_parameters['setPageTitle']=$this->GetConfigVar('catsubcat','set_title',1)==1?'Y':'N';
 	$res=$this->IncludeWidget($module,'CatElement',$module_parameters);
 }
 elseif(array_key_exists('type',$_GET) && $_GET['type'] == "rss")
 {
 	/* RSS */
 	$module_parameters['tpl'] = "RSS";
-	$module_parameters['sort_by'] = $KS_MODULES->GetConfigVar($module, "sort_by",'id');
-	$module_parameters['sort_dir'] = $KS_MODULES->GetConfigVar($module, "sort_dir",'asc');
-	$module_parameters['announces_count'] = $KS_MODULES->GetConfigVar($module, "count",'10');
+	$module_parameters['sort_by'] = $this->GetConfigVar($module, "sort_by",'id');
+	$module_parameters['sort_dir'] = $this->GetConfigVar($module, "sort_dir",'asc');
+	$module_parameters['announces_count'] = $this->GetConfigVar($module, "count",'10');
 	$module_parameters['parent_id'] = $module_parameters['parent_id'];
-	$module_parameters['select_from_children'] = $KS_MODULES->GetConfigVar($module, "select_from_children",'y');
+	$module_parameters['select_from_children'] = $this->GetConfigVar($module, "select_from_children",'y');
 
 	$res=$this->IncludeWidget($module,'CatAnnounce',$module_parameters);
 	$output['include_global_template'] = 0;

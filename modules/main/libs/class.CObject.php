@@ -187,7 +187,7 @@ class CObject extends CBaseList
 	{
 		/* Определение, есть ли запись с заданным id в таблице или нет.
 		   В зависимости от этого обновим старую запись или добавим новую. */
-		if(array_key_exists('id',$arData) && $arData['id']!='')
+		if(array_key_exists('id',$arData) && $arData['id']!=='')
 		{
 			$query_select = "SELECT id FROM " . PREFIX . $this->sTable . " WHERE id = '" . $arData['id'] . "' LIMIT 1";
 			$this->obDB->query($query_select);
@@ -275,11 +275,14 @@ class CObject extends CBaseList
 
 		$arData=$this->_PrepareData($input,$prefix);
 		if($this->_BeforeSave($arData))
-			if($arData['id']=$this->_SaveData($arData))
+		{
+			$arData['id']=$this->_SaveData($arData);
+			if($arData['id']!==false)
 			{
 				$this->_AfterSave($arData);
 				return $arData['id'];
 			}
+		}
 		return false;
 	}
 
@@ -554,7 +557,11 @@ class CObject extends CBaseList
 					else
 					{
 						if(!$noSafe) $value=$this->obDB->safesql($value);
-						if($operation=='!') $operation=" $myfield!='$value' ";
+						if($operation=='!')
+						{
+							if($noSafe) $operation=" $myfield!=$value ";
+							else $operation=" $myfield!='$value' ";
+						}
 						elseif($operation=='~') $operation=" $myfield LIKE '%".$value."%' ";
 						elseif($operation=='!~') $operation=" $myfield NOT LIKE '%".$value."%' ";
 						elseif($operation=='^~') $operation=" $myfield LIKE '".$value."%' ";
@@ -870,8 +877,11 @@ class CObject extends CBaseList
 				$arFields[$sField] = array('Type' => 'char', 'Size' => '255');
 			elseif(preg_match('#^enum#i',$arField['Type']))
 				$arFields[$sField] = array('Type' => 'enum', 'Size' => '255');
-			elseif(preg_match('#^([a-z]+)\s*\((\d+)\)( unsigned)?$#i',$arField['Type'],$matches))
-				$arFields[$sField] = array('Type' => strtolower($matches[1]), 'Size' => intval($matches[2]));
+			elseif(preg_match('#^([a-z]+)(\s*\((\d+)\))?( unsigned)?$#i',$arField['Type'],$matches))
+				if(count($matches)>3)
+					$arFields[$sField] = array('Type' => strtolower($matches[1]), 'Size' => intval($matches[3]));
+				else
+					$arFields[$sField] = array('Type' => strtolower($matches[1]), 'Size' => 0);
 		return $arFields;
 	}
 

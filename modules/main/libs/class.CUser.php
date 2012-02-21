@@ -85,11 +85,6 @@ class CUser extends CUsersCommon implements User
 		$onUserObjectInitSuccess = $KS_EVENTS_HANDLER->Execute('main', 'onUserObjectInit', $onInitParams);
 	}
 
-	function SetGroupList($arGroupList)
-	{
-		$this->groups_list = $arGroupList;
-	}
-
 	function IsValid()
 	{
 		try
@@ -542,7 +537,6 @@ class CUser extends CUsersCommon implements User
 		return $res;
 	}
 
-	var $groups_list;
 	protected $userdata;
 	/**
 	 * Массив со списком групп к которым принадлежит данный пользователь.

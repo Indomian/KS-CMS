@@ -126,12 +126,7 @@ class CcatsubcatAIindex extends CModuleAdmin
 	 */
 	function Save($id)
 	{
-		global $KS_URL;
-		$this->obEditable->AddCheckField('text_ident');
-
 		/* Добавление проверки на существование данного индентификатора "внутри" определенного раздела */
-		$this->obEditable->AddCheckField('parent_id');
-		$this->obEditable->AddAutoField('id');
 		$this->obEditable->AddFileField('img');
 
 		/* Проверка прав доступа на редактирование */
@@ -146,17 +141,18 @@ class CcatsubcatAIindex extends CModuleAdmin
 				$iError+=$this->obModules->AddNotify("CATSUBCAT_ENTER_NAME");
 
 			/* Проверка текстового идентификатора */
-			if(isset($_POST['CSC_text_ident']) && $_POST['CSC_text_ident'] == "" && $_POST['CSC_id'] != 0)
-			{
+			if(isset($_POST['CSC_text_ident']) && $_POST['CSC_text_ident'] == "" && $_POST['CSC_id']!=0)
 				$_POST['CSC_text_ident'] = Translit($_POST['CSC_title']);
-				if (!IsTextIdent($_POST['CSC_text_ident']))
-					$iError+=$this->obModules->AddNotify("SYSTEM_NOT_IDENT");
-			}
 
 			if ($_POST['CSC_id'] == 0)
 			{
 				unset($_POST['CSC_parent_id']);
 				unset($_POST['CSC_text_ident']);
+			}
+			else
+			{
+				if (!IsTextIdent($_POST['CSC_text_ident']))
+					$iError+=$this->obModules->AddNotify("SYSTEM_NOT_IDENT");
 			}
 
 			$children_ids = $this->obCategory->GetChildrenIds($_POST['CSC_id'], 0);
@@ -199,14 +195,14 @@ class CcatsubcatAIindex extends CModuleAdmin
 				if(!array_key_exists('update',$_REQUEST))
 				{
 					//if($this->sType=='cat') $KS_URL->Set('CSC_catid',$data['parent_id']);
-					if($this->obEditable instanceof CCategory) $KS_URL->Set('CSC_catid',$data['parent_id']);
-					CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl(Array('ACTION','type','CSC_id')));
+					if($this->obEditable instanceof CCategory) $this->obUrl->Set('CSC_catid',$data['parent_id']);
+					$this->obUrl->Redirect("admin.php?".$this->obUrl->GetUrl(Array('ACTION','type','CSC_id')));
 				}
 				else
 				{
 					if($this->obEditable instanceof CCategory) $sAdd='&CSC_catid='.$id;
 					if($this->obEditable instanceof CElement) $sAdd='&CSC_id='.$id.'&CSC_catid='.intval($_POST['CSC_parent_id']);
-					CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl('ACTION','CSC_id','CSC_catid').'&ACTION=edit'.$sAdd);
+					$this->obUrl->Redirect("admin.php?".$this->obUrl->GetUrl('ACTION','CSC_id','CSC_catid').'&ACTION=edit'.$sAdd);
 				}
 			}
 		}

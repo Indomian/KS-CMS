@@ -5,9 +5,9 @@
     	<meta name="keywords" content="{$KEYWORDS|default:$SITE.home_keywrds}" />
     	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
     	<title>{$SITE.home_title}{if $TITLE} | {$TITLE}{/if} innre</title>
-    	<link rel="stylesheet" href="{$templates_files_folder}{$glb_tpl}/css/default.css" type="text/css" />
-		<link rel="stylesheet" href="{$templates_files_folder}{$glb_tpl}/css/template.css" type="text/css" />
-		<link rel="stylesheet" href="{$templates_files_folder}{$glb_tpl}/css/content.css" type="text/css" />
+    	<link rel="stylesheet" href="{$templates_files_folder}/{$glb_tpl}/css/default.css" type="text/css" />
+		<link rel="stylesheet" href="{$templates_files_folder}/{$glb_tpl}/css/template.css" type="text/css" />
+		<link rel="stylesheet" href="{$templates_files_folder}/{$glb_tpl}/css/content.css" type="text/css" />
     	<script type="text/javascript" src="/js/main.js"></script>
     	<script type="text/javascript" src="/js/jquery/jquery.js"></script>
     	{MainHeadStrings}
@@ -21,7 +21,7 @@
     		<!--Шапка-->
     		<div class="header"><div class="header_in">
 	    		<div class="header_sitename">
-					<a href="/"><img src="{$templates_files_folder}{$glb_tpl}/images/t.gif" alt="logo"/>{$SITE.home_title}</a>
+					<a href="/"><img src="{$templates_files_folder}/{$glb_tpl}/images/t.gif" alt="logo"/>{$SITE.home_title}</a>
 				</div>
     			<div class="header_auth">
 			    </div>
@@ -52,7 +52,7 @@
 					<div class="footer_menu">
 						<ul>
 							{if $USER.id>0}
-							<li><a href="/user/{$USER.id}/"><img src="{$templates_files_folder}{$glb_tpl}/images/t.gif" alt="icon" />Посетить профиль</a></li>
+							<li><a href="/user/{$USER.id}/"><img src="{$templates_files_folder}/{$glb_tpl}/images/t.gif" alt="icon" />Посетить профиль</a></li>
 							{/if}
        						<li><a href="{$SITE.home_url}/" onclick="indexPage.makeHomepage(this); return false;" title="Сделать стартовой"><img src="{$templates_files_folder}{$glb_tpl}/images/t.gif" alt="icon" />Сделать стартовой</a></li>
        						<li><a href="{$SITE.home_url}/" title="Добавить в избранное" onclick="indexPage.toFavorites('{$SITE.home_url}/', '{$SITE.home_title}');return false;"><img src="{$templates_files_folder}{$glb_tpl}/images/t.gif" alt="icon" />Добавить в закладки</a></li>

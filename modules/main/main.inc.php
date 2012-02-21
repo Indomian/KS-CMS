@@ -96,9 +96,6 @@ if (!defined('KS_MAIN_INIT'))
 	/* пользователи */
 	require_once MODULES_DIR.'/main/libs/class.CUser.php';
 	$USER = new CUser();
-	/* Подгружаем список уровней доступа */
-	$obGroup = new CObject('usergroups');
-	$USER->SetGroupList($obGroup->GetList(false, false, false, array('id','title')));
 	/*Подключение системы событий*/
 	require_once MODULES_DIR.'/main/libs/class.CEvents.php';
 	$obEvents=new CEvents();

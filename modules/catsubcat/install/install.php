@@ -21,13 +21,15 @@ include 'description.php';
 require_once MODULES_DIR.'/main/libs/class.CUserGroup.php';
 require_once MODULES_DIR.'/main/libs/class.CAccess.php';
 include MODULES_DIR.'/'.$module_name.'/install/db_structure.php';
+include MODULES_DIR.'/'.$module_name.'/libs/class.CCatsubcatAPI.php';
 include MODULES_DIR.'/'.$module_name.'/libs/class.CCategory.php';
 
 //Список таблиц модуля
 $arDBList=array(
 	'catsubcat_catsubcat',
 	'catsubcat_element',
-	'catsubcat_links'
+	'catsubcat_links',
+	'catsubcat_storage'
 );
 //Получаем список таблиц системы
 $arTables=$ks_db->ListTables();

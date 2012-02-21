@@ -58,7 +58,7 @@ class CnavigationAImenu extends CModuleAdmin
 		if (class_exists('CFields'))
 		{
 			$obFields=new CFields();
-			$arFields=$obFields->GetList(Array('id'=>'asc'),Array('module'=>"navigation",'type'=>$this->oElement->sTable));
+			$arFields=$obFields->GetList(Array('id'=>'asc'),Array('module'=>"navigation",'type'=>$this->oElement->GetTable()));
 			$this->smarty->assign('addFields',$arFields);
 		}
 		$this->smarty->assign('data',$data);

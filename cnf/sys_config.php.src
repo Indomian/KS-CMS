@@ -1,6 +1,8 @@
 <?php
+
 /**
  * Конфигурационный файл модуля "main"
+ * Последнее изменение: 19.02.2012, 20:22:55
  */
 
 $ks_config = array
@@ -9,23 +11,30 @@ $ks_config = array
 	'home_title' => "#TITLE#",
 	'home_descr' => "#DESCRIPTION#",
 	'home_keywrds' => "#KEYWORDS#",
-	'admin_email' => "#ADMIN_EMAIL#",
+	'admin_email' => "#EMAIL#",
 	'time_format' => "j F Y H:i",
 	'SEF_URL' => "1",
 	'DB_CLASS' => "mysql",
 	'LANG' => "ru",
 	'debugmode' => "1",
 	'copyright' => "Copyright 2011 Kolos-Studio",
-	'start_adminpage' => "lite",
+	'start_adminpage' => "main",
 	'text_ident_length' => "20",
 	'highlight_new_elements' => "all",
 	'highlight_time' => "300",
 	'highlight_color' => "fff74b",
 	'highlight_odd_row_color' => "70808D",
 	'user_inactive_time' => "2000",
-	'emailFrom' => "#ADMIN_EMAIL#",
-	'go_install'=>0,
-	'update_db'=>0,
+	'emailFrom' => "#EMAIL#",
+	'update_db' => "0",
+	'go_install' => "0",
+	'lifetime' => "864000",
+	'user_inactive_check' => "0",
+	'enable_auth_save' => "0",
+	'pkey' => "demo",
+	'update_server' => "updata.kscms.ru",
+	'admin_lang' => "ru",
+	'admin_items_count' => "50"
 );
 
 ?>
