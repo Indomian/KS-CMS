@@ -15,7 +15,7 @@ if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 $module_name='interfaces';
 
 require_once MODULES_DIR.'/main/libs/class.CUserGroup.php';
-require_once MODULES_DIR.'/main/libs/class.CAccess.php';
+require_once MODULES_DIR.'/main/libs/class.CModulesAccess.php';
 include MODULES_DIR.'/'.$module_name.'/install/db_structure.php';
 
 if($this->IsModule($module_name)) throw new CError('MAIN_MODULE_ALREADY_INSTALLED');
