@@ -141,6 +141,8 @@ class CObject extends CBaseList
 		{
 			if (($value['Type'] == 'int')||($value['Type']=='smallint')||($value['Type']=='tinyint'))
 				$result = intval($input[$prefix . $key]);
+			elseif ($value['Type'] == 'decimal')
+				$result = number_format($input[$prefix.$key],2,'.','');
 			elseif (($value['Type'] == 'char') || ($value['Type'] == 'varchar'))
 				$result = $this->obDB->safesql(mb_substr($input[$prefix . $key], 0, $value['Size'],'UTF-8'));
 			elseif ($value['Type'] == 'text')
@@ -207,12 +209,22 @@ class CObject extends CBaseList
 		$fields = "";
 		$values = "";
 		if (is_array($this->arAutoFields))
+		{
 			foreach($arData as $key=>$item)
+			{
 				if (!in_array($key, $this->arAutoFields))
 				{
 					$fields .= "`".$key."`,";
 					$values .= "'$item',";
 				}
+			}
+		}
+		else
+			foreach($arData as $key=>$item)
+			{
+				$fields.= "`".$key."`,";
+				$values.= "'$item',";
+			}
 
 		$fields = chop($fields, " ,");
 		$values = chop($values, " ,");
