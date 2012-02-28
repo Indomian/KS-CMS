@@ -1,21 +1,16 @@
 <?php
-/*
-KS ENGINE
-
-Класс работы с БД
-*/
-
 if( !defined('KS_ENGINE') )  die("Hacking attempt!");
 
-require_once 'class.CDBInterface.php';
+require_once MODULES_DIR.'/main/libs/db/class.CDBInterface.php';
+
 /**
-Класс выполняет роль интерфейса к базе данных типа mysql. Логгирует все SQL запросы
-при работе в режиме отладки, также логирует время исполнения этих запросов. Добавлена функция вставки информационных
-строк в лог запросов, что позволяет отделять из каких методов произведен вызов того или иного запроса.
-\version 1.3
-\author dotj <dotj@kolosstudio.ru>
-*/
-final class mysql extends CDBInterface
+ * Класс выполняет роль интерфейса к базе данных типа mysql. Логгирует все SQL запросы
+ * при работе в режиме отладки, также логирует время исполнения этих запросов. Добавлена функция вставки информационных
+ * строк в лог запросов, что позволяет отделять из каких методов произведен вызов того или иного запроса.
+ * @version 2.6
+ * @author BlaDe39 <blade39@kolosstudio.ru>, DNKonev <dnkonev@yandex.ru>, dotj <dotj@kolosstudio.ru>
+ */
+class mysql extends CDBInterface
 {
 	private $ks_db_id = false; 			/**<Ресурс подключения к базе данных*/
 	private $connected = false;			/**<флаг подключения к базе данных*/
@@ -26,52 +21,55 @@ final class mysql extends CDBInterface
 	private $query_id = false;				/**<номер запроса*/
 	private $iVersion;				/**<Версия mysql*/
 	private $arColumnTypes;		/**<Массив со списком доступных типов полей*/
+	protected $sTableType;
 
-	/**Конструктор класса.
-	 * \param $debug - устанавливает уровень отладки
-	 * \since 1.2
-	 * \author blade39 <blade39@kolosstudio.ru>
+	/**
+	 * Конструктор класса.
+	 * @param $debug - устанавливает уровень отладки
+	 * @since 1.2
+	 * @author blade39 <blade39@kolosstudio.ru>
 	 */
 	function __construct($debug=0)
 	{
 		$this->iDebug=$debug;
 		$this->iVersion='';
 		$this->arColumnTypes=array('char','varchar','int','float','text','enum');
+		$this->sTableType='MyISAM';
 	}
 
-	/**Деструктор класса. Очищает память, закрывает соединение к БД (если оно было открыто ранее).*/
+	/**
+	 * Деструктор класса. Очищает память, закрывает соединение к БД (если оно было открыто ранее).
+	 */
 	function __destruct()
 	{
 		if($this->connected)
-		{
 			$this->close();
-		}
 	}
 
-	/**Функция открывает подключение к базе данных. В случае ошибки подключения выводит критическую ошибку базы данных и останавливает
-	выполнение скрипта. Возвращаемые значения true - в случае успеха. False - если не удалось подключиться.
-	@param $ks_db_user -- имя пользоваталя;
-	@param $ks_db_pass -- пароль к базе данных;
-	@param $ks_db_name -- имя базы данных (непонятно почему не на первом месте);
-	@param $ks_db_location -- размещение базы данных (обычно localhost);
-	@param $show_error -- флаг останова по ошибке, обычно 1, при значении 0 скрипт продолжает работу.*/
+	/**
+	 * Функция открывает подключение к базе данных. В случае ошибки подключения выводит критическую ошибку базы данных и останавливает
+	 * выполнение скрипта. Возвращаемые значения true - в случае успеха. False - если не удалось подключиться.
+	 * @param $ks_db_user -- имя пользоваталя;
+	 * @param $ks_db_pass -- пароль к базе данных;
+	 * @param $ks_db_name -- имя базы данных (непонятно почему не на первом месте);
+	 * @param $ks_db_location -- размещение базы данных (обычно localhost);
+	 * @param $show_error -- флаг останова по ошибке, обычно 1, при значении 0 скрипт продолжает работу.
+	 */
 	function connect($ks_db_user, $ks_db_pass, $ks_db_name, $ks_db_location = 'localhost', $show_error=1)
 	{
 		//пробуем подключиться
 		if(!$this->ks_db_id = @mysql_connect($ks_db_location, $ks_db_user, $ks_db_pass)) {
-			if($show_error == 1) {
+			if($show_error == 1)
 				throw new CDBError(mysql_error(), mysql_errno());
-			} else {
+			else
 				return false;
-			}
 		}
 		//пробуем выбрать бд для работы
 		if(!@mysql_select_db($ks_db_name, $this->ks_db_id)) {
-			if($show_error == 1) {
+			if($show_error == 1)
 				throw new CDBError(mysql_error(), mysql_errno());
-			} else {
+			else
 				return false;
-			}
 		}
 		//получаем номер версии
 		$this->iVersion = mysql_get_server_info();
@@ -87,55 +85,51 @@ final class mysql extends CDBInterface
 	}
 
 	/**
-	Метод выполняет SQL запрос к базе данных.
-	Возращает id результата. В случае работы в режиме отката,
-	записывает последние изменения в базе данных в кэш.
-	@param $query -- sql запрос;
-	@param $show_error -- флаг вывода ошибок.
+	 * Метод выполняет SQL запрос к базе данных.
+	 * Возращает id результата. В случае работы в режиме отката,
+	 * записывает последние изменения в базе данных в кэш.
+	 * @param $query -- sql запрос;
+	 * @param $show_error -- флаг вывода ошибок.
 	 */
 	function query($query, $show_error=true)
 	{
-		$time_before = $this->get_real_time();
+		if(KS_DEBUG==1)
+			$time_before = $this->get_real_time();
 
 		if(!$this->connected) $this->connect(DBUSER, DBPASS, DBNAME, DBHOST);
 
-		/*проверяем включенность режима записи операций, если работает производим
-		 * выборку в зависимости от типа операции
-		(добавление, обновление)*/
+		/* проверяем включенность режима записи операций, если работает производим
+		 выборку в зависимости от типа операции	(добавление, обновление)*/
 		if($this->iBegin>0)
-	{
-		$matches=array();
-		$arRow=false;
-			//echo $query;
-		if(preg_match("#^UPDATE ([\w\d_]+) SET *((`?[\w\d`]+` ?= ?'[^']*',? *)+) *WHERE ([`\w\d= ',\(\)]+)#si",$query,$matches)>0)
 		{
-			$arRow=array();
-			$arRow['OP']='UPDATE';
-			$arRow['TABLE']=$matches[1];
-			$arRow['WHERE']=$matches[4];
-			$arRow['QUERY']=$query;
-			$myquery="SELECT * FROM ".$arRow['TABLE']." WHERE ".$arRow['WHERE'];
-			if(!($this->query_id = @mysql_query($myquery, $this->ks_db_id) ))
+			$matches=array();
+			$arRow=false;
+				//echo $query;
+			if(preg_match("#^UPDATE ([\w\d_]+) SET *((`?[\w\d`]+` ?= ?'[^']*',? *)+) *WHERE ([`\w\d= ',\(\)]+)#si",$query,$matches)>0)
 			{
-				$this->mysql_error = mysql_error();
-				$this->mysql_error_num = mysql_errno();
-				if($show_error)
+				$arRow=array();
+				$arRow['OP']='UPDATE';
+				$arRow['TABLE']=$matches[1];
+				$arRow['WHERE']=$matches[4];
+				$arRow['QUERY']=$query;
+				$myquery="SELECT * FROM ".$arRow['TABLE']." WHERE ".$arRow['WHERE'];
+				if(!($this->query_id = @mysql_query($myquery, $this->ks_db_id) ))
 				{
-					throw new CDBError("Ошибка работы системы отката:\n".$this->mysql_error, $this->mysql_error_num, "запрос:".$query."\n выборка из базы".$myquery."\n запрос на обновление".$arRow['QUERY']);
+					$this->mysql_error = mysql_error();
+					$this->mysql_error_num = mysql_errno();
+					if($show_error)
+						throw new CDBError("Ошибка работы системы отката:\n".$this->mysql_error, $this->mysql_error_num, "запрос:".$query."\n выборка из базы".$myquery."\n запрос на обновление".$arRow['QUERY']);
 				}
+				while($arResRow=$this->get_row())
+					$arRow['DATA'][]=$arResRow;
 			}
-			while($arResRow=$this->get_row())
-			{
-				$arRow['DATA'][]=$arResRow;
-			}
-		}
 			if(preg_match('#^INSERT INTO ([\w\d_]+)#',$query,$matches)>0)
-		{
-			$arRow=array();
-			$arRow['OP']='INSERT INTO';
-			$arRow['TABLE']=$matches[1];
-			$arRow['QUERY']=$query;
-		}
+			{
+				$arRow=array();
+				$arRow['OP']='INSERT INTO';
+				$arRow['TABLE']=$matches[1];
+				$arRow['QUERY']=$query;
+			}
 		}
 
 		if(!($this->query_id = @mysql_query($query, $this->ks_db_id) ))
@@ -147,28 +141,29 @@ final class mysql extends CDBInterface
 
 		if($this->iBegin>0)
 		{
-		if($arRow['OP']=='INSERT INTO')
+			if($arRow['OP']=='INSERT INTO')
+				$arRow['DATA']=$this->insert_id();
+			if(is_array($arRow))
+				array_push($this->arBackUpData[$this->iBegin],$arRow);
+		}
+		if(KS_DEBUG==1)
 		{
-			$arRow['DATA']=$this->insert_id();
-		}
-		if(is_array($arRow))
-		{
-			array_push($this->arBackUpData[$this->iBegin],$arRow);
-		}
-		}
-		/*Запись запроса в лог, запись времени его исполнения в лог*/
+			/*Запись запроса в лог, запись времени его исполнения в лог*/
 			$this->add2log($query,$this->get_real_time() - $time_before);
 			$this->MySQL_time_taken += $this->get_real_time() - $time_before;
-		$this->query_num ++;
+			$this->query_num ++;
+		}
 		return $this->query_id;
 	}
 
-	/**Отменяет все последние изменения в базе данных. Внимание! Если с БД работает несколько человек (особенно на запись) присутствует вероятность
-	искажения данных. По окончанию работы очищает массив последних операций, снимает флаг записи операций.
-	@param $show_error -- флаг отображения ошибок
-	\author blade39 <blade39@kolosstudio.ru>
-	\since 1.0
-	*/
+	/**
+	 * Отменяет все последние изменения в базе данных.
+	 * Внимание! Если с БД работает несколько человек (особенно на запись) присутствует вероятность
+	 * искажения данных. По окончанию работы очищает массив последних операций, снимает флаг записи операций.
+	 * @param $show_error -- флаг отображения ошибок
+	 * @author blade39 <blade39@kolosstudio.ru>
+	 * @since 1.0
+	 */
 	function rollback($show_error=false)
 	{
 		if(($this->iBegin>0)&&is_array($this->arBackUpData[$this->iBegin])&&(count($this->arBackUpData[$this->iBegin])>0))
@@ -222,11 +217,10 @@ final class mysql extends CDBInterface
 	 * В качестве параметра можно передать код запроса. По умолчанию используется
 	 * код последненго запроса.
 	 * @param $query_id -- целое число, дескриптор результата.
-	 * */
+	 */
 	function get_row($query_id = '')
 	{
 		if ($query_id == '') $query_id = $this->query_id;
-
 		return mysql_fetch_assoc($query_id);
 	}
 
@@ -235,20 +229,11 @@ final class mysql extends CDBInterface
 	 * В качестве параметра можно передать код запроса. По умолчанию используется
 	 * код последненго запроса.
 	 * @param $query_id -- целое число, дескриптор результата.
-	 * */
-	function get_array($query_id = '') {
-		if ($query_id == '') $query_id = $this->query_id;
-
-		return mysql_fetch_array($query_id);
-	}
-
-	/**
-	 * Пока без документации
-	 * @deprecated 2.5.4 - 17.02.2010
-	 * */
-	function super_query($query, $multi = false)
+	 */
+	function get_array($query_id = '')
 	{
-		throw new CError('DEPRECATED METHOD CALL');
+		if ($query_id == '') $query_id = $this->query_id;
+		return mysql_fetch_array($query_id);
 	}
 
 	/**
@@ -256,11 +241,10 @@ final class mysql extends CDBInterface
 	 * В качестве параметра можно передать код запроса.
 	 * По умолчанию используется код последненго запроса.
 	 * @param $query_id -- целое число, дескриптор результата.
-	 * */
+	 */
 	function num_rows($query_id = '')
 	{
 		if ($query_id == '') $query_id = $this->query_id;
-
 		return @mysql_num_rows($query_id);
 	}
 
@@ -268,7 +252,7 @@ final class mysql extends CDBInterface
 	 * Возвращает номер последней вставленной записи. В качестве
 	 * параметра можно передать код запроса.
 	 * По умолчанию используется код последненго запроса.
-	 * */
+	 */
 	function insert_id()
 	{
 		return @mysql_insert_id($this->ks_db_id);
@@ -295,9 +279,7 @@ final class mysql extends CDBInterface
 	{
 		if ($query_id == '') $query_id = $this->query_id;
 		while ($field = @mysql_fetch_field($query_id))
-		{
             $fields[] = $field;
-		}
 		return $fields;
    	}
 
@@ -307,13 +289,11 @@ final class mysql extends CDBInterface
 	 * Включил дополнительную проверку переданной строки (mysql_real_escape_string)
 	 * после отчистки слэшей от magic_quotes_gpc
 	 * @param $source -- строка, данные требующие обработки.
-	 * */
+	 */
 	function safesql( $source )
 	{
 		if(ini_get('magic_quotes_gpc')==1)
-		{
 			$source=stripslashes($source);
-		}
 		if ($this->ks_db_id) return mysql_real_escape_string ($source, $this->ks_db_id);
 		return @mysql_escape_string($source);
 	}
@@ -323,7 +303,7 @@ final class mysql extends CDBInterface
 	 * В качестве параметра можно передать код запроса.
 	 * По умолчанию используется код последненго запроса.
 	 * @param $query_id -- целое число, дескриптор результата.
-	 * */
+	 */
 	function free( $query_id = '' )
 	{
 		if ($query_id == '') $query_id = $this->query_id;
@@ -348,9 +328,7 @@ final class mysql extends CDBInterface
 		$arDB=array();
 		$rs=$this->query('SHOW TABLES');
 		while ($table = @mysql_fetch_assoc($rs))
-		{
 			$arDB[]=current($table);
-		}
 		if($bGetFields)
 		{
 			$arResult=array();
@@ -361,17 +339,13 @@ final class mysql extends CDBInterface
 				{
 					$arTable=array();
 					while($arRow=@mysql_fetch_assoc($res))
-					{
 						$arTable[$arRow['Field']]=$arRow;
-					}
 					$arResult[$table]=$arTable;
 				}
 			}
 		}
 		else
-		{
 			$arResult=$arDB;
-		}
 		return $arResult;
 	}
 
@@ -383,25 +357,19 @@ final class mysql extends CDBInterface
 	public function GetTableFields($sTable,$sPrefix='')
 	{
 		$res=$this->query('DESCRIBE '.PREFIX.$sTable);
+		$arTable=array();
 		if(@mysql_num_rows($res)>0)
-		{
-			$arTable=array();
 			while($arRow=@mysql_fetch_assoc($res))
 			{
 				if($sPrefix!='')
 				{
 					if(preg_match('#^'.$sPrefix.'#i',$arRow['Field']))
-					{
 						$arTable[$arRow['Field']]=$arRow;
-					}
 				}
 				else
-				{
 					$arTable[$arRow['Field']]=$arRow;
-				}
 			}
 			return $arTable;
-		}
 		throw new CDBError('SYSTEM_TABLE_NOT_FOUND',1,$sTable);
 	}
 
@@ -416,32 +384,30 @@ final class mysql extends CDBInterface
 		$arFullText=array();
 		foreach($arTableStructure as $sField=>$arFieldParams)
 		{
+			if(!isset($arFieldParams['Extra'])) $arFieldParams['Extra']='';
+			if(!isset($arFieldParams['Default'])) $arFieldParams['Default']='';
+			if(!isset($arFieldParams['Null'])) $arFieldParams['Null']='NO';
+			if(!isset($arFieldParams['Key'])) $arFieldParams['Key']='';
+			if(!isset($arFieldParams['Type'])) $arFieldParams['Type']='char(255)';
 			$sLine='`'.$sField.'` '.
 				$arFieldParams['Type'].' '.
 				($arFieldParams['Null']=='NO'?'NOT NULL':'NULL').' ';
 			if($arFieldParams['Extra']!='auto_increment')
 			{
-				$sLine.=($arFieldParams['Default']!=''?" DEFAULT '".$arFieldParams['Default']."' ":" DEFAULT ''");
+				if($arFieldParams['Type']!='date')
+					$sLine.=($arFieldParams['Default']!=''?" DEFAULT '".$arFieldParams['Default']."' ":" DEFAULT ''");
 			}
 			else
-			{
 				$sLine.=$arFieldParams['Extra'];
-			}
 			$sLine.=($arFieldParams['Key']=='PRI'?' PRIMARY KEY':'');
 			$arFields[]=$sLine;
 			if($arFieldParams['Extra']=='fulltext')
-			{
 				$arFullText[]=$arFieldParams['Field'];
-			}
 		}
 		if(count($arFullText)>0)
-		{
 			$arFields[]=' FULLTEXT INDEX ('.join(',',$arFullText).')';
-		}
 		if(count($arFields)>0)
-		{
-			$sQuery.='('.join(',',$arFields).') TYPE=MyISAM';
-		}
+			$sQuery.='('.join(',',$arFields).') TYPE='.$this->sTableType;
 		try
 		{
 			$this->query($sQuery);
@@ -464,30 +430,25 @@ final class mysql extends CDBInterface
 		if(is_numeric($arColumn)) return false;
 		//Если передали строку создаем поле по умолчанию
 		if(!is_array($arColumn)&&is_string($arColumn))
-		{
-			$arColumn=array(
-				'Field'=>$arColumn,
-				'Type'	=> 	'char(255)',
-				'Null'	=>	'NO',
-				'Key'	=>	'',
-				'Default'=>	'',
-				'Extra'	=>	'',
-			);
-		}
+			$arColumn=array('Field'=>$arColumn);
 		try
 		{
+			if(!isset($arColumn['Extra'])) $arColumn['Extra']='';
+			if(!isset($arColumn['Default'])) $arColumn['Default']='';
+			if(!isset($arColumn['Null'])) $arColumn['Null']='NO';
+			if(!isset($arColumn['Key'])) $arColumn['Key']='';
+			if(!isset($arColumn['Type'])) $arColumn['Type']='char(255)';
 			$query="ALTER TABLE ".PREFIX.$sTable." ADD COLUMN `".
 				$arColumn['Field'].'` '.
 				$arColumn['Type'].' '.
 				($arColumn['Null']=='NO'?'NOT NULL':'NULL').' ';
 			if($arColumn['Extra']!='auto_increment')
 			{
-				$query.=($arColumn['Default']!=''?" DEFAULT '".$arColumn['Default']."' ":" DEFAULT ''");
+				if($arColumn['Type']!='date')
+					$query.=($arColumn['Default']!=''?" DEFAULT '".$arColumn['Default']."' ":" DEFAULT ''");
 			}
 			else
-			{
 				$query.=$arColumn['Extra'];
-			}
 			$query.=($arColumn['Key']=='PRI'?' PRIMARY KEY':'');
 			$this->query($query);
 			if($arColumn['Extra']=='fulltext')
@@ -522,11 +483,12 @@ final class mysql extends CDBInterface
 			if(!$arColumn) return false;
 			if($arColumn['Type']==$sType) return false;
 			if(strpos($sType,'int')!==false || strpos($sType,'float')!==false)
-			{
 				$arColumn['Default']="0";
-			}
 			if($sType=='text') $arColumn['Default']='';
-			$query="ALTER TABLE ".PREFIX.$sTable." CHANGE COLUMN $sColumn $sColumn $sType ".($arColumn['Null']=='NO'?'NOT NULL':'NULL')." default '".$arColumn['Default']."'";
+			if($sType!='date')
+				$query="ALTER TABLE ".PREFIX.$sTable." CHANGE COLUMN $sColumn $sColumn $sType ".($arColumn['Null']=='NO'?'NOT NULL':'NULL')." default '".$arColumn['Default']."'";
+			else
+				$query="ALTER TABLE ".PREFIX.$sTable." CHANGE COLUMN $sColumn $sColumn $sType ".($arColumn['Null']=='NO'?'NOT NULL':'NULL');
 			$this->query($query);
 		}
 		catch (CError $e)
@@ -544,28 +506,28 @@ final class mysql extends CDBInterface
 		//Если передали строку создаем поле по умолчанию
 		try
 		{
+			if(!isset($arFieldParams['Extra'])) $arFieldParams['Extra']='';
+			if(!isset($arFieldParams['Default'])) $arFieldParams['Default']='';
+			if(!isset($arFieldParams['Null'])) $arFieldParams['Null']='';
+			if(!isset($arFieldParams['Key'])) $arFieldParams['Key']='';
+			if(!isset($arFieldParams['Type'])) $arFieldParams['Type']='char(255)';
 			$arColumn=$this->DescribeColumn($sTable,$sColumn);
 			if($arColumn['Key']=='UNI')
-			{
 				//Есть ключ уникальности колонки
 				if($arFieldParams['Key']!=$arColumn['Key'])
-				{
 					//Ключи не совпадают, надо удалить ключ уникальности
 					$this->query("ALTER TABLE ".PREFIX.$sTable." DROP INDEX ".$sColumn);
-				}
-			}
 			$query="ALTER TABLE ".PREFIX.$sTable." CHANGE COLUMN `".$sColumn.'` `'.
 				$arFieldParams['Field'].'` '.
 				$arFieldParams['Type'].' '.
 				($arFieldParams['Null']=='NO'?'NOT NULL':'NULL').' ';
 			if($arFieldParams['Extra']!='auto_increment')
 			{
-				$query.=($arFieldParams['Default']!=''?" DEFAULT '".$arFieldParams['Default']."' ":" DEFAULT ''");
+				if($arFieldParams['Type']!='date')
+					$query.=($arFieldParams['Default']!=''?" DEFAULT '".$arFieldParams['Default']."' ":" DEFAULT ''");
 			}
 			else
-			{
 				$query.=$arFieldParams['Extra'];
-			}
 			//$query.=($arFieldParams['Key']=='PRI'?' PRIMARY KEY':'');
 			$this->query($query);
 			if($arFieldParams['Extra']=='fulltext')
@@ -591,15 +553,12 @@ final class mysql extends CDBInterface
 	 */
 	protected function DescribeColumn($sTable,$sColumn)
 	{
-		if(!$sTable) return false;
 		/* Чтение всех полей таблицы */
 		$query="SHOW COLUMNS FROM " . PREFIX . $sTable." WHERE Field='$sColumn'";
 		$this->query($query);
 		/* Формирование массива с параметрами полей - Type (тип данных), Size (размер в байтах) */
 		while ($field = $this->get_row())
-		{
 			return $field;
-		}
 		return false;
 	}
 
@@ -613,9 +572,7 @@ final class mysql extends CDBInterface
 		$arDBTables=$this->ListTables();
 		$arTablesToDelete=array();
 		foreach($arTables as $sTable)
-		{
 			if(in_array(PREFIX.$sTable,$arDBTables) && IsTextIdent($sTable)) $arTablesToDelete[]=PREFIX.$sTable;
-		}
 		if(count($arTablesToDelete)>0)
 		{
 			$query="DROP TABLE IF EXISTS ".join(',',$arTablesToDelete);
@@ -663,11 +620,17 @@ final class mysql extends CDBInterface
 		return true;
 	}
 
+	/**
+	 * Метод возвращает суммарное время потраченное на запросы
+	 */
 	function GetTimeTaken()
 	{
 		return $this->MySQL_time_taken;
 	}
 
+	/**
+	 * Метод возвращает количество выполненных запросов к БД с момента создания объекта класса
+	 */
 	function GetQueriesCount()
 	{
 		return $this->query_num;

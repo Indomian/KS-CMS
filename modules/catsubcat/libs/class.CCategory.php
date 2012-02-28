@@ -1,14 +1,13 @@
 <?php
 /**
- * \file class.CCategory.php
+ * @filesource catsubcat/libs/class.CCategory.php
  * Файл контейнер класса ccategory
  * Файл проекта kolos-cms.
  *
- * Создан 25.02.2010
+ * @since 25.02.2010
  *
- * \author blade39
- * \version
- * \todo
+ * @author blade39 <blade39@kolosstudio.ru>
+ * @version 2.6
  */
 /*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
@@ -16,15 +15,14 @@ if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 require_once MODULES_DIR.'/catsubcat/libs/class.CCommonCategory.php';
 require_once MODULES_DIR.'/catsubcat/libs/class.CElementLinks.php';
 
-class CCategory extends CCommonCategory
+final class CCategory extends CCommonCategory
 {
 	private $obLinks;
 
-	function __construct($tables = 'catsubcat_catsubcat',$sElementsTable = 'catsubcat_element')
+	function __construct($obElement=NULL)
 	{
-		$this->fType='cat';
-		$this->sFieldsModule='catsubcat';
-		parent::__construct($tables,$sElementsTable);
+		parent::__construct('catsubcat_catsubcat','/catsubcat','catsubcat',CCatsubcatAPI::get_instance()->Storage(), $obElement);
+		$this->AddFileField('img');
 		$this->obLinks=new CElementLinks('catsubcat_links');
 	}
 

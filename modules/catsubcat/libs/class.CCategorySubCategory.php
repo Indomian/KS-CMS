@@ -1,45 +1,25 @@
 <?php
 /**
- * \file class.CCategorySubCategory.php
+ * @filesource catsubcat/libs/class.CCategorySubCategory.php
  * Контейнер для класса CCategorySubCategory
  * Файл проекта kolos-cms.
  *
- * Создан 25.02.2010
- *
+ * @since 25.02.2010
+ * @version 2.6
  */
 /*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 require_once MODULES_DIR.'/main/libs/class.CRestorable.php';
-/**Родительский класс для модуля категорий, подкатегорий. В общем обычно абстрактен и сам по себе нигде не используется.
+/**
+ * Родительский класс для модуля категорий, подкатегорий. В общем обычно абстрактен и сам по себе нигде не используется.
  * Рекомендуется не применять этот класс а пользоваться его потомками CElement, CCategory. Начиная с версии 2.0
  * присутствует поддержка пользовательских полей.
  * @version 2.1
  * @author blade39 <blade39@kolosstudio.ru>
  */
-class CCategorySubCategory extends CRestorable
+abstract class CCategorySubCategory extends CRestorable
 {
-	var $items;
-	var $pages;
-	var $visible;
-	var $sElTable;				/**<Таблица элементов*/
-	var $arFields;
-	var $check_fields;
-	var $auto_fields;
-	var $fType;
-
-	/**
-	 * Коструктор, устанавливает внутренние переменные, производит вызов родительского конструктора,
-	 * проверяет наличие пользовательских полей, и их инициализацию.
-	 */
-
-	function __construct($sCategoryTable = '',$sElementsTable='')
-	{
-		$this->sTable = ($sCategoryTable!='') ? $sCategoryTable : 'catsubcat_catsubcat';
-		$this->sElTable = ($sElementsTable!='') ? $sElementsTable : 'catsubcat_element';
-		parent::__construct($this->sTable,'/catsubcat','catsubcat');
-	}
-
 	/**
 	 * Метод генерирует уникальный ключ для записи
 	 * @param array $arRecord массив по которому генерируется ключ записи
@@ -60,71 +40,24 @@ class CCategorySubCategory extends CRestorable
 	}
 
 	/**
-	 * Смотрите @link CObject::_GenWhere(); для подробного описания
-	 * Метод проверяет наличие поля deleted в запросе и в случае его отсутствия
-	 * добавляет туда значение отображения только существующих элементов
+	 * Метод выполняется перед сохранением записи
+	 * @param $arData
 	 */
-	protected function _GenWhere($arFilter=false,$method='AND',$step=0)
-	{
-		if($step==0)
-		{
-			$bAddField=true;
-			if($arFilter)
-			{
-				foreach($arFilter as $key=>$item)
-				{
-					if(preg_match('#^([><!~=]|>=|<=|->|)?([\w_\.\-]+)#i',$key,$matches))
-					{
-						if(strpos($key,'\.')>0)
-						{
-							$field=substr($key,strpos($matches[2],'\.'));
-						}
-						else
-						{
-							$field=$matches[2];
-						}
-						if($field=='deleted')
-						{
-							$bAddField=false;
-							break;
-						}
-					}
-				}
-			}
-			if($bAddField) $arFilter[$this->sTable.'.deleted']='0';
-		}
-		return parent::_GenWhere($arFilter,$method,$step);
-	}
-
-	function SetLimits($num)
-	{
-		global $ks_db;
-		$this->visible=$num;
-		$this->pages['active']=$_REQUEST['page'];
-	}
-
-	/**
-	 * Метод выполняет сохранение записи
-	 */
-	function Save($prefix='',$data=false)
+	protected function _BeforeSave(&$arData)
 	{
 		global $KS_MODULES;
-		if(!is_array($data))
+		if(array_key_exists('text_ident',$arData))
 		{
-			$data=$_POST;
-		}
-		if(array_key_exists($prefix.'text_ident',$data))
-		{
-			$data[$prefix.'text_ident']=Translit($data[$prefix.'text_ident']);
-			$data[$prefix.'text_ident']=preg_replace('#\s#i','_',$data[$prefix.'text_ident']);
-			$data[$prefix.'text_ident']=preg_replace('#[^a-z0-9_\-]#i','',$data[$prefix.'text_ident']);
+			$arData['text_ident']=Translit($arData['text_ident']);
+			$arData['text_ident']=preg_replace('#\s#i','_',$arData['text_ident']);
+			$arData['text_ident']=preg_replace('#[^a-z0-9_\-]#i','',$data['text_ident']);
 			$length=$KS_MODULES->GetConfigVar('main','text_ident_length',20);
-			$data[$prefix.'text_ident']=substr($data[$prefix.'text_ident'],0,$length);
-			$arRow=$this->GetRecord(array('text_ident'=>$data[$prefix.'text_ident'],'!id'=>$data[$prefix.'id'],'parent_id'=>$data[$prefix.'parent_id']));
+			$arData['text_ident']=substr($arData['text_ident'],0,$length);
+			$arRow=$this->GetRecord(array('text_ident'=>$arData['text_ident'],'!id'=>$arData['id'],'parent_id'=>$arData['parent_id']));
 			if(is_array($arRow)&&($arRow['id']>0))
 			{
 				//Уже есть запись с таким обрезанным идентификатором
-				$code=substr($data[$prefix.'text_ident'],0,$length-MAX_TEXT_IDENT_NUMBERS);
+				$code=substr($arData['text_ident'],0,$length-MAX_TEXT_IDENT_NUMBERS);
 				$arFilter=array(
 					'~text_ident'=>$code,
 					'!id'=>$arRow['id'],
@@ -133,24 +66,17 @@ class CCategorySubCategory extends CRestorable
 					'text_ident'=>'desc',
 				);
 				$iNext=1;
-				$arList=$this->GetList($arSort,$arFilter,100);
-				if(is_array($arList))
-				{
+				if($arList=$this->GetList($arSort,$arFilter,100))
 					foreach($arList as $arItem)
-					{
 						if(preg_match('#^'.$code.'([0-9]{'.MAX_TEXT_IDENT_NUMBERS.','.MAX_TEXT_IDENT_NUMBERS.'})$#i',$arItem['text_ident'],$matches))
-						{
 							$iNext=intval($matches[1])+1;
 							break;
-						}
-					}
-				}
-				$data[$prefix.'text_ident']=$code.str_repeat(0,MAX_TEXT_IDENT_NUMBERS-strlen($iNext)).$iNext;
+				$arData['text_ident']=$code.str_repeat(0,MAX_TEXT_IDENT_NUMBERS-strlen($iNext)).$iNext;
 			}
-			if(strlen($data[$prefix.'text_ident'])<1) $data[$prefix.'text_ident']=time();
+			if(strlen($arData['text_ident'])<1) $arData['text_ident']=time();
 		}
-		if($data[$prefix.'id']==0) $data[$prefix.'text_ident']='';
-		return parent::Save($prefix,$data);
+		if($arData['id']==0) $arData['text_ident']='';
+		return true;
 	}
 
 	/**

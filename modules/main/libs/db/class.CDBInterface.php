@@ -143,16 +143,10 @@ abstract class CDBInterface
 		if(!is_array($arDBStructure) || count($arDBStructure)==0) return false;
 		$this->arDBStructure=$this->ListTables(true);
 		foreach($arDBStructure as $sTableName=>$arTableStructure)
-		{
 			if(array_key_exists(PREFIX.$sTableName,$this->arDBStructure))
-			{
 				$this->CheckTable($sTableName,$arTableStructure);
-			}
 			else
-			{
 				$this->AddTable($sTableName,$arTableStructure);
-			}
-		}
 	}
 
 	/**
@@ -166,13 +160,9 @@ abstract class CDBInterface
 	function CheckTable($sTable,$arTableStructure)
 	{
 		if(!is_array($this->arDBStructure))
-		{
 			$this->arDBStructure=$this->ListTables(true);
-		}
 		if(!array_key_exists(PREFIX.$sTable,$this->arDBStructure))
-		{
 			throw new CDBError('TABLE_NOT_FOUND');
-		}
 		else
 		{
 			foreach($arTableStructure as $sField=>$arField)
@@ -181,12 +171,15 @@ abstract class CDBInterface
 				{
 					//Если поле таблице существует, надо проверить его параметры
 					$bUpdate=false;
+					if(!isset($arField['Extra'])) $arField['Extra']='';
+					if(!isset($arField['Default'])) $arField['Default']='';
+					if(!isset($arField['Null'])) $arField['Null']='';
+					if(!isset($arField['Key'])) $arField['Key']='';
+					if(!isset($arField['Type'])) $arField['Type']='char(255)';
 					foreach($arField as $sParam=>$sValue)
 					{
 						if($sParam=='Default' && $arField['Key']=='PRI')
-						{
 							continue;
-						}
 						if($sParam=='Extra' && $sValue=='fulltext')
 						{
 							if($this->arDBStructure[PREFIX.$sTable][$sField]['Key']=='MUL')
@@ -204,9 +197,7 @@ abstract class CDBInterface
 						}
 					}
 					if($bUpdate)
-					{
 						$this->UpdateColumn($sTable,$sField,$arField);
-					}
 				}
 				else
 				{
