@@ -99,9 +99,7 @@ class CFilterFrame extends CFrame
 			$this->arFields[$arField['FIELD']]['TYPE']=$arNewField['TYPE'];
 			$this->arFields[$arField['FIELD']]['METHOD']=$arNewField['METHOD'];
 			if(($this->arFields[$arField['FIELD']]['VALUE']=='') && ($arNewField['DEFAULT']!=''))
-			{
 				$this->arFields[$arField['FIELD']]['VALUE']=$arNewField['DEFAULT'];
-			}
 		}
 		else
 		{
@@ -118,17 +116,11 @@ class CFilterFrame extends CFrame
 	{
 		global $smarty;
 		foreach($this->arFields as $arItem)
-		{
 			if ($arItem['TYPE']=='DATE') $smarty->assign('addCalendar',1);
-		}
 		if(array_key_exists('showFilter',$_COOKIE))
-		{
 			$smarty->assign('hideFilter',intval($_COOKIE['showFilter']));
-		}
 		else
-		{
 			$smarty->assign('hideFilter',1);
-		}
 		$smarty->assign($sName,$this->arFields);
 	}
 
@@ -180,22 +172,25 @@ class CFilterFrame extends CFrame
 			{
 				if($value['TYPE']=='DATE')
 				{
-					if((strlen($value['VALUE'][0])>0)&&
-						(strlen($value['VALUE'][1])>0))
+					if((strlen($value['VALUE'][0])>0)&&(strlen($value['VALUE'][1])>0))
 					{
-						if(preg_match('#([0-9]{2,2})\.([0-9]{2,2})\.([0-9]{4,4}) ([0-9]{2,2}):([0-9]{2,2})#',$value['VALUE'][0],$time))
-							$arResult['>'.$key]=mktime(intval($time[4]),intval($time[5]),0,intval($time[2]),intval($time[1]),intval($time[3]));
-						if(preg_match('#([0-9]{2,2})\.([0-9]{2,2})\.([0-9]{4,4}) ([0-9]{2,2}):([0-9]{2,2})#',$value['VALUE'][1],$time))
-							$arResult['<'.$key]=mktime(intval($time[4]),intval($time[5]),0,intval($time[2]),intval($time[1]),intval($time[3]));
-						$KS_URL->Set('ff'.$key.'[0]',$value['VALUE'][0]);
-						$KS_URL->Set('ff'.$key.'[1]',$value['VALUE'][1]);
+						if($iFrom=String2Time($value['VALUE'][0]))
+						{
+							$arResult['>'.$key]=$iFrom;
+							$KS_URL->Set('ff'.$key.'[0]',$value['VALUE'][0]);
+						}
+						if($iTo=String2Time($value['VALUE'][0]))
+						{
+							$arResult['<'.$key]=$iTo;
+							$KS_URL->Set('ff'.$key.'[1]',$value['VALUE'][1]);
+						}
 					}
 				}
 				elseif($value['METHOD']=='->')
 				{
 					$arResult[$value['METHOD'].$key]="('".join("','",$value['VALUE'])."')";
-					foreach($value['VALUE'] as $key=>$val)
-						$KS_URL->Set('ff'.$key.'['.$key.']',$val);
+					foreach($value['VALUE'] as $subkey=>$val)
+						$KS_URL->Set('ff'.$key.'['.$subkey.']',$val);
 				}
 				elseif($value['METHOD']=='<>')
 				{

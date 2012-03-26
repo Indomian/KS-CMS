@@ -11,6 +11,11 @@
 					<input type="button" class="add_div2" onclick="document.location='{get_url ACTION=new}';" value="{#create#}">
 				</div>
 			</td>
+			<td>
+				<div>
+					<input type="button" class="add_div2" onclick="document.location='{get_url ACTION=import}';" value="{#import#}">
+				</div>
+			</td>
 			<td width="100%">
 				<span>{#header_hint#}</span>
 			</td>
@@ -46,9 +51,12 @@
 						<td>{$oItem.description}</td>
 						<td>{$oItem.script_descr}</td>
     					<td>
-    						<div style="width:60px;">
+    						<div style="width:80px;">
     							<a href="{get_url ACTION=edit CSC_catid=$oItem.id}" title="{#edit#}">
 									<img src="{#images_path#}/icons2/edit.gif" alt="{#edit#}" />
+								</a>
+								<a href="{get_url ACTION=export CSC_catid=$oItem.id}" title="{#export#}">
+									<img src="{#images_path#}/icons2/elements.png" alt="{#export#}" />
 								</a>
     							<a href="{get_url ACTION=delete CSC_catid=$oItem.id}" onclick="return confirm('{#delete_confirm#}');" title="{#delete#}">
     								<img src="{#images_path#}/icons2/delete.gif" alt="{#delete#}" />

@@ -85,7 +85,7 @@ if (!defined("KS_MAIN_INIT"))
 	$smarty->register_function("captchaImageUrl", array("CCaptcha","GetCaptchaUrl"));
 
 	/* Подключение и опрос модулей */
-	require_once "libs/class.CMain.php";
+	require_once "libs/class.CObject.php";
 	require_once "libs/class.CModuleHookUp.php";
 
 	//$KS_MODULES = new CMain();

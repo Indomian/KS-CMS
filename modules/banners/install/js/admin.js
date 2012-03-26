@@ -146,8 +146,9 @@ $(document).ready(function(){
 		RecheckTable();
 	}
 	$('#filterStatistics').click(function(){
-		var dateFrom=$('#statisticsFrom').datetimepicker('getDate');
-		var dateTo=$('#statisticsTo').datetimepicker('getDate');
+		var dateFrom=$('input[name=statisticsFrom]').datetimepicker('getDate');
+		var dateTo=$('input[name=statisticsTo]').datetimepicker('getDate');
+		var id=$('input[name=id]').val();
 		iDate=dateFrom.getTime()/1000;
 		iDateTo=dateTo.getTime()/1000;
 		params={
@@ -156,7 +157,7 @@ $(document).ready(function(){
 			'module':'banners',
 			'page':'banners',
 			'action':'getStatistics',
-			'id':{/literal}{$data.id}{literal}
+			'id':id
 		};
 		$.getJSON('/admin.php',params,function(data){
 			if(data.error)
@@ -172,29 +173,17 @@ $(document).ready(function(){
 					mytable.append('<tr><td rowspan="2">'+ii+'</td><td>Показов</td></tr>');
 					var row=$('#statResult tr:last');
 					for(i=0;i<24;i++)
-					{
 						if(data.list[ii][i])
-						{
 							row.append('<td>'+data.list[ii][i].views+'</td>');
-						}
 						else
-						{
 							row.append('<td>-</td>');
-						}
-					}
 					mytable.append('<tr><td>Хитов</td></tr>');
 					var row=$('#statResult tr:last');
 					for(i=0;i<24;i++)
-					{
 						if(data.list[ii][i])
-						{
 							row.append('<td>'+data.list[ii][i].hits+'</td>');
-						}
 						else
-						{
 							row.append('<td>-</td>');
-						}
-					}
 				}
 			}
 		});

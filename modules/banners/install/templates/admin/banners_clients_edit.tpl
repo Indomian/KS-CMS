@@ -49,11 +49,4 @@
 	<div><a href="{get_url _CLEAR="action id"}" class="cancel_button">{#cancel#}</a></div>
 </div>
 </form>
-{strip}
-<dl class="def" style="background:#FFF6C4 url('{#images_path#}/big_icons/doc.gif') left 50% no-repeat;{if $smarty.cookies.showHelpBar==1}display:none;{/if}">
-	<dt>{#edit_client_title#}</dt>
-	<dd>{#hint_edit_client#}</dd>
-</dl>
-<div class="content_arrow_{if $smarty.cookies.showHelpBar==1}down{else}up{/if}" onclick="ToggleHelpBar(this)" style="cursor:pointer;">&nbsp;</div>
-{/strip}
-
+{include file='admin/common/hint.tpl' title=$smarty.config.edit_client_title description=$smarty.config.hint_edit_client icon="/big_icons/doc.gif"}

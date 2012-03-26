@@ -18,7 +18,8 @@ function smarty_function_BrowserAttention($params, &$subsmarty)
 	$bOld=false;
 	if($arBrowser['BROWSER']=='Firefox')
 	{
-		if($arBrowser['VERSION']<'4.0') $bOld=true;
+		$arVersion=explode('.',$arBrowser['VERSION']);
+		if($arVersion[0]<4) $bOld=true;
 	}
 	elseif($arBrowser['BROWSER']=='Chrome')
 	{
@@ -41,11 +42,13 @@ function smarty_function_BrowserAttention($params, &$subsmarty)
 	}
 	elseif($arBrowser['BROWSER']=='Safari')
 	{
-		if($arBrowser['VERSION']<'4.0') $bOld=true;
+		$arVersion=explode('.',$arBrowser['VERSION']);
+		if($arVersion[0]<4) $bOld=true;
 	}
 	elseif($arBrowser['BROWSER']=='Opera')
 	{
-		if($arBrowser['VERSION']<'10.0') $bOld=true;
+		$arVersion=explode('.',$arBrowser['VERSION']);
+		if($arVersion[0]<10) $bOld=true;
 	}
 
 	$subsmarty->assign('is_old',$bOld);

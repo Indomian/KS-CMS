@@ -162,6 +162,11 @@ abstract class CModuleManagment extends CObject
 	 */
 	function AddNotify($msg,$text='',$type=NOTIFY_WARNING)
 	{
+		if($msg instanceof Exception)
+		{
+			$text=$msg->GetAdditionalText();
+			$msg=$msg->getMessage();
+		}
 		$this->arNotifies[]=array(
 			'msg'=>$msg,
 			'text'=>$text,

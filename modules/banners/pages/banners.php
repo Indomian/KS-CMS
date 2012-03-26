@@ -71,12 +71,10 @@ class CbannersAIbanners extends CModuleAdmin
 		if (class_exists('CFields'))
 		{
 			$obFields=new CFields();
-			if($arFields=$obFields->GetList(Array('id'=>'asc'),Array('module'=>$this->module,'type'=>$this->obBanners->Banner()->sTable)))
+			if($arFields=$obFields->GetList(Array('id'=>'asc'),Array('module'=>$this->module,'type'=>$this->obBanners->Banner()->GetTable())))
 			{
 				foreach($arFields as $item)
-				{
 					$arDefaults['ext_'.$item['title']]=$item['default'];
-				}
 				$this->smarty->assign('addFields',$arFields);
 			}
 		}
@@ -202,12 +200,12 @@ class CbannersAIbanners extends CModuleAdmin
 		{
 			if(isset($_GET['dateFrom'])) $dateFrom=$_GET['dateFrom']; else $dateFrom=time()-2592000;
 			if(isset($_GET['dateTo'])) $dateTo=$_GET['dateTo']; else $dateTo=time();
+			$arStatistics=array();
 			if($arStat=$this->obBanners->GetStatistics($id,$dateFrom,$dateTo))
 			{
 				$arTmp=$arStat['list'];
 				if(is_array($arTmp))
 				{
-					$arStatistics=array();
 					foreach($arTmp as $arDay)
 					{
 						$sDay=date('d.m.Y',$arDay['date']);
@@ -236,23 +234,15 @@ class CbannersAIbanners extends CModuleAdmin
 		//Получение списка баннеропозиций
 		$arFilterBT=array(''=>$this->obModules->GetText('any'));
 		if($arData=$this->obBanners->Type()->GetList())
-		{
 			foreach($arData as $arRow)
-			{
 				$arFilterBT[$arRow['id']]=$arRow['title'].' ['.$arRow['text_ident'].']';
-			}
-		}
 		//Получение списка рекламных кампаний
 		$arFilterCT=array(''=>$this->obModules->GetText('any'));
 		if($arData=$this->obBanners->Client()->GetList())
-		{
 			foreach($arData as $arRow)
-			{
 				$arFilterCT[$arRow['id']]=$arRow['title'];
-			}
-		}
 		// Обработка порядка вывода элементов
-		list($sOrderField,$sOrderDir)=$this->InitSort($arSortFields,$_REQUEST['order'],$_REQUEST['dir']);
+		list($sOrderField,$sOrderDir)=$this->InitSort($arSortFields);
 		$sNewDir=($sOrderDir=='desc')?'asc':'desc';
 		// Фильтр элементов
 		$arFilter=array();
@@ -275,7 +265,10 @@ class CbannersAIbanners extends CModuleAdmin
 		}
 		if(!is_array($arFilter)) $arFilter=array();
 		$iCount=$this->obBanners->Banner()->Count($arFilter);
-		$obPages = new CPages();
+		$obPages = $this->InitPages();
+		$sClientTable=$this->obBanners->Client()->GetTable();
+		$sTypeTable=$this->obBanners->Type()->GetTable();
+		$sBannersTable=$this->obBanners->Banner()->GetTable();
 		$arSelect=array(
 			'id',
 			'title',
@@ -284,11 +277,11 @@ class CbannersAIbanners extends CModuleAdmin
 			'type_id',
 			'client_id',
 			'save_stats',
-			$this->obBanners->Client()->sTable.'.title'=>'client_title',
-			$this->obBanners->Type()->sTable.'.title'=>'type_title',
+			$sClientTable.'.title'=>'client_title',
+			$sTypeTable.'.title'=>'type_title',
 		);
-		$arFilter['<?'.$this->obBanners->Banner()->sTable.'.client_id']=$this->obBanners->Client()->sTable.'.id';
-		$arFilter['<?'.$this->obBanners->Banner()->sTable.'.type_id']=$this->obBanners->Type()->sTable.'.id';
+		$arFilter['<?'.$sBannersTable.'.client_id']=$sClientTable.'.id';
+		$arFilter['<?'.$sBannersTable.'.type_id']=$sTypeTable.'.id';
 		$arBanners=$this->obBanners->Banner()->GetList(array($sOrderField=>$sOrderDir),$arFilter,$obPages->GetLimits($iCount),$arSelect);
 		$this->smarty->assign('ITEMS',$arBanners);
 		$this->smarty->assign('pages',$obPages->GetPages($iCount));

@@ -23,7 +23,7 @@ class CSiteTree
 		if(isset($_SESSION['adminTree']))
 		{
 			$this->arTree=$_SESSION['adminTree'];
-			$this->arTreeList=$this->GetTreeList($this->arTree);
+			$this->ConvertTreeToList($this->arTree);
 		}
 		else
 		{
@@ -34,29 +34,58 @@ class CSiteTree
 
 	function __destruct()
 	{
-		$_SESSION['adminTree']=$this->arTree;
 	}
 
+	function SaveTree()
+	{
+		unset($_SESSION['adminTree']);
+		$this->arTree=$this->ConvertListToTree($this->arTreeList);
+		$_SESSION['adminTree']=$this->GetTree();
+	}
+
+	function GetTreeList()
+	{
+		return $this->arTreeList;
+	}
+
+	function GetTree()
+	{
+		return $this->ConvertListToTree($this->arTreeList);
+		return $this->arTree;
+	}
+	
 	function Modules()
 	{
 		return $this->obModules;
 	}
 
 	/**
+	 * Метод преобразует список в дерево
+	 */
+	private function ConvertListToTree(array $arList)
+	{
+		$arResult=array();
+		foreach($arList as $key=>$arItem)
+		{
+			if(!isset($arItem['parent']))
+				$arResult[$key]=$arItem;
+		}
+		return $arResult;
+	}
+	
+	/**
 	 * Метод преобразует дерево в список
 	 * @param array $arTree
 	 */
-	function GetTreeList(array &$arTree)
+	private function ConvertTreeToList(array &$arTree)
 	{
-		$arList=array();
 		if(is_array($arTree))
-			foreach($arTree as $key=>$arItem)
+			foreach($arTree as $key=>&$arItem)
 			{
-				$arList[$key]=&$arTree[$key];
-				if(array_key_exists('children',$arItem))
-					$arList=array_merge($arList,$this->GetTreeList($arItem['children']));
+				$this->arTreeList[$key]=$arItem;
+				if(isset($arItem['children']))
+					$this->ConvertTreeToList($arItem['children']);
 			}
-		return $arList;
 	}
 
 	/**
@@ -88,12 +117,23 @@ class CSiteTree
 	 */
 	public function AddTreeLeaf($sParentKey='',array $arLeaf)
 	{
-		if($sParentKey!='' && array_key_exists($sParentKey,$this->arTreeList))
+		if($sParentKey!='')
 		{
-			if(array_key_exists('children',$this->arTreeList[$sParentKey]))
-				$this->arTreeList[$sParentKey]['children'][$arLeaf['key']]=$arLeaf;
+			if(array_key_exists($sParentKey,$this->arTreeList))
+			{
+				$arLeaf['parent']=$sParentKey;
+				if(array_key_exists('children',$this->arTreeList[$sParentKey]))
+				{
+					$this->arTreeList[$sParentKey]['children'][$arLeaf['key']]=$arLeaf;
+					$this->arTreeList[$arLeaf['key']]=&$this->arTreeList[$sParentKey]['children'][$arLeaf['key']];
+				}
+				else
+					throw new CError('MAIN_TREE_CANT_ADD_LEAF_TO_LEAF');
+			}
 			else
-				throw new CError('MAIN_TREE_CANT_ADD_LEAF_TO_LEAF');
+			{
+				throw new CError('MAIN_TREE_PARENT_NOT_FOUND');
+			}
 		}
 		else
 		{

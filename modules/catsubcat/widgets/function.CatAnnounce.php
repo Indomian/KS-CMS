@@ -15,7 +15,7 @@
  * 3. BlaDe39: добавлена поддержка работы в режиме Аякс
  */
 
-require_once MODULES_DIR.'/interfaces/libs/class.CAjax.php';
+include_once(MODULES_DIR."/catsubcat/libs/class.CCategory.php");
 
 /**
  * Функция, возвращающая шаблон анонсов
@@ -27,104 +27,84 @@ require_once MODULES_DIR.'/interfaces/libs/class.CAjax.php';
 function smarty_function_CatAnnounce($params, &$subsmarty)
 {
 	/* Необходимые глобальные объекты и переменные */
-	global $KS_URL, $USER, $KS_MODULES, $ks_db;
-	try
+	global $USER, $KS_MODULES;
+
+	/* Проверка прав доступа пользователя к анонсам */
+	$access_level=$USER->GetLevel('catsubcat');
+	//Проверяем права на доступ к самому модулю
+	if($access_level>8) throw new CAccessError("CATSUBCAT_NOT_VIEW_ANNOUNCE");
+	/* Подключаем необходимые библиотеки */
+
+	/* Подключаем необходимые библиотеки */
+	$arFilterOperations=array(
+		'eq'=>'=',
+		'ne'=>'!=',
+		'gt'=>'>',
+		'lt'=>'<',
+		'ge'=>'>=',
+		'le'=>'<=',
+		//'in'=>'->',
+	);
+	/* Создаём объект для работы с разделами */
+	$obCategory = new CCategory();
+
+	/* Создаём объект для работы с элементами*/
+	$obElement = new CElement();
+	$arFields=$obElement->GetFields();
+	foreach($arFields as $item)
+		if($item!='id')	$arFilterFields[$item]='[a-z0-9_\-\.]+';
+
+	/* Берём параметры, которые нам необходимы для работы виджета */
+	$select_all = false;
+	if ($params['parent_id'] == "all")
 	{
-		//Проверка и инициализация аякса
-		if($params['isAjax']=='Y')
-		{
-			/*Ключ о том это аякс запрос или нет*/
-			$oldAjax=false;
-			$obAjax=new CAjax('CatAnnounce',$params);
-			if(array_key_exists('ajaxMode',$_GET))
-			{
-				if($obAjax->CheckHash($_GET['ajaxMode']))
-				{
-					$oldAjax=true;
-					ob_clean();
-				}
-				else
-					return '';
-			}
-		}
-		/* Проверка прав доступа пользователя к анонсам */
-		$access_level=$USER->GetLevel('catsubcat');
-		$arUserGroups=$USER->GetGroups();
-		//Проверяем права на доступ к самому модулю
-		if($access_level>8) throw new CAccessError("CATSUBCAT_NOT_VIEW_ANNOUNCE");
-		/* Подключаем необходимые библиотеки */
-		$module_directory = MODULES_DIR . "/catsubcat/";
-		include_once($module_directory . "libs/class.CCategory.php");
-		/* Подключаем необходимые библиотеки */
-		$arFilterOperations=array(
-			'eq'=>'=',
-			'ne'=>'!=',
-			'gt'=>'>',
-			'lt'=>'<',
-			'ge'=>'>=',
-			'le'=>'<=',
-			//'in'=>'->',
-		);
-		/* Создаём объект для работы с разделами */
-		$obCategory = new CCategory();
+		$select_all = true;
+		$parent_id = 0;
+	}
+	else
+		$parent_id = intval($params['parent_id']);
+	$params['shift']=intval($params['shift']);
 
-		/* Создаём объект для работы с элементами*/
-		$obElement = new CElement();
-		$arFields=$obElement->GetFields();
-		foreach($arFields as $item)
-			if($item!='id')	$arFilterFields[$item]='[a-z0-9_\-\.]+';
+	/* Количество анонсируемых страниц или количество анонсируемых текстовых страниц на страницу (для постраничной навигации)*/
+	$announces_count = $params['announces_count'];
 
-		/* Берём параметры, которые нам необходимы для работы виджета */
-		$select_all = false;
-		if ($params['parent_id'] == "all")
-		{
-			$select_all = true;
-			$parent_id = 0;
-		}
+	/* Принцип сортировки */
+	$orderby = $params['sort_by'];
+	$orderdir= $params['sort_order']=='asc'?'asc':'desc';
+
+	/* Смотрим, найден ли активный родительский элемент - если нет, то нужно отдать в Смарти ошибку */
+	if ($parent_id >= 0)
+	{
+		/* Определяем принцип сортировки элементов */
+		if ($orderby != "random")
+			$arElOrder = array($orderby => $orderdir);
 		else
-			$parent_id = intval($params['parent_id']);
-		$params['shift']=intval($params['shift']);
+			$arElOrder = array("RAND()" => $orderdir);
 
-		/* Количество анонсируемых страниц или количество анонсируемых текстовых страниц на страницу (для постраничной навигации)*/
-		$announces_count = $params['announces_count'];
-
-		/* Принцип сортировки */
-		$orderby = $params['sort_by'];
-		$orderdir= $params['sort_order']=='asc'?'asc':'desc';
-
-		/* Смотрим, найден ли активный родительский элемент - если нет, то нужно отдать в Смарти ошибку */
-		if ($parent_id >= 0)
+		/* Определяем принцип выборки */
+		if ($select_all)
+			$arElFilter = array("active" => 1);
+		else
 		{
-			/* Определяем принцип сортировки элементов */
-			if ($orderby != "random")
-				$arElOrder = array($orderby => $orderdir);
-			else
-				$arElOrder = array("RAND()" => $orderdir);
-
-			/* Определяем принцип выборки */
-			if ($select_all)
-				$arElFilter = array("active" => 1);
-			else
+			if ($params["select_from_children"] == "Y")
 			{
-				if ($params["select_from_children"] == "Y")
+				if($parent_id!=0)
 				{
-					if($parent_id!=0)
-					{
-						/* Анонсируемые страницы выбираются не только из указанного раздела, но и из всех вложенных */
-						$children_ids = array_merge(array($parent_id), $obCategory->GetChildrenIds($parent_id));
-						$arElFilter = array("->parent_id" => "(" . implode(", ", $children_ids) . ")", "active" => 1);
-					}
-					else
-					{
-						$arElFilter = array("active" => 1);
-					}
+					/* Анонсируемые страницы выбираются не только из указанного раздела, но и из всех вложенных */
+					$children_ids = array_merge(array($parent_id), $obCategory->GetChildrenIds($parent_id));
+					$arElFilter = array("->parent_id" => "(" . implode(", ", $children_ids) . ")", "active" => 1);
 				}
 				else
 				{
-					/* Анонсируемые страницы выбираются только из указанного раздела */
-					$arElFilter = array("parent_id" => $parent_id, "active" => 1);
+					$arElFilter = array("active" => 1);
 				}
 			}
+			else
+			{
+				/* Анонсируемые страницы выбираются только из указанного раздела */
+				$arElFilter = array("parent_id" => $parent_id, "active" => 1);
+			}
+		}
 
 		//Если надо фильтруем записи по времени
 		if($_GET['year']!=0)
@@ -155,147 +135,114 @@ function smarty_function_CatAnnounce($params, &$subsmarty)
 			}
 		}
 
-			/**
-			 * Ищем пользовательские требования к фильтру и используем их если надо
-			 */
-			//Делаем проверку на наличие фильтра в параметрах
-			$fParams=array();
-			foreach($params as $key=>$value)
+		/**
+		 * Ищем пользовательские требования к фильтру и используем их если надо
+		 */
+		//Делаем проверку на наличие фильтра в параметрах
+		$fParams=array();
+		foreach($params as $key=>$value)
+			if(preg_match('#^(fo|ff)_([a-z0-9_]+)$#i',$key,$matches))
+				$fParams[$key]=$value;
+		if((count($fParams)<1)&&($_GET['ff']=='Y')) $fParams=$_GET;
+		foreach($fParams as $key=>$value)
+			if(preg_match('#^fo_([a-z0-9_]+)$#i',$key,$matches))
 			{
-				if(preg_match('#^(fo|ff)_([a-z0-9_]+)$#i',$key,$matches))
-				{
-					$fParams[$key]=$value;
-				}
-			}
-			if((count($fParams)<1)&&($_GET['ff']=='Y')) $fParams=$_GET;
-			foreach($fParams as $key=>$value)
-			{
-				if(preg_match('#^fo_([a-z0-9_]+)$#i',$key,$matches))
-				{
-					$field=$matches[1];
-					if(array_key_exists($field,$arFilterFields)&&array_key_exists($value,$arFilterOperations)&&array_key_exists('ff_'.$field,$fParams))
-					{
-						if(preg_match('#'.$arFilterFields[$field].'#i',$fParams['ff_'.$field]))
-						{
-							if($value=='eq') $arElFilter[$field]=$fParams['ff_'.$field];
-							else
+				$field=$matches[1];
+				if(array_key_exists($field,$arFilterFields)&&array_key_exists($value,$arFilterOperations)&&array_key_exists('ff_'.$field,$fParams))
+					if(preg_match('#'.$arFilterFields[$field].'#i',$fParams['ff_'.$field]))
+						if($value=='eq')
+							$arElFilter[$field]=$fParams['ff_'.$field];
+						else
 							$arElFilter[$arFilterOperations[$value].$field]=$fParams['ff_'.$field];
-						}
-					}
-				}
 			}
-			/* Устанавливаем количество выбираемых элементов */
-			$arLimit = intval($announces_count);
+		/* Устанавливаем количество выбираемых элементов */
+		$arLimit = intval($announces_count);
 
-			/* Массив выбираемых полей */
-			if(!isset($params['select']))
+		/* Массив выбираемых полей */
+		if(!isset($params['select']))
+		{
+			$arSelect = array("id", "parent_id", "text_ident", "title", "description", "img", "date_add", "views_count");
+		}
+		else
+		{
+			$params['select']=explode(',',$params['select']);
+			$arSelectAv=$obElement->GetFields();
+			$arSelect=array('id',"parent_id", "text_ident", "title","img");
+			foreach($arSelect as $sField)
 			{
-				$arSelect = array("id", "parent_id", "text_ident", "title", "description", "img", "date_add", "views_count");
+				if(in_array($sField,$params['select']))
+					$arSelect[]=$sField;
 			}
-			else
-			{
-				$params['select']=explode(',',$params['select']);
-				$arSelectAv=$obElement->GetFields();
-				$arSelect=array('id',"parent_id", "text_ident", "title","img");
-				foreach($arSelect as $sField)
-				{
-					if(in_array($sField,$params['select']))
-						$arSelect[]=$sField;
-				}
-				$arSelect=array_unique($arSelect);
-			}
-			/* Использование постраничной навигации */
-			if ($params["use_page_navigation"] == "Y")
-			{
-				/* Подключаем библиотеку для работы с постраничной навигацией */
-				include_once MODULES_DIR . '/interfaces/libs/class.CInterface.php';
-
-				/* Определяем общее количество выбираемых элементов */
-				$elements_count = $obElement->Count($arElFilter);
-
-				/* Создаём объект для работы с постраничной навигацией */
-				$obPages = new CPageNavigation($obElement, $elements_count, $announces_count);
-
-				/* Получаем массив для постраничной навигации (будем использовать в Смарти) */
-				$pages = $obPages->GetPages();
-
-				/* Устанавливаем новые переделы для выборки элементов */
-				$arLimit = $obPages->GetLimits();
-			}
-
+			$arSelect=array_unique($arSelect);
+		}
+		/* Использование постраничной навигации */
+		if ($params["use_page_navigation"] == "Y")
+		{
+			/* Подключаем библиотеку для работы с постраничной навигацией */
+			include_once MODULES_DIR . '/interfaces/libs/class.CInterface.php';
+			/* Определяем общее количество выбираемых элементов */
+			$elements_count = $obElement->Count($arElFilter);
+			/* Создаём объект для работы с постраничной навигацией */
+			$obPages = new CPageNavigation($obElement, $elements_count, $announces_count);
+			/* Получаем массив для постраничной навигации (будем использовать в Смарти) */
+			$pages = $obPages->GetPages();
+			/* Устанавливаем новые переделы для выборки элементов */
+			$arLimit = $obPages->GetLimits();
+		}
+		else
+		{
+			$elements_count=1;
+		}
+		//Если есть какие либо записи, либо мы не считали
+		if($elements_count>0)
+		{
 			//Проверяем надо ли сдвигать результат или нет
 			if($params['shift']>0)
 			{
 				if(is_array($arLimit))
-				{
 					$arLimit[0]+=$params['shift'];
-//					$arLimit[1]+=$params['shift'];
-				}
 				else
-				{
 					$arLimit=array($params['shift'],$arLimit);
-				}
 			}
 
-
-			/* Получаем массив анонсируемых страниц */
-			$announces = $obElement->GetList($arElOrder, $arElFilter, $arLimit,$arSelect);
 			$data=array();
 			$arFullPath=array();
-			if (is_array($announces))
-				if (count($announces))
-					foreach ($announces as $announce_key => $announce)
-					{
-						/* Кидаем в массив дату добавления в отформатированном виде */
-						$announces[$announce_key]['date'] = date("d.m.Y", $announce['date_add']);
+			/* Получаем массив анонсируемых страниц */
+			if($announces = $obElement->GetList($arElOrder, $arElFilter, $arLimit,$arSelect))
+				foreach ($announces as $announce_key => $announce)
+				{
+					/* Кидаем в массив дату добавления в отформатированном виде */
+					$announces[$announce_key]['date'] = date("d.m.Y", $announce['date_add']);
 
-						/* Определяем полный путь к разделу, содержащему элемент */
-						/* Определяем полный путь к разделу, содержащему элемент */
-						if(!array_key_exists($announce['parent_id'],$arFullPath))
-						{
-							$arFullPath[$announce['parent_id']]=$obCategory->GetFullPath($announce['parent_id']);
-						}
-						$announces[$announce_key]['full_path'] = $arFullPath[$announce['parent_id']];
-						$announces[$announce_key]['date_rfc2822']=date('r',$announces[$announce_key]['date_add']);
-						if($data['pubDate']<$announce['date_add'])
-							$data['pubDate'] = $announce['date_add'];
-						if($data['lastBuildDate']<$announce['date_edit'])
-							$data['lastBuildDate'] = $announce['date_edit'];
-					}
-
-			/* Отправляем данные для Смарти */
-			$subsmarty->assign("announces", $announces);
-			$subsmarty->assign("announces_count", count($announces));
-			$subsmarty->assign('module_title',$KS_MODULES->GetConfigVar('catsubcat','title_default','Текстовые страницы'));
-			$subsmarty->assign("orderby", $orderby);
-			if (isset($pages))
-			{
-				$data = array();
-				$data["pages"] = $pages;
-				$subsmarty->assign("data", $data);
-			}
+					/* Определяем полный путь к разделу, содержащему элемент */
+					/* Определяем полный путь к разделу, содержащему элемент */
+					if(!array_key_exists($announce['parent_id'],$arFullPath))
+						$arFullPath[$announce['parent_id']]=$obCategory->GetFullPath($announce['parent_id']);
+					$announces[$announce_key]['full_path'] = $arFullPath[$announce['parent_id']];
+					$announces[$announce_key]['date_rfc2822']=date('r',$announces[$announce_key]['date_add']);
+					if($data['pubDate']<$announce['date_add'])
+						$data['pubDate'] = $announce['date_add'];
+					if($data['lastBuildDate']<$announce['date_edit'])
+						$data['lastBuildDate'] = $announce['date_edit'];
+				}
 		}
-		else
-			$subsmarty->assign("announce_error", "CATSUBCAT_SECTION_NOT_ACTIVE");
 
-		$sResult=$KS_MODULES->RenderTemplate($subsmarty,'/catsubcat/CatAnnounce',$params['global_template'],$params['tpl']);
-		//Заканчиваем работу в режиме аякса
-		if($params['isAjax']=='Y') $sResult=$obAjax->GetCode($sResult,$oldAjax);
-		if($oldAjax)
+		/* Отправляем данные для Смарти */
+		$subsmarty->assign("announces", $announces);
+		$subsmarty->assign("announces_count", count($announces));
+		$subsmarty->assign('module_title',$KS_MODULES->GetConfigVar('catsubcat','title_default','Текстовые страницы'));
+		$subsmarty->assign("orderby", $orderby);
+		if (isset($pages))
 		{
-			echo $sResult;
-			die();
+			$data = array();
+			$data["pages"] = $pages;
+			$subsmarty->assign("data", $data);
 		}
-		return $sResult;
 	}
-	catch (CAccessError $e)
-	{
-		return $e;
-	}
-	catch (CError $e)
-	{
-		return $e;
-	}
+	else
+		$subsmarty->assign("announce_error", "CATSUBCAT_SECTION_NOT_ACTIVE");
+
+	return $KS_MODULES->RenderTemplate($subsmarty,'/catsubcat/CatAnnounce',$params['global_template'],$params['tpl']);
 }
 
 /**

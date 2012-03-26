@@ -1,6 +1,6 @@
 <?php
 /**
- * @file catsubcat/pages/options.php
+ * @filesource catsubcat/pages/options.php
  * Файл обработки настроек модуля catsubcat
  * Файл проекта kolos-cms.
  *
@@ -12,13 +12,10 @@
 /*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
-require_once MODULES_DIR.'/main/libs/class.CModuleAdmin.php';
-require_once MODULES_DIR.'/main/libs/class.CUserGroup.php';
-require_once MODULES_DIR.'/main/libs/class.CAccess.php';
-require_once MODULES_DIR.'/main/libs/class.CConfigParser.php';
+require_once MODULES_DIR.'/main/libs/class.CModuleOptions.php';
 require_once MODULES_DIR.'/catsubcat/libs/class.CElement.php';
 
-class CcatsubcatAIoptions extends CModuleAdmin
+class CcatsubcatAIoptions extends CModuleOptions
 {
 	private $obElement;
 

@@ -19,7 +19,7 @@ $sContent='';
 
 include 'description.php';
 require_once MODULES_DIR.'/main/libs/class.CUserGroup.php';
-require_once MODULES_DIR.'/main/libs/class.CAccess.php';
+require_once MODULES_DIR.'/main/libs/class.CModulesAccess.php';
 
 
 //Определяем режим работы

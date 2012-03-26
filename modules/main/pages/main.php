@@ -72,6 +72,9 @@ class CmainAImain extends CModuleAdmin
 				'size'=>count($arTreeBrunch)
 			);
 		}
+		$arResult['debug']=$this->obTree->GetTree();
+		$arResult['debug_list']=$this->obTree->GetTreeList();
+		$this->obTree->SaveTree();
 		echo json_encode($arResult);
 		///@todo Убрать!
 		die();

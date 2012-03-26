@@ -184,17 +184,11 @@
 				<tr>
 					<td>Показать с</td>
 					<td>
-						<div class="date_selector">
-							<input type="text" id="statisticsFrom" readonly="readonly" {if $data.statisticsFrom!=0}value="{$data.statisticsFrom|date_format:"%d.%m.%Y %H:%M":""}"{else}value=""{/if} class="date_input"/>
-							<img src="/uploads/templates/admin/images/calendar/img.gif" class="date_button" title="Выбор даты спомощью календаря" align="absmiddle">
-						</div>
+						{ShowCalendar field="statisticsFrom" title=$smarty.config.select_date value=$data.statisticsFrom}
 					</td>
 					<td>по</td>
 					<td>
-						<div class="date_selector">
-							<input type="text" id="statisticsTo" readonly="readonly" {if $data.statisticsFrom!=0}value="{$data.statisticsTo|date_format:"%d.%m.%Y %H:%M":""}"{else}value=""{/if} class="date_input"/>
-							<img src="/uploads/templates/admin/images/calendar/img.gif" class="date_button" title="Выбор даты спомощью календаря" align="absmiddle">
-						</div>
+						{ShowCalendar field="statisticsTo" title=$smarty.config.select_date value=$data.statisticsTo}
 					</td>
 					<td>
 						<input type="button" class="button" id="filterStatistics" value="Выбрать данные"/>
@@ -279,18 +273,11 @@
 	<div><a href="{get_url _CLEAR="action id"}" class="cancel_button">{#cancel#}</a></div>
 </div>
 </form>
-{strip}
-<dl class="def" style="background:#FFF6C4 url('{#images_path#}/big_icons/doc.gif') left 50% no-repeat;{if $smarty.cookies.showHelpBar==1}display:none;{/if}">
-	{if $rights.canEdit}
-		<dt>{#title_edit#}</dt>
-		<dd>{#hint_edit#}</dd>
-	{else}
-		<dt>{#title_view#}</dt>
-		<dd>{#hint_view#}</dd>
-	{/if}
-</dl>
-<div class="content_arrow_{if $smarty.cookies.showHelpBar==1}down{else}up{/if}" onclick="ToggleHelpBar(this)" style="cursor:pointer;">&nbsp;</div>
-{/strip}
+{if $rights.canEdit}
+	{include file='admin/common/hint.tpl' title=$smarty.config.title_edit description=$smarty.config.hint_edit icon="/big_icons/doc.gif"}
+{else}
+	{include file='admin/common/hint.tpl' title=$smarty.config.title_view description=$smarty.config.hint_view icon="/big_icons/doc.gif"}
+{/if}
 {if not $rights.canEdit}
 {literal}
 <script type="text/javascript">

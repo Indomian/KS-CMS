@@ -172,6 +172,8 @@ class CmainAIusers extends CModuleAdmin
 						$bError+=$this->obModules->AddNotify('MAIN_USERS_EMAIL_ALREADY');
 				}
 			}
+			else
+				$bError+=$this->obModules->AddNotify('MAIN_USERS_EMAIL_REQUIRED');
 			//Проверка пароля
 			if(strlen($_POST['CU_password'])>0)
 			{
@@ -202,7 +204,10 @@ class CmainAIusers extends CModuleAdmin
 					$_POST['CU_blocked_from']=0;
 					$_POST['CU_blocked_till']=0;
 				}
-			$_POST['CU_active']=intval($_POST['CU_active']);
+			if(isset($_POST['CU_active']))
+				$_POST['CU_active']=intval($_POST['CU_active']);
+			else
+				$_POST['CU_active']=0;
 			if($bError==0)
 			{
 				if($id = $this->obUser->Save("CU_",$_POST))

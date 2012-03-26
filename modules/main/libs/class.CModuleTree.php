@@ -26,6 +26,11 @@ class CModuleTree
 		$this->sIcon='/icons_tree/folder.gif';
 	}
 
+	function GetRootPath()
+	{
+		return $this->obSiteTree->Modules()->GetSitePath($this->sModule);
+	}
+
 	function GetRootBrunch()
 	{
 		$arHash=array($this->sModule);
@@ -33,8 +38,9 @@ class CModuleTree
 			'key'=>$this->obSiteTree->GenHash($arHash),
 			'title'=>$this->obSiteTree->Modules()->GetTitle($this->sModule),
 			'icon'=>$this->sIcon,
-			'href'=>'',
+			'href'=>$this->obSiteTree->Modules()->GetSitePath($this->sModule),
 			'actions'=>'',
+			'date_change'=>0,
 			'data'=>array(
 				'module'=>$this->sModule
 			)

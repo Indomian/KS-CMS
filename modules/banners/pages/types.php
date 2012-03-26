@@ -31,12 +31,10 @@ class CbannersAITypes extends CModuleAdmin
 		if (class_exists('CFields'))
 		{
 			$obFields=new CFields();
-			if($arFields=$obFields->GetList(Array('id'=>'asc'),Array('module'=>$this->module,'type'=>$this->obBanners->Type()->sTable)))
+			if($arFields=$obFields->GetList(Array('id'=>'asc'),Array('module'=>$this->module,'type'=>$this->obBanners->Type()->GetTable())))
 			{
 				foreach($arFields as $item)
-				{
 					$arDefaults['ext_'.$item['title']]=$item['default'];
-				}
 				$this->smarty->assign('addFields',$arFields);
 			}
 		}
@@ -49,16 +47,10 @@ class CbannersAITypes extends CModuleAdmin
 		$arResult=array();
 		$arFields=$this->obBanners->GetTypesFields();
 		foreach($arFields as $sField)
-		{
 			if(array_key_exists($prefix.$sField,$data))
-			{
 				$arResult[$sField]=$data[$prefix.$sField];
-			}
 			else
-			{
 				$arResult[$sField]='';
-			}
-		}
 		return $arResult;
 	}
 	/**
@@ -75,16 +67,10 @@ class CbannersAITypes extends CModuleAdmin
 			try
 			{
 				if($obImageUploader->IsReady())
-				{
 					if($sImageName=$obImageUploader->Upload($this->obBanners->Type()->GetUploadFolder()))
-					{
 						$_POST['OS_icon']=$sImageName;
-					}
 					else
-					{
 						$bError=$this->obModules->AddNotify('BANNERS_TYPE_ICON_UPLOAD_ERROR');
-					}
-				}
 			}
 			catch(CError $e)
 			{
@@ -121,20 +107,12 @@ class CbannersAITypes extends CModuleAdmin
 			if($bError==0)
 			{
 				if($id=$this->obBanners->Type()->Save('OS_',$_POST))
-				{
 					if(!array_key_exists('update',$_REQUEST))
-					{
 						$KS_URL->Redirect("admin.php?".$KS_URL->GetUrl(array('action','id')));
-					}
 					else
-					{
 						$KS_URL->Redirect("admin.php?".$KS_URL->GetUrl(array('action','id')).'&action=edit&id='.$id);
-					}
-				}
 				else
-				{
 					throw new CError('BANNERS_TYPE_SAVE_ERROR');
-				}
 			}
 			else
 			{
@@ -154,7 +132,7 @@ class CbannersAITypes extends CModuleAdmin
 	{
 		$arSortFields=$this->obBanners->GetTypesFields();
 		// Обработка порядка вывода элементов
-		list($sOrderField,$sOrderDir)=$this->InitSort($arSortFields,$_REQUEST['order'],$_REQUEST['dir']);
+		list($sOrderField,$sOrderDir)=$this->InitSort($arSortFields);
 		$sNewDir=($sOrderDir=='desc')?'asc':'desc';
 		// Фильтр элементов
 		$arFilter=array();
@@ -174,7 +152,7 @@ class CbannersAITypes extends CModuleAdmin
 			$this->smarty->assign('ftitles',$arTitles);
 		}
 		$iCount=$this->obBanners->Type()->Count($arFilter);
-		$obPages = $this->InitPages(20);
+		$obPages = $this->InitPages();
 		$arOrders=$this->obBanners->Type()->GetList(array($sOrderField=>$sOrderDir),$arFilter,$obPages->GetLimits($iCount));
 		$this->smarty->assign('ITEMS',$arOrders);
 		$this->smarty->assign('pages',$obPages->GetPages($iCount));

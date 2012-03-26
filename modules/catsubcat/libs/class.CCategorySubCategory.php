@@ -50,7 +50,7 @@ abstract class CCategorySubCategory extends CRestorable
 		{
 			$arData['text_ident']=Translit($arData['text_ident']);
 			$arData['text_ident']=preg_replace('#\s#i','_',$arData['text_ident']);
-			$arData['text_ident']=preg_replace('#[^a-z0-9_\-]#i','',$data['text_ident']);
+			$arData['text_ident']=preg_replace('#[^a-z0-9_\-]#i','',$arData['text_ident']);
 			$length=$KS_MODULES->GetConfigVar('main','text_ident_length',20);
 			$arData['text_ident']=substr($arData['text_ident'],0,$length);
 			$arRow=$this->GetRecord(array('text_ident'=>$arData['text_ident'],'!id'=>$arData['id'],'parent_id'=>$arData['parent_id']));
@@ -69,13 +69,23 @@ abstract class CCategorySubCategory extends CRestorable
 				if($arList=$this->GetList($arSort,$arFilter,100))
 					foreach($arList as $arItem)
 						if(preg_match('#^'.$code.'([0-9]{'.MAX_TEXT_IDENT_NUMBERS.','.MAX_TEXT_IDENT_NUMBERS.'})$#i',$arItem['text_ident'],$matches))
+						{
 							$iNext=intval($matches[1])+1;
 							break;
+						}
 				$arData['text_ident']=$code.str_repeat(0,MAX_TEXT_IDENT_NUMBERS-strlen($iNext)).$iNext;
 			}
 			if(strlen($arData['text_ident'])<1) $arData['text_ident']=time();
 		}
-		if($arData['id']==0) $arData['text_ident']='';
+		if(!isset($arData['id']) || $arData['id']<0)
+		{
+			$arData['date_add']=time();
+		}
+		elseif($arData['id']==0)
+		{
+			$arData['text_ident']='';
+		}
+		$arData['date_edit']=time();
 		return true;
 	}
 

@@ -189,7 +189,7 @@ class CObject extends CBaseList
 	{
 		/* Определение, есть ли запись с заданным id в таблице или нет.
 		   В зависимости от этого обновим старую запись или добавим новую. */
-		if(array_key_exists('id',$arData) && $arData['id']!='')
+		if(array_key_exists('id',$arData) && $arData['id']!=='')
 		{
 			$query_select = "SELECT id FROM " . PREFIX . $this->sTable . " WHERE id = '" . $arData['id'] . "' LIMIT 1";
 			$this->obDB->query($query_select);
@@ -211,16 +211,12 @@ class CObject extends CBaseList
 		$fields = "";
 		$values = "";
 		if (is_array($this->arAutoFields))
-		{
 			foreach($arData as $key=>$item)
-			{
 				if (!in_array($key, $this->arAutoFields))
 				{
 					$fields .= "`".$key."`,";
 					$values .= "'$item',";
 				}
-			}
-		}
 		else
 			foreach($arData as $key=>$item)
 			{
@@ -287,11 +283,14 @@ class CObject extends CBaseList
 
 		$arData=$this->_PrepareData($input,$prefix);
 		if($this->_BeforeSave($arData))
-			if($arData['id']=$this->_SaveData($arData))
+		{
+			$arData['id']=$this->_SaveData($arData);
+			if($arData['id']!==false)
 			{
 				$this->_AfterSave($arData);
 				return $arData['id'];
 			}
+		}
 		return false;
 	}
 
@@ -566,7 +565,11 @@ class CObject extends CBaseList
 					else
 					{
 						if(!$noSafe) $value=$this->obDB->safesql($value);
-						if($operation=='!') $operation=" $myfield!='$value' ";
+						if($operation=='!')
+						{
+							if($noSafe) $operation=" $myfield!=$value ";
+							else $operation=" $myfield!='$value' ";
+						}
 						elseif($operation=='~') $operation=" $myfield LIKE '%".$value."%' ";
 						elseif($operation=='!~') $operation=" $myfield NOT LIKE '%".$value."%' ";
 						elseif($operation=='^~') $operation=" $myfield LIKE '".$value."%' ";
@@ -787,7 +790,7 @@ class CObject extends CBaseList
 		return $sOrder;
 	}
 
-/**
+	/**
 	 * Метод генерирует список полей для SELECT запроса. Все переданные
 	 * даннные проходят проверку по списку полей, поля которые не существуют, отбрасываются.
 	 * @param $arSelect array - список полей которые надо преобразовать в строку.
@@ -802,6 +805,7 @@ class CObject extends CBaseList
 	{
 		if(!is_array($arSelect)) return ' * ';
 		$res=' * ';
+		$arFieldsTmp=array_flip($this->arFields);
 		foreach ($arSelect as $key=>$myfield)
 		{
 			$prefix='';
@@ -813,7 +817,8 @@ class CObject extends CBaseList
 			else
 				$sNewName='';
 			/*Добавлена проверка на сложное наименование полей*/
-			if(substr($myfield,0,1)=='?')
+			//if(substr($myfield,0,1)=='?')
+			if($myfield{0}=='?')
 			{
 				$myfield=substr($myfield,1);
 				if($sNewName!='')
@@ -827,7 +832,7 @@ class CObject extends CBaseList
 				$arField=explode('.',$myfield);
 				if($arField[0]!='')
 				{
-					if(!array_key_exists($arField[0],$this->arTables))
+					if(!isset($this->arTables[$arField[0]]))
 					{
 						//Такая таблица еще не добавлена
 						$code=chr(65+count($this->arTables));
@@ -846,10 +851,11 @@ class CObject extends CBaseList
 			}
 			else
 			{
-				if (in_array(strtolower($myfield),$this->arFields))
+				//if (in_array(strtolower($myfield),$this->arFields))
+				if (isset($arFieldsTmp[$myfield]))
 				{
 					//Простое наименование, значит поле стандартной таблицы - преобразуем
-					if(!array_key_exists($this->sTable,$this->arTables))
+					if(!isset($this->arTables[$this->sTable]))
 					{
 						//Такая таблица еще не добавлена
 						$code=chr(65+count($this->arTables));
@@ -882,8 +888,13 @@ class CObject extends CBaseList
 				$arFields[$sField] = array('Type' => 'char', 'Size' => '255');
 			elseif(preg_match('#^enum#i',$arField['Type']))
 				$arFields[$sField] = array('Type' => 'enum', 'Size' => '255');
-			elseif(preg_match('#^([a-z]+)\s*\((\d+)\)( unsigned)?$#i',$arField['Type'],$matches))
-				$arFields[$sField] = array('Type' => strtolower($matches[1]), 'Size' => intval($matches[2]));
+			elseif(preg_match('#^(float|double)#i',$arField['Type'],$matches))
+				$arFields[$sField] = array('Type' => strtolower($matches[1]), 'Size' => '255');
+			elseif(preg_match('#^([a-z]+)(\s*\((\d+)\))?( unsigned)?$#i',$arField['Type'],$matches))
+				if(count($matches)>3)
+					$arFields[$sField] = array('Type' => strtolower($matches[1]), 'Size' => intval($matches[3]));
+				else
+					$arFields[$sField] = array('Type' => strtolower($matches[1]), 'Size' => 0);
 		return $arFields;
 	}
 
@@ -1101,14 +1112,17 @@ class CObject extends CBaseList
 		$sWhere='';
 		if(!$bFiltered)
 		{
-			if(is_array($id))
+			if(is_array($id)&&count($id)>0)
 			{
 				foreach ($id as $ItemId)
 					$arWhere[]="`id`='$ItemId'";
-				if (count($arWhere)>0): $sWhere="WHERE ".join(' OR ',$arWhere);endif;
+				if (count($arWhere)>0)
+					$sWhere="WHERE ".join(' OR ',$arWhere);
 			}
 			elseif (is_numeric($id))
 				$sWhere="WHERE `id`='$id' ";
+			else
+				throw new CError('MAIN_INCORRECT_UPDATE_FILTER');
 		}
 		else
 			$sWhere=$this->_GenWhere($id);

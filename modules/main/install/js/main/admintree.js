@@ -17,7 +17,7 @@ function _KSAdminTree(id){
 					root.parent().children('.show').hide().prev().show();
 					for(ii in data.list)
 					{
-						var obItem=root.append('<li id="'+ii+'"><span>'+data.list[ii].title+'</span></li>').children('li:last');
+						var obItem=root.append('<li id="'+ii+'"><span title="'+data.list[ii].href+'">'+data.list[ii].title+'</span></li>').children('li:last');
 						if('icon' in data.list[ii])
 							obItem.prepend('<img src="/uploads/templates/admin/images'+data.list[ii].icon+'" alt="" class="icon">');
 						if('children' in data.list[ii])

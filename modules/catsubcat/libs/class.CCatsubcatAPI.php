@@ -39,7 +39,7 @@ class CCatsubcatAPI extends CBaseAPI
 	/**
 	 * This implements the 'singleton' design pattern
    	 *
-     * @return object CMain The one and only instance
+     * @return object CCatsubcatAPI The one and only instance
      */
   	static function get_instance()
   	{

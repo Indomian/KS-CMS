@@ -123,13 +123,14 @@ class Cguestbook2AIrecords extends CModuleAdmin
 			);
 			$this->smarty->assign('ftitles',$arTitles);
 		}
-		$arFilter['<?'.$this->obGB2->obPosts->sTable.'.user_id']=$this->obUser->sTable.'.id';
+		$sUserTable=$this->obUser->GetTable();
+		$arFilter['<?'.$this->obGB2->obPosts->GetTable().'.user_id']=$sUserTable.'.id';
 		$this->obGB2->obPosts->Count($arFilter);
 		$obPages = new CPageNavigation($this->obGB2->obPosts);
 		$arSelect=$arSortFields;
 		$arFields=$this->obUser->GetFields();
 		foreach($arFields as $sItem)
-			$arSelect[]=$this->obUser->sTable.'.'.$sItem;
+			$arSelect[]=$sUserTable.'.'.$sItem;
 		$arOrders=$this->obGB2->obPosts->GetList(array($sOrderField=>$sOrderDir),$arFilter,$obPages->GetLimits(),$arSelect);
 		$this->smarty->assign('ITEMS',$arOrders);
 		$this->smarty->assign('pages',$obPages->GetPages());

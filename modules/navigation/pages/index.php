@@ -117,6 +117,56 @@ class CnavigationAIindex extends CModuleAdmin
 		}
 	}
 
+	function ExportForm($id)
+	{
+		if($data=$this->oType->GetById($id))
+		{
+			$arResult['type']=$data;
+			$arFilter=array('type_id'=>$data['id']);
+			$arResult['items']=$this->oElement->GetList(false,$arFilter);
+			$this->smarty->assign('export',json_encode($arResult));
+			return '_export';
+		}
+		$this->obModules->AddNotify('NAVIGATION_MENU_TYPE_NOT_FOUND');
+		return $this->Table();
+	}
+
+	function DoImport()
+	{
+		$KS_URL=CUrlParser::get_instance();
+		if($_SERVER['REQUEST_METHOD']=='POST' && isset($_POST['importCode']))
+		{
+			$arRequestData=json_decode($_POST['importCode'],true);
+			if(is_array($arRequestData) && isset($arRequestData['type']) && is_array($arRequestData['type']))
+			{
+				$arType=$arRequestData['type'];
+				unset($arType['id']);
+				if($id=$this->oType->Save('',$arType))
+				{
+					if(isset($arRequestData['items']) && is_array($arRequestData['items']))
+					{
+						foreach($arRequestData['items'] as $arMenuItem)
+						{
+							unset($arMenuItem['id']);
+							$arMenuItem['type_id']=$id;
+							$this->oElement->Save('',$arMenuItem);
+						}
+					}
+				}
+				$this->obModules->AddNotify('NAVIGATION_TYPE_IMPORT_OK','',NOTIFY_MESSAGE);
+				CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION')));
+			}
+			else
+			{
+				$this->obModules->AddNotify('WRONG_IMPORT_DATA');
+				CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION')));
+			}
+		}
+		$this->obModules->AddNotify('WRONG_IMPORT_REQUEST');
+		CUrlParser::get_instance()->Redirect("/admin.php?".$KS_URL->GetUrl(Array('ACTION')));
+	}
+
+
 	function CommonActions()
 	{
 		//Обработка множественного выбора
@@ -166,8 +216,17 @@ class CnavigationAIindex extends CModuleAdmin
 			case "new":
 				$page=$this->EditForm($data);
 			break;
+			case "export":
+				$page=$this->ExportForm($this->iId);
+			break;
 			case "save":
-				$page=$this->Save();
+				$this->Save();
+			break;
+			case "import":
+				$page='_import';
+			break;
+			case "import_do":
+				$page=$this->DoImport();
 			break;
 			case "delete":
 				if($arData=$this->oType->GetById($this->iId))

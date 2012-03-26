@@ -36,16 +36,10 @@ class CbannersAIclients extends CModuleAdmin
 		$arResult=array();
 		$arFields=$this->obBanners->Client()->GetFields();
 		foreach($arFields as $sField)
-		{
 			if(array_key_exists($prefix.$sField,$data))
-			{
 				$arResult[$sField]=$data[$prefix.$sField];
-			}
 			else
-			{
 				$arResult[$sField]='';
-			}
-		}
 		return $arResult;
 	}
 	/**
@@ -67,27 +61,15 @@ class CbannersAIclients extends CModuleAdmin
 			else
 				$_POST['OS_active']=0;
 			if($bError==0)
-			{
 				if($id=$this->obBanners->Client()->Save('OS_',$_POST))
-				{
 					if(!array_key_exists('update',$_REQUEST))
-					{
 						$KS_URL->Redirect("admin.php?".$KS_URL->GetUrl(array('action','id')));
-					}
 					else
-					{
 						$KS_URL->Redirect("admin.php?".$KS_URL->GetUrl(array('action','id')).'&action=edit&id='.$id);
-					}
-				}
 				else
-				{
 					throw new CError('BANNERS_CLIENT_SAVE_ERROR');
-				}
-			}
 			else
-			{
 				throw new CDataError('BANNERS_CLIENT_WRONG_FIELDS');
-			}
 		}
 		catch(CError $e)
 		{
@@ -102,7 +84,7 @@ class CbannersAIclients extends CModuleAdmin
 	{
 		$arSortFields=$this->obBanners->Client()->GetFields();
 		// Обработка порядка вывода элементов
-		list($sOrderField,$sOrderDir)=$this->InitSort($arSortFields,$_REQUEST['order'],$_REQUEST['dir']);
+		list($sOrderField,$sOrderDir)=$this->InitSort($arSortFields);
 		$sNewDir=($sOrderDir=='desc')?'asc':'desc';
 		// Фильтр элементов
 		$arFilter=array();
@@ -120,7 +102,7 @@ class CbannersAIclients extends CModuleAdmin
 			$this->smarty->assign('ftitles',$arTitles);
 		}
 		$iCount=$this->obBanners->Client()->Count($arFilter);
-		$obPages = $this->InitPages(20);
+		$obPages = $this->InitPages();
 		$arOrders=$this->obBanners->Client()->GetList(array($sOrderField=>$sOrderDir),$arFilter,$obPages->GetLimits($iCount));
 		$this->smarty->assign('ITEMS',$arOrders);
 		$this->smarty->assign('pages',$obPages->GetPages($iCount));

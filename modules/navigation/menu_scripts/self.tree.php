@@ -41,7 +41,7 @@ if(!function_exists('self_tree_menu_GetChildren'))
 }
 
 $obMenu = new CNavElement();
-if($arItems = $obMenu->GetList(array('orderation'=>'asc'),array('type_id'=>$menu_params['id'])))
+if($arItems = $obMenu->GetList(array('orderation'=>'asc'),array('type_id'=>$menu_params['id'],'active'=>1)))
 {
 	$output=self_tree_menu_GetChildren(0,$arItems);
 }

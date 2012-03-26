@@ -23,10 +23,8 @@ function smarty_function_Pic($params, &$subsmarty)
 	if($params['height']!='') $sSizeFile.=intval($params['height']);
 	$cacheDir=ROOT_DIR.'/uploads/PicCache'.$params['src'].'/';
 	$cacheFile='/uploads/PicCache'.$params['src'].'/'.$sSizeFile.'.png';
-	if(file_exists(ROOT_DIR.$cacheFile))
-	{
+	if(file_exists(ROOT_DIR.$cacheFile)&&is_file(ROOT_DIR.$cacheFile))
 		$res=$cacheFile;
-	}
 	else
 	{
 		//Такой файл не был закеширован, значит надо его создавать
@@ -48,39 +46,36 @@ function smarty_function_Pic($params, &$subsmarty)
 					if(!file_exists($cacheDir)) $KS_FS->makedir($cacheDir);
 					if($obImage->SavePNG(ROOT_DIR.$cacheFile))
 					{
-						chmod(ROOT_DIR.$cacheFile,0655);
-						$res=$cacheFile;
+						if(file_exists(ROOT_DIR.$cacheFile))
+						{
+							chmod(ROOT_DIR.$cacheFile,0655);
+							$res=$cacheFile;
+						}
+						else
+							throw new CError('SYSTEM_NOT_FOUND_AFTER_SAVE');
 					}
 					else
-					{
 						throw new CError('SYSTEM_CANT_SAVE');
-					}
 				}
 				else
-				{
 					throw new CError('SYSTEM_CANT_RESIZE');
-				}
 			}
 			catch (CError $e)
 			{
 				if($e->getMessage()=='SYSTEM_WRONG_FILE')
-					$cacheFile=$params['src'];
+					$res=$params['src'];
 				else
 					return $e->__toString();
 			}
 		}
 		elseif($params['default']!='')
-		{
 			$res=$params['default'];
-		}
 		else
-		{
 			throw new CError('SYSTEM_FILE_NOT_FOUND',0,$params['src']);
-		}
 	}
 	if($res!='' && !$params['only_url'])
 	{
-		$res='<img src="'.$cacheFile.'"';
+		$res='<img src="'.$res.'"';
 		foreach($params as $key=>$value)
 		{
 			if($params['keepSmall']=='Y' && ($key=='width' || $key=='height')) continue;
@@ -91,8 +86,3 @@ function smarty_function_Pic($params, &$subsmarty)
 	}
 	return $res;
 }
-
-function widget_params_Pic($params)
-{
-}
-

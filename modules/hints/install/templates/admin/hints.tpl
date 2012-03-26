@@ -50,7 +50,7 @@
 					<a href="{get_url action=edit id=$oItem.id}" title="{#edit#}">
 						<img src="{#images_path#}/icons2/edit.gif" alt="{#edit#}" />
 					</a>
-					<a href="{get_url action=delete id=$oItem.id}" title="{#delete#}">
+					<a href="{get_url action=delete id=$oItem.id}" title="{#delete#}" onclick="return confirm('{#delete_confirm#}');">
 						<img src="{#images_path#}/icons2/delete.gif" alt="{#delete#}" />
 					</a>
 				</div>

@@ -32,7 +32,7 @@ class ChintsAIindex extends CModuleAdmin
 		$obHints=$this->obAPI->Hints();
 		$arSortFields=$obHints->GetFields();
 		// Обработка порядка вывода элементов
-		list($sOrderField,$sOrderDir)=$this->InitSort($arSortFields,$_REQUEST['order'],$_REQUEST['dir']);
+		list($sOrderField,$sOrderDir)=$this->InitSort($arSortFields);
 		$sNewDir=($sOrderDir=='desc')?'asc':'desc';
 		if(class_exists('CFilterFrame'))
 		{
@@ -49,7 +49,7 @@ class ChintsAIindex extends CModuleAdmin
 		}
 		else $arFilter=false;
 
-		$obPages = new CPages(20);
+		$obPages = $this->InitPages();
 		$iCount=$obHints->count($arFilter);
 		$arOrder=array($sOrderField=>$sOrderDir);
 		if($arList=$obHints->GetList($arOrder,$arFilter,$obPages->GetLimits($iCount)))

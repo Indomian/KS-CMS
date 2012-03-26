@@ -98,6 +98,9 @@ final class CElement extends CCommonElement
 				$this->obLinks->sTable.'.category_id'=>$parent_id,
 			);
 			$this->bDistinctMode=true;
+			if(!$arSelect)
+				$arSelect=$this->arFields;
+			$arSelect[$this->obLinks->sTable.'.category_id']=$this->obLinks->sTable.'_category_id';
 		}
 		return parent::GetList($arOrder,$arFilter,$arLimit,$arSelect,$arGroup);
 	}
@@ -112,10 +115,11 @@ final class CElement extends CCommonElement
 		{
 			$parent_id=$arFilter['parent_id'];
 			unset($arFilter['parent_id']);
-			$arFilter['<?'.$this->sTable.'.id']=$this->obLinks->sTable.'.element_id';
+			$sLinksTable=$this->obLinks->GetTable();
+			$arFilter['<?'.$this->sTable.'.id']=$sLinksTable.'.element_id';
 			$arFilter['OR']=array(
 				'parent_id'=>$parent_id,
-				$this->obLinks->sTable.'.category_id'=>$parent_id,
+				$sLinksTable.'.category_id'=>$parent_id,
 			);
 			$this->bDistinctMode=true;
 		}

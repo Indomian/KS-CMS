@@ -217,6 +217,7 @@
 						<td><select name="CM_add" onchange="obCatsubcat.togglePanel(this)">
 							<option value="1">{#yes#}</option>
 							<option value="0" selected="selected">{#no#}</option>
+							</select>
 						</td>
 					</tr>
 				</table>

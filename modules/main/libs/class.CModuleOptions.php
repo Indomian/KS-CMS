@@ -8,7 +8,7 @@ if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
 require_once MODULES_DIR.'/main/libs/class.CModuleAdmin.php';
 require_once MODULES_DIR.'/main/libs/class.CUserGroup.php';
-require_once MODULES_DIR.'/main/libs/class.CAccess.php';
+require_once MODULES_DIR.'/main/libs/class.CModulesAccess.php';
 require_once MODULES_DIR.'/main/libs/class.CConfigParser.php';
 
 class CModuleOptions extends CModuleAdmin

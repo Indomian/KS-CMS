@@ -81,6 +81,8 @@ class CHintsAPI extends CBaseAPI
 	{
 		if(count($this->arHintsRequested)>0)
 		{
+			$sResult='';
+			$arHintsFound=array();
 			if($arList=$this->Hints()->GetList(false,array('->text_ident'=>$this->arHintsRequested)))
 			{
 				$sResult='<script type="text/javascript">var arHints={';
@@ -88,10 +90,25 @@ class CHintsAPI extends CBaseAPI
 				foreach($arList as $arItem)
 				{
 					$arItems[]="'".$arItem['text_ident']."':".json_encode($arItem['content'])."\n";
+					$arHintsFound[]=$arItem['text_ident'];
 				}
 				$sResult.=join(",\n",$arItems).'};</script>';
-				return $sResult;
 			}
+			if(count($this->arHintsRequested)>0 && count($arHintsFound)!=count($this->arHintsRequested))
+			{
+				$arNotFound=array_diff($this->arHintsRequested,$arHintsFound);
+				if(count($arNotFound)>0)
+					foreach($arNotFound as $sTextIdent)
+					{
+						$arItem=array(
+							'id'=>-1,
+							'text_ident'=>$sTextIdent,
+							'content'=>'',
+						);
+						$this->Hints()->Save('',$arItem);
+					}
+			}
+			return $sResult;
 		}
 		return '<!-- NO HINTS -->';
 	}

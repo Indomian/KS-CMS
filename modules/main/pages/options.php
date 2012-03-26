@@ -184,7 +184,7 @@ class CmainAIoptions extends CModuleOptions
 					$this->obConfig->Set('admin_lang',$_POST['admin_lang']);
 				else
 					//Язык по умолчанию - русский
-					$obConfig->Set('admin_lang','ru');
+					$this->obConfig->Set('admin_lang','ru');
 				$this->obModules->RecountTextStructure();
 				if($error>0) throw new CDataError('MAIN_OPTIONS_ERRORS');
 				$this->obConfig->WriteConfig();
@@ -196,7 +196,6 @@ class CmainAIoptions extends CModuleOptions
 			}
 			catch (EXCEPTION $e)
 			{
-				$ks_config=$obConfig->GetConfig();
 				$this->smarty->assign('last_error',$e);
 			}
 		}

@@ -67,7 +67,7 @@ final class CAdminModuleManagment extends CModuleManagment
 	/**
 	 * This implements the 'singleton' design pattern
 	 *
-	 * @return object CMain The one and only instance
+	 * @return object CAdminModuleManagment The one and only instance
 	 */
 	static function get_instance()
 	{

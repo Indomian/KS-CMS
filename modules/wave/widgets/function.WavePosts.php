@@ -80,6 +80,8 @@ function smarty_function_WavePosts($params,&$subsmarty)
 					$arPost=array(
 						'content'=>EscapeHTML($_REQUEST['WV_content']),
 					);
+					if($arPost['content']=='Впишите сюда свой комментарий')
+						$bError=$KS_MODULES->AddNotify('WAVE_TEXT_ERROR');
 					if(!$USER->IsLogin())
 					{
 						if($KS_MODULES->GetConfigVar('wave','use_captcha',0)==1)

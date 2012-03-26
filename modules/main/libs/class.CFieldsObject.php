@@ -23,6 +23,7 @@ class CFieldsObject extends CFilesObject
 	 */
 	protected $arUserFields;
 	protected $bFields;			/**<Флаг указывает на наличие пользовательских полей*/
+	protected $sFieldsModule;
 
 	function __construct($sTable,$sUploadPath='',$sModule=false)
 	{

@@ -84,6 +84,7 @@ class CNavTypes extends CFilesObject
 
 class CNavElement extends CFieldsObject
 {
+	static protected $arMenuRequestsCache=array();
 	/**
 	 * Конструктор элемента навигации
 	 */
@@ -162,6 +163,20 @@ class CNavElement extends CFieldsObject
 		return $this->GetDaughterMenuItems($type_id, $start_parent_id, $menu_items_all);
 	}
 
+	private function GetMenuItem($link,$type_id='')
+	{
+		if(!array_key_exists($link,CNavElement::$arMenuRequestsCache))
+		{
+			$arFilter=array('link'=>$link);
+			CNavElement::$arMenuRequestsCache[$link]=array();
+			if($arItems=$this->GetList(false,$arFilter))
+				foreach($arItems as $arItem)
+					CNavElement::$arMenuRequestsCache[$link][$arItem['type_id']]=$arItem;
+			if(!isset(CNavElement::$arMenuRequestsCache[$link][$type_id])) CNavElement::$arMenuRequestsCache[$link][$type_id]=false;
+		}
+		return CNavElement::$arMenuRequestsCache[$link][$type_id];
+	}
+
 	/**
 	 * Функция возвращает ассоциативный массив, содержащий id элемента меню и id его родительского элемента меню
 	 * для страницы с URL $link
@@ -170,11 +185,8 @@ class CNavElement extends CFieldsObject
 	 */
 	function GetCurrentPageMenuIds($link,$type_id='')
 	{
-		$arFilter = array('link' => $link);
-		if($type_id)
-			$arFilter['type_id']=$type_id;
 		$page_menu=array();
-		if($res_array = $this->GetRecord($arFilter))
+		if($res_array = $this->GetMenuItem($link,$type_id))
 		{
 			$page_menu['id'] = $res_array['id'];
 			$page_menu['parent_id'] = $res_array['parent_id'];
@@ -188,10 +200,7 @@ class CNavElement extends CFieldsObject
 			{
 				array_pop($arSourceLink);
 				$sLink=join('/',$arSourceLink);
-				$arFilter = array('link' => $sLink.'/');
-				if($type_id)
-					$arFilter['type_id']=$type_id;
-				if($res_array = $this->GetRecord($arFilter))
+				if($res_array = $this->GetMenuItem($sLink.'/',$type_id))
 				{
 					$page_menu['id'] = $res_array['id'];
 					$page_menu['parent_id'] = $res_array['parent_id'];

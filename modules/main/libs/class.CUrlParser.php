@@ -213,9 +213,7 @@ class CUrlParser
 		if(!is_array($items))
 			$items=$this->items;
         foreach ($params as $key=>$value)
-        {
         	$items[$key]=$value;
-        }
         //Подчищаем команду юзверя, если она не указанна принудительно
         if(!array_key_exists('CU_ACTION',$params)) unset($items['CU_ACTION']);
         $uri=array();
@@ -223,20 +221,20 @@ class CUrlParser
 		{
 			$res=0;
 			if ($clear)
-			{
 				foreach($clearList as $pattern)
 				{
 					$res=preg_match($pattern,$key);
 					if ($res==1) break;
 				}
-			}
 			if($key!='path' && $key!='part')
-			{
 				if ($res==0)
 				{
-					$uri[]= urlencode(urldecode($key)).'='.urlencode(urldecode($item));
+					if(is_array($item))
+						foreach($item as $value)
+							$uri[]= urlencode(urldecode($key)).'[]='.urlencode(urldecode($value));
+					else
+						$uri[]= urlencode(urldecode($key)).'='.urlencode(urldecode($item));
 				}
-			}
 		}
 		return $uri;
 	}

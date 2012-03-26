@@ -217,36 +217,29 @@ class CGB2API extends CBaseAPI
 	{
 		global $USER;
 		$iCount=$this->obPosts->Count($arFilter);
-		$arFilter['<?'.$this->obPosts->sTable.'.user_id']=$USER->sTable.'.id';
+		$sUserTable=$USER->GetTable();
+		$arFilter['<?'.$this->obPosts->GetTable().'.user_id']=$sUserTable.'.id';
 		$arSelect=$this->GetPostFields();
 		$arFields=$USER->GetFields();
 		foreach($arFields as $sItem)
-			$arSelect[]=$USER->sTable.'.'.$sItem;
+			$arSelect[]=$sUserTable.'.'.$sItem;
 		$arData=$this->obPosts->GetList($arOrder,$arFilter,$obPages->GetLimits($iCount),$arSelect);
 		$arID2Key=array();
 		foreach($arData as $key=>$arItem)
-		{
 			$arID2Key[$arItem['id']]=$key;
-		}
 		if(count($arID2Key)>0)
 		{
 			//Если есть хотябы один ответ, надо его приклеить
-			$arAFilter=array(
-				'->post_id'=>array_keys($arID2Key),
-			);
+			$arAFilter=array('->post_id'=>array_keys($arID2Key));
 			if(array_key_exists('active',$arFilter))
-			{
 				$arAFilter['active']=$arFilter['active'];
-			}
-			$arAFilter['<?'.$this->obAnswers->sTable.'.user_id']=$USER->sTable.'.id';
+			$arAFilter['<?'.$this->obAnswers->GetTable().'.user_id']=$sUserTable.'.id';
 			$arSelect=$this->GetAnswerFields();
 			foreach($arFields as $sItem)
-				$arSelect[]=$USER->sTable.'.'.$sItem;
+				$arSelect[]=$sUserTable.'.'.$sItem;
 			$arAnswers=$this->obAnswers->GetList(array('id'=>'asc'),$arAFilter,false,$arSelect);
 			foreach($arAnswers as $arItem)
-			{
 				$arData[$arID2Key[$arItem['post_id']]]['answer']=$arItem;
-			}
 		}
 		return $arData;
 	}
@@ -257,9 +250,7 @@ class CGB2API extends CBaseAPI
 	function DeletePost($id)
 	{
 		if(is_numeric($id))
-		{
 			$id=array($id);
-		}
 		$this->obPosts->DeleteItems(array('->id'=>$id));
 		$this->obAnswers->DeleteItems(array('->post_id'=>$id));
 	}
@@ -271,9 +262,7 @@ class CGB2API extends CBaseAPI
 	{
 		global $KS_MODULES;
 		if($arCategory=$this->obCategories->GetById($id))
-		{
 			return $KS_MODULES->GetSitePath('guestbook2').$arCategory['text_ident'].'/';
-		}
 		return $KS_MODULES->GetSitePath('guestbook2');
 	}
 

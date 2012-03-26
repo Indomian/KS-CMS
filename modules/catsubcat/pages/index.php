@@ -29,6 +29,7 @@ class CcatsubcatAIindex extends CModuleAdmin
 		parent::__construct($module,$smarty,$parent);
 		$this->obCategory=new CCategory();
 		$this->obElement=new CElement();
+		$this->obCategory->SetElement($this->obElement);
 		$this->obUser=$USER;
 		$this->access_level=10;
 		$this->iCurSection=0;
@@ -126,12 +127,7 @@ class CcatsubcatAIindex extends CModuleAdmin
 	 */
 	function Save($id)
 	{
-		global $KS_URL;
-		$this->obEditable->AddCheckField('text_ident');
-
 		/* Добавление проверки на существование данного индентификатора "внутри" определенного раздела */
-		$this->obEditable->AddCheckField('parent_id');
-		$this->obEditable->AddAutoField('id');
 		$this->obEditable->AddFileField('img');
 
 		/* Проверка прав доступа на редактирование */
@@ -157,6 +153,11 @@ class CcatsubcatAIindex extends CModuleAdmin
 			{
 				unset($_POST['CSC_parent_id']);
 				unset($_POST['CSC_text_ident']);
+			}
+			else
+			{
+				if (!IsTextIdent($_POST['CSC_text_ident']))
+					$iError+=$this->obModules->AddNotify("SYSTEM_NOT_IDENT");
 			}
 
 			$children_ids = $this->obCategory->GetChildrenIds($_POST['CSC_id'], 0);
@@ -199,14 +200,14 @@ class CcatsubcatAIindex extends CModuleAdmin
 				if(!array_key_exists('update',$_REQUEST))
 				{
 					//if($this->sType=='cat') $KS_URL->Set('CSC_catid',$data['parent_id']);
-					if($this->obEditable instanceof CCategory) $KS_URL->Set('CSC_catid',$data['parent_id']);
-					CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl(Array('ACTION','type','CSC_id')));
+					if($this->obEditable instanceof CCategory) $this->obUrl->Set('CSC_catid',$data['parent_id']);
+					$this->obUrl->Redirect("admin.php?".$this->obUrl->GetUrl(Array('ACTION','type','CSC_id')));
 				}
 				else
 				{
 					if($this->obEditable instanceof CCategory) $sAdd='&CSC_catid='.$id;
 					if($this->obEditable instanceof CElement) $sAdd='&CSC_id='.$id.'&CSC_catid='.intval($_POST['CSC_parent_id']);
-					CUrlParser::get_instance()->Redirect("admin.php?".$KS_URL->GetUrl('ACTION','CSC_id','CSC_catid').'&ACTION=edit'.$sAdd);
+					$this->obUrl->Redirect("admin.php?".$this->obUrl->GetUrl('ACTION','CSC_id','CSC_catid').'&ACTION=edit'.$sAdd);
 				}
 			}
 		}
@@ -405,28 +406,37 @@ class CcatsubcatAIindex extends CModuleAdmin
 	 */
 	function CommonActions()
 	{
-		$arElements=$_POST['sel']['elm'];
-		$arSections=$_POST['sel']['cat'];
+		if(isset($_POST['sel']['elm']))
+			$arElements=$_POST['sel']['elm'];
+		else
+			$arElements=array();
+		if(isset($_POST['sel']['cat']))
+			$arSections=$_POST['sel']['cat'];
+		else
+			$arSections=array();
 		$sAction='common';
 		if (array_key_exists('comact',$_POST))
 		{
 			// Установка общей активности для выделенных элементов
-			$this->obCategory->Update($arSections,Array('active'=>'1'));
-			$this->obElement->Update($arElements,Array('active'=>'1'));
+			if(count($arSections)>0)
+				$this->obCategory->Update($arSections,Array('active'=>'1'));
+			if(count($arElements)>0)
+				$this->obElement->Update($arElements,Array('active'=>'1'));
 			$this->obModules->AddNotify('CATSUBCAT_NOTIFY_ACTIVATE_DONE','',NOTIFY_MESSAGE);
 		}
 		elseif (array_key_exists('comdea',$_POST))
 		{
 			//Снятие общей активности для элементов
-			$this->obCategory->Update($arSections,Array('active'=>'0'));
-			$this->obElement->Update($arElements,Array('active'=>'0'));
+			if(count($arSections)>0)
+				$this->obCategory->Update($arSections,Array('active'=>'0'));
+			if(count($arElements)>0)
+				$this->obElement->Update($arElements,Array('active'=>'0'));
 			$this->obModules->AddNotify('CATSUBCAT_NOTIFY_DEACTIVATE_DONE','',NOTIFY_MESSAGE);
 		}
 		elseif (array_key_exists('comdel',$_POST))
 		{
 			// Удаление выделенных элементов
 			if(is_array($arSections)&&count($arSections)>0)
-			{
 				foreach($arSections as $i)
 				{
 					if($i==0)
@@ -434,24 +444,24 @@ class CcatsubcatAIindex extends CModuleAdmin
 						$this->obModules->AddNotify('CATSUBCAT_NOT_DELETE_MAIN');
 						continue;
 					}
-					$arData=$this->obCategory->GetRecord(array('id'=>$i));
-					if(($i==$arData['parent_id'])&&($i==0)) throw new CError("CATSUBCAT_NOT_DELETE_MAIN");
-					if($this->obModules->IsActive('search'))
+					if($arData=$this->obCategory->GetRecord(array('id'=>$i)))
 					{
-						$obSearch=new CSearch();
-						$obSearch->Delete('catsubcat',$this->obCategory->GenHash($arData));
-					}
-					if($this->obCategory->Delete($i))
-					{
-						$this->obModules->AddNotify('CATSUBCAT_NOTIFY_DELETE_OK',$arData['title'],NOTIFY_MESSAGE);
+						if(($i==$arData['parent_id'])&&($i==0)) throw new CError("CATSUBCAT_NOT_DELETE_MAIN");
+						if($this->obModules->IsActive('search'))
+						{
+							$obSearch=new CSearch();
+							$obSearch->Delete('catsubcat',$this->obCategory->GenHash($arData));
+						}
+						if($this->obCategory->Delete($i))
+							$this->obModules->AddNotify('CATSUBCAT_NOTIFY_DELETE_OK',$arData['title'],NOTIFY_MESSAGE);
+						else
+							$this->obModules->AddNotify('CATSUBCAT_NOTIFY_DELETE_BAD',$arData['title'],NOTIFY_WARNING);
 					}
 					else
-					{
-						$this->obModules->AddNotify('CATSUBCAT_NOTIFY_DELETE_BAD',$arData['title'],NOTIFY_WARNING);
-					}
+						$this->obModules->AddNotify('CATSUBCAT_NOTIFY_DELETE_BAD',$this->obModules->GetErrorText('CATSUBCAT_CATEGORY_NOT_FOUND'),NOTIFY_WARNING);
 				}
-			}
-			$this->obElement->DeleteByIds($arElements);
+			if(is_array($arElements)&&count($arElements)>0)
+				$this->obElement->DeleteByIds($arElements);
 		}
 		elseif (array_key_exists('commove', $_POST))
 		{
@@ -479,8 +489,10 @@ class CcatsubcatAIindex extends CModuleAdmin
 							if (in_array($move_selected_to, $children_ids))
 								unset($arSections[$section_key]);
 						}
-					$this->obCategory->Update($arSections, array('parent_id' => $move_selected_to));
-					$this->obElement->Update($arElements, array('parent_id' => $move_selected_to));
+					if(count($arSections)>0)
+						$this->obCategory->Update($arSections, array('parent_id' => $move_selected_to));
+					if(count($arElements)>0)
+						$this->obElement->Update($arElements, array('parent_id' => $move_selected_to));
 				}
 			}
 		}

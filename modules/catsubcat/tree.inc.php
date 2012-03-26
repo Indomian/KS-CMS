@@ -19,6 +19,7 @@ class CcatsubcatTree extends CModuleTree
 {
 	private $obCategory;
 	private $obElement;
+	private $sRootPath;
 
 	function __construct($module='catsubcat',CSiteTree $obSiteTree)
 	{
@@ -26,15 +27,31 @@ class CcatsubcatTree extends CModuleTree
 		$this->obCategory=new CCategory();
 		$this->obElement=new CElement();
 		$this->sIcon='/icons_tree/catsubcat.gif';
+		$this->sRootPath=$this->GetRootPath();
 	}
 
+	/**
+	 * Метод генерирует путь к разделу описанному в $arRootItem
+	 */
+	private function GenPath($arRootItem)
+	{
+		$sPath='';
+		if(isset($arRootItem['data']['text_ident']))
+		{
+			if(isset($arRootItem['data']['parent']))
+				$sPath.=$this->GenPath($arRootItem['data']['parent']);
+			$sPath.=$arRootItem['data']['text_ident'].'/';
+		}
+		return $sPath;
+	}
+	
 	function GetBrunch($key='')
 	{
-		$arFilter=array('parent_id'=>0);
-		if($arItem=$this->obSiteTree->GetTreeItem($key))
-			if(array_key_exists('id',$arItem['data']))
-				$arFilter=array('parent_id'=>$arItem['data']['id']);
-		if($arCategories=$this->obCategory->GetList(array('orderation'=>'asc'),$arFilter,false,array('id','title','parent_id','active')))
+		$arFilter=array('parent_id'=>0,'active'=>1);
+		if($arRootItem=$this->obSiteTree->GetTreeItem($key))
+			if(isset($arRootItem['data']['id']))
+				$arFilter=array('parent_id'=>$arRootItem['data']['id']);
+		if($arCategories=$this->obCategory->GetList(array('orderation'=>'asc'),$arFilter,false,array('id','title','parent_id','active','text_ident','date_edit')))
 			foreach($arCategories as $arItem)
 			{
 				$arHash=array('catsubcat','cat',$arItem['id'],$arItem['parent_id']);
@@ -42,22 +59,26 @@ class CcatsubcatTree extends CModuleTree
 				$arRow=array(
 					'key'=>$this->obSiteTree->GenHash($arHash),
 					'title'=>$arItem['title'],
-					'href'=>'',
+					'href'=>$this->sRootPath.$this->GenPath($arRootItem).$arItem['text_ident'].'/',
 					'actions'=>'',
-					'data'=>$arItem
+					'data'=>$arItem,
+					'date_change'=>$arItem['date_edit']
 				);
 				if($arItem['id']==0 && $arItem['parent_id']==0)
 				{
 					$arRow['icon']='/icons_tree/page.gif';
+					$arRow['href']=$this->sRootPath.'index.html';
+					$arRow['freq']='always';
 					$this->obSiteTree->AddTreeLeaf($key,$arRow);
 				}
 				else
 				{
+					$arRow['data']['parent']=$arRootItem;
 					$arRow['icon']='/icons_tree/folder.gif';
 					$this->obSiteTree->AddTreeBrunch($key,$arRow);
 				}
 			}
-		if($arElements=$this->obElement->GetList(array('orderation'=>'asc'),$arFilter,false,array('id','title','parent_id','active')))
+		if($arElements=$this->obElement->GetList(array('orderation'=>'asc'),$arFilter,false,array('id','title','parent_id','active','text_ident','date_edit')))
 			foreach($arElements as $arItem)
 			{
 				$arHash=array('catsubcat','elm',$arItem['id'],$arItem['parent_id']);
@@ -66,9 +87,10 @@ class CcatsubcatTree extends CModuleTree
 					'key'=>$this->obSiteTree->GenHash($arHash),
 					'title'=>$arItem['title'],
 					'icon'=>'/icons_tree/page.gif',
-					'href'=>'',
+					'href'=>$this->sRootPath.$this->GenPath($arRootItem).$arItem['text_ident'].'.html',
 					'actions'=>'',
-					'data'=>$arItem
+					'data'=>$arItem,
+					'date_change'=>$arItem['date_edit']
 				);
 				$this->obSiteTree->AddTreeLeaf($key,$arRow);
 			}

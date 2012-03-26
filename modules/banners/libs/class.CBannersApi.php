@@ -12,6 +12,8 @@
 /*Обязательно вставляем во все файлы для защиты от взлома*/
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 
+include_once MODULES_DIR.'/main/libs/class.CBaseAPI.php';
+
 //==================== Блок констант для уровней доступа ==============================
 define('KS_ACCESS_BANNERS_FULL',0);
 define('KS_ACCESS_BANNERS_CLIENTS',4);
@@ -76,6 +78,7 @@ class CBannersAPI extends CBaseAPI
 		if(!$this->obBanners)
 		{
 			$this->obBanners=new CFieldsObject('banners','/banners','banners');
+			$this->obBanners->AddFileField('img');
 		}
 		return $this->obBanners;
 	}
@@ -86,9 +89,7 @@ class CBannersAPI extends CBaseAPI
 	function Type()
 	{
 		if(!$this->obBannerTypes)
-		{
 			$this->obBannerTypes=new CFieldsObject('banners_types','/banners','banners');
-		}
 		return $this->obBannerTypes;
 	}
 
@@ -98,9 +99,7 @@ class CBannersAPI extends CBaseAPI
 	protected function Link()
 	{
 		if(!$this->obBannerLinks)
-		{
 			$this->obBannerLinks=new CObject('banners_links');
-		}
 		return $this->obBannerLinks;
 	}
 
@@ -110,9 +109,7 @@ class CBannersAPI extends CBaseAPI
 	function Hit()
 	{
 		if(!$this->obBannerHits)
-		{
 			$this->obBannerHits=new CObject('banners_hits');
-		}
 		return $this->obBannerHits;
 	}
 
@@ -134,9 +131,7 @@ class CBannersAPI extends CBaseAPI
 	function Client()
 	{
 		if(!$this->obBannerClient)
-		{
 			$this->obBannerClient=new CObject('banners_clients');
-		}
 		return $this->obBannerClient;
 	}
 
@@ -169,9 +164,7 @@ class CBannersAPI extends CBaseAPI
 				$arBanner['exc_path']='';
 				$arBanner['inc_path']='';
 				foreach($arPath as $arRow)
-				{
 					$arBanner[$arRow['type'].'_path'].=$arRow['path']."\n";
-				}
 			}
 			if($arTimes=$this->Time()->GetList(false,array('banner_id'=>$arBanner['id'])))
 			{
@@ -254,7 +247,6 @@ class CBannersAPI extends CBaseAPI
 					$arTimes[$i-1][$j-1]=1;
 		}
 		//Собственно баннер
-		$this->Banner()->AddFileField('img');
 		if($id=$this->Banner()->Save($prefix,$data))
 		{
 			$this->Link()->DeleteItems(array('banner_id'=>$id));
@@ -317,17 +309,12 @@ class CBannersAPI extends CBaseAPI
 	 */
 	function AddView($bannerId)
 	{
-		global $ks_db;
 		$now=mktime(date('H'),0,0);
 		$arHit=$this->Hit()->GetRecord(array('banner_id'=>$bannerId,'date'=>$now));
 		if(is_array($arHit))
-		{
 			$this->Hit()->Update($arHit['id'],array('views'=>$arHit['views']+1));
-		}
 		else
-		{
 			$this->Hit()->Save('',array('banner_id'=>$bannerId,'date'=>$now,'hits'=>0,'views'=>1));
-		}
 	}
 
 	/**
@@ -338,13 +325,9 @@ class CBannersAPI extends CBaseAPI
 		$now=floor(time()/3600)*3600;
 		$arHit=$this->Hit()->GetRecord(array('banner_id'=>$bannerId,'date'=>intval($now)));
 		if(is_array($arHit))
-		{
 			$this->Hit()->Update($arHit['id'],array('hits'=>$arHit['hits']+1));
-		}
 		else
-		{
 			$this->Hit()->Save('',array('banner_id'=>$bannerId,'date'=>$now,'hits'=>1,'views'=>1));
-		}
 	}
 
 	/**
@@ -360,16 +343,16 @@ class CBannersAPI extends CBaseAPI
 		{
 			if($dateFrom==false && $dateTo==false)
 			{
-				$dateFrom=time()-86400*7;
+				$dateFrom=strtotime("7 days ago");;
 				$dateTo=time();
 			}
 			elseif($dateFrom==false && $dateTo>0)
 			{
-				$dateFrom=$dateTo-86400*7;
+				$dateFrom=$dateTo-strtotime("7 days ago");
 			}
 			elseif($dateTo==false && $dateFrom>0)
 			{
-				$dateTo=$dateFrom+86400*7;
+				$dateTo=$dateFrom+strtotime("7 days ago");
 			}
 			if($dateFrom>$dateTo)
 			{
@@ -406,8 +389,9 @@ class CBannersAPI extends CBaseAPI
 		$arType=$this->arBannerTypes[$type];
 		if(is_array($arType))
 		{
+			$sLinkTable=$this->Link()->GetTable();
 			$arFilter=array(
-				'<?'.$this->Banner()->sTable.'.id'=>$this->Link()->sTable.'.banner_id',
+				'<?'.$this->Banner()->GetTable().'.id'=>$sLinkTable.'.banner_id',
 				'type_id'=>$arType['id'],
 				//$this->obBannerLinks->sTable.'.type'=>'inc',
 				'active'=>1,
@@ -417,31 +401,31 @@ class CBannersAPI extends CBaseAPI
 				)
 			);
 			$arSelect=$this->Banner()->GetFields();
-			$arSelect[$this->Link()->sTable.'.path']='path';
-			$arSelect[$this->Link()->sTable.'.type']='path_type';
+			$arSelect[$sLinkTable.'.path']='path';
+			$arSelect[$sLinkTable.'.type']='path_type';
 			$bOldMode=$this->Banner()->SetKeyMode(true);
-			$arBanners=$this->Banner()->GetList(array($this->Link()->sTable.'.path'=>'desc'),$arFilter,false,$arSelect);
+			$arBanners=$this->Banner()->GetList(array($sLinkTable.'.path'=>'desc'),$arFilter,false,$arSelect);
 			if(is_array($arBanners)&&count($arBanners)>0)
 			{
 				$path=$KS_URL->GetPath();
 				$maxLength=0;
 				foreach($arBanners as $arBanner)
 				{
-					if($arBanner['path_type']=='inc' && $arBanner[$this->Link()->sTable.'_path']!='')
+					if($arBanner['path_type']=='inc' && $arBanner[$sLinkTable.'_path']!='')
 					{
 						//Если строка - регулярное выражение
-						if(substr($arBanner[$this->Link()->sTable.'_path'],0,1)=='#')
+						if(substr($arBanner[$sLinkTable.'_path'],0,1)=='#')
 						{
-							if(preg_match($arBanner[$this->Link()->sTable.'_path'],$path))
+							if(preg_match($arBanner[$sLinkTable.'_path'],$path))
 							{
 								$arResultBanners[1][$arBanner['id']]=$arBanner;
 								if($maxLength<1) $maxLength=1;
 							}
 						}
-						elseif(strpos($path,$arBanner[$this->Link()->sTable.'_path'])!==false)
+						elseif(strpos($path,$arBanner[$sLinkTable.'_path'])!==false)
 						{
-							$arResultBanners[strlen($arBanner[$this->Link()->sTable.'_path'])][$arBanner['id']]=$arBanner;
-							if(strlen($arBanner[$this->Link()->sTable.'_path'])>$maxLength) $maxLength=strlen($arBanner[$this->Link()->sTable.'_path']);
+							$arResultBanners[strlen($arBanner[$sLinkTable.'_path'])][$arBanner['id']]=$arBanner;
+							if(strlen($arBanner[$sLinkTable.'_path'])>$maxLength) $maxLength=strlen($arBanner[$sLinkTable.'_path']);
 						}
 					}
 					else
@@ -494,13 +478,9 @@ class CBannersAPI extends CBaseAPI
 	{
 		global $KS_MODULES;
 		if(array_key_exists('inc',$arBanner) && count($arBanner['inc'])>0)
-		{
 			foreach($arBanner['inc'] as $sPath)
-			{
 				if($KS_MODULES->CheckPath($sPath))
 					return 3;
-			}
-		}
 		return 5;
 	}
 
@@ -520,24 +500,27 @@ class CBannersAPI extends CBaseAPI
 		$arType=$this->arBannerTypes[$type];
 		if(is_array($arType))
 		{
+			$sLinkTable=$this->Link()->GetTable();
+			$sBannerTable=$this->Banner()->GetTable();
+			$sTimeTable=$this->Time()->GetTable();
 			$wDay=date('w');
 			if($wDay==0) $wDay=7;
 			$h=date('G')+1;
 			$arFilter=array(
-				'<?'.$this->Banner()->sTable.'.id'=>$this->Link()->sTable.'.banner_id',
+				'<?'.$sBannerTable.'.id'=>$sLinkTable.'.banner_id',
 				'type_id'=>$arType['id'],
 				'active'=>1,
-				'?'.$this->Time()->sTable.'.banner_id'=>$this->Banner()->sTable.'.id',
-				$this->Time()->sTable.'.wday'=>$wDay,
-				$this->Time()->sTable.'.hour'=>$h,
+				'?'.$sTimeTable.'.banner_id'=>$sBannerTable.'.id',
+				$sTimeTable.'.wday'=>$wDay,
+				$sTimeTable.'.hour'=>$h,
 				'AND'=>array(
 					array('OR'=>array('>=active_to'=>time(),'active_to'=>0)),
 					array('OR'=>array('<=active_from'=>time(),'active_from'=>0)),
 				)
 			);
 			$arSelect=$this->Banner()->GetFields();
-			$arSelect[$this->Link()->sTable.'.path']='path';
-			$arSelect[$this->Link()->sTable.'.type']='path_type';
+			$arSelect[$sLinkTable.'.path']='path';
+			$arSelect[$sLinkTable.'.type']='path_type';
 			$bOldMode=$this->Banner()->SetKeyMode(true);
 			if($arBannersTmp=$this->Banner()->GetList(array('show_rate'=>'desc'),$arFilter,false,$arSelect))
 			{
@@ -646,24 +629,27 @@ class CBannersAPI extends CBaseAPI
 		$arType=$this->arBannerTypes[$type];
 		if(is_array($arType))
 		{
+			$sLinkTable=$this->Link()->GetTable();
+			$sBannerTable=$this->Banner()->GetTable();
+			$sTimeTable=$this->Time()->GetTable();
 			$wDay=date('w');
 			if($wDay==0) $wDay=7;
 			$h=date('G')+1;
 			$arFilter=array(
-				'<?'.$this->Banner()->sTable.'.id'=>$this->Link()->sTable.'.banner_id',
+				'<?'.$sBannerTable.'.id'=>$sLinkTable.'.banner_id',
 				'type_id'=>$arType['id'],
 				'active'=>1,
-				'?'.$this->Time()->sTable.'.banner_id'=>$this->Banner()->sTable.'.id',
-				$this->Time()->sTable.'.wday'=>$wDay,
-				$this->Time()->sTable.'.hour'=>$h,
+				'?'.$sTimeTable.'.banner_id'=>$sBannerTable.'.id',
+				$sTimeTable.'.wday'=>$wDay,
+				$sTimeTable.'.hour'=>$h,
 				'AND'=>array(
 					array('OR'=>array('>=active_to'=>time(),'active_to'=>0)),
 					array('OR'=>array('<=active_from'=>time(),'active_from'=>0)),
 				)
 			);
 			$arSelect=$this->Banner()->GetFields();
-			$arSelect[$this->Link()->sTable.'.path']='path';
-			$arSelect[$this->Link()->sTable.'.type']='path_type';
+			$arSelect[$sLinkTable.'.path']='path';
+			$arSelect[$sLinkTable.'.type']='path_type';
 			$bOldMode=$this->Banner()->SetKeyMode(true);
 			if($arBanners=$this->Banner()->GetList(array('show_rate'=>'desc'),$arFilter,$count,$arSelect))
 			{

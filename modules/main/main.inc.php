@@ -15,6 +15,7 @@
 if( !defined('KS_ENGINE') ) {die("Hacking attempt!");}
 if (!defined('KS_MAIN_INIT'))
 {
+	date_default_timezone_set('Europe/Moscow');
 	/* Запускаем сессию */
 	require_once MODULES_DIR.'/main/libs/class.CSessionManager.php';
 	include_once MODULES_DIR.'/main/libs/class.CError.php';
@@ -124,4 +125,7 @@ if (!defined('KS_MAIN_INIT'))
 	$initParams = array();
 	$KS_EVENTS_HANDLER->Execute('main', 'onInit', $initParams);
 	define("KS_MAIN_INIT", 1);
+
+	if(isset($_REQUEST['CU_ACTION']) && $_REQUEST['CU_ACTION']=='logout')
+		$USER->logout();
 }

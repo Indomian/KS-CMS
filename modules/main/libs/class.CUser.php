@@ -465,7 +465,10 @@ class CUser extends CUsersCommon implements User
 				throw new CDataError('MAIN_USER_PASSWORD_REQUIRED');
 			$arData['date_register']=time();
 		}
-		$this->LogAction($nId,'Сохранение записи в БД',array($arData));
+		if(isset($arData['id']))
+			$this->LogAction($arData['id'],'Сохранение записи в БД',array($arData));
+		else
+			$this->LogAction(-1,'Сохранение записи в БД',array($arData));
 		return true;
 	}
 
@@ -529,11 +532,11 @@ class CUser extends CUsersCommon implements User
 	function DeleteItems(array $arFilter)
 	{
 		global $KS_EVENTS_HANDLER;
-		$onBeforeDeleteParams['id'] = $arFilter['id'];
+		$onBeforeDeleteParams['filter'] = $arFilter;
 		if (!$KS_EVENTS_HANDLER->Execute('main', 'onBeforeDelete', $onBeforeDeleteParams))		// Вызов обработчика перед удалением
 			throw new CError('MAIN_HANDLER_ERROR',0,$KS_EVENTS_HANDLER->GetLastEvent());
 
-		$this->LogAction($arUser['id'],'Удаление пользователей по фильтру',$arFilter);
+		$this->LogAction('-1','Удаление пользователей по фильтру',$arFilter);
 
 		$res = parent::DeleteItems($arFilter);			// Удаление элемента
 		$onDeleteParams = array();

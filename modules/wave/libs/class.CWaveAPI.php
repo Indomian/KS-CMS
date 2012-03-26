@@ -25,23 +25,25 @@ class CWaveAPI extends CBaseAPI
 	private $obVoteLocks;
 	private $sMode;
 	private $arLocksCache;
+	private $iAccess;
 
 	/**
 	 * Метод заменяющий конструктор. Используется для инициализации.
 	 */
 	private function init()
 	{
-		global $KS_MODULES;
+		global $KS_MODULES,$USER;
 		$this->obPosts=new CWavePosts();
 		$this->obVoteLocks=false;
 		$this->sMode=$KS_MODULES->GetConfigVar('wave','mode','list');
 		$this->arLocksCache=false;
+		$this->iAccess=$USER->GetLevel('wave');
 	}
 
 	/**
 	 * This implements the 'singleton' design pattern
    	 *
-     * @return object CMain The one and only instance
+     * @return object CWaveAPI The one and only instance
      */
   	static function get_instance()
   	{
@@ -59,18 +61,17 @@ class CWaveAPI extends CBaseAPI
 	function Posts()
 	{
 		if(!$this->obPosts)
-		{
 			$this->obPosts=new CWavePosts();
-		}
 		return $this->obPosts;
 	}
 
+	/**
+	 * Метод возвращает объект управления блокировками голосов
+	 */
 	function Locks()
 	{
 		if(!$this->obVoteLocks)
-		{
 			$this->obVoteLocks=new CObject('wave_rating_locks');
-		}
 		return $this->obVoteLocks;
 	}
 
@@ -83,13 +84,9 @@ class CWaveAPI extends CBaseAPI
 		global $KS_EVENTS_HANDLER,$KS_MODULES,$USER;
 
 		if(!is_array($id))
-		{
 			$arPost=$this->Posts()->GetById($id);
-		}
 		else
-		{
 			$arPost=$id;
-		}
 		if(!$arPost) throw new CError('WAVE_POST_NOT_FOUND');
 		$arAccess=array(
 			'canAnswer'=>false,
@@ -105,22 +102,23 @@ class CWaveAPI extends CBaseAPI
 				if($KS_MODULES->GetConfigVar('wave','max_depth',10)>0)
 				{
 					if($arPost['depth']<$KS_MODULES->GetConfigVar('wave','max_depth',10))
-						$arAccess['canAnswer']=$USER->GetLevel('wave')<=KS_ACCESS_WAVE_ANSWER;
+						$arAccess['canAnswer']=$this->iAccess<=KS_ACCESS_WAVE_ANSWER;
 				}
 				else
 				{
-					$arAccess['canAnswer']=$USER->GetLevel('wave')<=KS_ACCESS_WAVE_ANSWER;
+					$arAccess['canAnswer']=$this->iAccess<=KS_ACCESS_WAVE_ANSWER;
 				}
 			}
 			elseif($this->sMode=='answer')
 			{
 				if($arPost['depth']==1)
 				{
-					$arAccess['canAnswer']=$USER->GetLevel('wave')<=KS_ACCESS_WAVE_ANSWER;
+					$arAccess['canAnswer']=$this->iAccess<=KS_ACCESS_WAVE_ANSWER;
 					if($KS_EVENTS_HANDLER->HasHandler('wave','onGetAnswerRight'))
 					{
 						$arCheckArray=array(
 							'parent'=>$arPost,
+							'currentAccess'=>$arAccess,
 							'new'=>false,
 						);
 						$arAccess['canAnswer']=$KS_EVENTS_HANDLER->Execute("wave", "onGetAnswerRight",$arCheckArray);
@@ -130,7 +128,7 @@ class CWaveAPI extends CBaseAPI
 		}
 		if($USER->ID()>0)
 		{
-			if($USER->GetLevel('wave')>KS_ACCESS_WAVE_MODERATE)
+			if($this->iAccess>KS_ACCESS_WAVE_MODERATE)
 			{
 				$arAccess['canEdit']=$arPost['user_id']==$USER->ID();
 				$arAccess['canDelete']=$arPost['user_id']==$USER->ID();
@@ -142,20 +140,14 @@ class CWaveAPI extends CBaseAPI
 				$arAccess['canModerate']=true;
 			}
 		}
+		//Проверка доступности голосования
 		if($KS_MODULES->GetConfigVar('wave','use_ratings','')=='usefullness')
 		{
 			$bUser=false;
 			if($KS_MODULES->GetConfigVar('wave','usefullness_dsv','1')==1)
-			{
-				if($arPost['user_id']!=$USER->ID())
-				{
-					$bUser=true;
-				}
-			}
+				$bUser=$arPost['user_id']!=$USER->ID();
 			else
-			{
 				$bUser=true;
-			}
 			if($KS_MODULES->GetConfigVar('wave','usefullness_dvr','1')==1)
 			{
 				$bLocked=true;
@@ -164,9 +156,9 @@ class CWaveAPI extends CBaseAPI
 				{
 					$this->arLocksCache=array();
 					$arFilter=array(
-						'<?'.$this->Locks()->sTable.'.comment_id'=>$this->Posts()->sTable.'.id',
+						'<?'.$this->Locks()->GetTable().'.comment_id'=>$this->Posts()->GetTable().'.id',
 						'user_id'=>$USER->ID(),
-						$this->Posts()->sTable.'.hash'=>$arPost['hash'],
+						$this->Posts()->GetTable().'.hash'=>$arPost['hash'],
 					);
 					$arSelect=array(
 						'comment_id'=>'id',
@@ -250,12 +242,9 @@ class CWaveAPI extends CBaseAPI
 		);
 		$arUserFields=$this->obPosts->GetUserFields();
 		if(is_array($arUserFields) && count($arUserFields)>0)
-		{
 			foreach($arUserFields as $arField)
-			{
 				$arFields['ext_'.$arField['title']]=$arInFields['ext_'.$arField['title']];
-			}
-		}
+
 		if($this->CheckRequiredFields($arFields)>0) throw new CDataError('WAVE_FIELDS_ERROR');
 		//Если код родительского сообщения больше 0 то ищем его
 		if($parent_id>0)
@@ -274,17 +263,11 @@ class CWaveAPI extends CBaseAPI
 					if(!$KS_EVENTS_HANDLER->Execute("wave", "onGetAnswerRight",$arCheckArray))
 						throw new CError('WAVE_ACCESS_ANSWER_DENIED');
 					if($arChild=$this->obPosts->GetRecord(array('parent_id'=>$arParentPost['id'])))
-					{
 						return $this->obPosts->Update($arChild['id'],$arFields);
-					}
 				}
 				if($KS_MODULES->GetConfigVar('wave','max_depth',10)>0)
-				{
 					if($arParentPost['depth']+1>$KS_MODULES->GetConfigVar('wave','max_depth',10))
-					{
 						$parent_id=$arParentPost['parent_id'];
-					}
-				}
 				$arFields['parent_id']=$parent_id;
 			}
 			else
@@ -425,26 +408,18 @@ class CWaveAPI extends CBaseAPI
 				if($arPosts=$this->obPosts->GetList(false,$arFilter))
 				{
 					if($KS_MODULES->GetConfigVar('wave','use_ratings','no')=='usefullness')
-					{
 						$this->Locks()->DeleteItems(array('->comment_id'=>array_keys($arPosts)));
-					}
 					$this->obPosts->DeleteItems(array('->id'=>array_keys($arPosts)));
 				}
 				if($KS_MODULES->GetConfigVar('wave','use_ratings','no')=='usefullness')
-				{
 					$this->Locks()->DeleteItems(array('comment_id'=>$arPost['id']));
-				}
 				return $this->obPosts->DeleteItems(array('id'=>$arPost['id']));
 			}
 			else
-			{
 				return false;
-			}
 		}
 		else
-		{
 			throw new CError('WAVE_POST_NOT_FOUND');
-		}
 		return false;
 	}
 
@@ -463,8 +438,9 @@ class CWaveAPI extends CBaseAPI
 		{
 			$arSelect=$this->Posts()->GetFields();
 			$arFields=$USER->GetFields();
+			$sUserTable=$USER->GetTable();
 			foreach($arFields as $sField)
-				$arSelect[]=$USER->sTable.'.'.$sField;
+				$arSelect[]=$sUserTable.'.'.$sField;
 		}
 		if(!$arFilter) $arFilter=array();
 		$arFilter['hash']=$sHash;
@@ -472,9 +448,7 @@ class CWaveAPI extends CBaseAPI
 		if($arPosts=$this->Posts()->GetList($arOrder,$arFilter,false,$arSelect))
 		{
 			foreach($arPosts as $arPost)
-			{
 				$arPosts[$arPost['id']]['access']=$this->GetPostRights($arPost);
-			}
 			$arResult=$arPosts;
 		}
 		return $arResult;
@@ -494,27 +468,48 @@ class CWaveAPI extends CBaseAPI
 		{
 			$arSelect=$this->Posts()->GetFields();
 			$arFields=$USER->GetFields();
+			$sUserTable=$USER->GetTable();
 			foreach($arFields as $sField)
-				$arSelect[]=$USER->sTable.'.'.$sField;
+				$arSelect[]=$sUserTable.'.'.$sField;
 		}
 		if(!$arFilter) $arFilter=array();
 		$arFilter['hash']=$sHash;
 		$arResult=array();
 		$iCount=$this->Posts()->Count($arFilter);
 		if($obPage instanceof CPages)
-		{
 			$arLimits=$obPage->GetLimits($iCount);
-		}
 		else
-		{
 			$arLimits=false;
-		}
-		if($arPosts=$this->Posts()->GetList($arOrder,$arFilter,$arLimits,$arSelect))
+
+		if($arTmpPosts=$this->Posts()->GetList($arOrder,$arFilter,$arLimits,$arSelect))
 		{
-			foreach($arPosts as $arPost)
+			$arPosts=array();
+			$iMore=0;
+			foreach($arTmpPosts as $arPost)
 			{
-				if($arPost['depth']>2) $arPosts[$arPost['id']]['depth']=2;
-				$arPosts[$arPost['id']]['access']=$this->GetPostRights($arPost);
+				if($arPost['depth']>2) $arPost['depth']=2;
+				$arPost['access']=$this->GetPostRights($arPost);
+				if($arPost['parent_id']>0 && !isset($arTmpPosts[$arPost['parent_id']]))
+					$iMore++;
+				else
+					$arPosts[$arPost['id']]=$arPost;
+			}
+			if($iMore>0)
+			{
+				$arLimits[0]+=$arLimits[1];
+				$arLimits[1]=$iMore;
+				if($arTmpPosts=$this->Posts()->GetList($arOrder,$arFilter,$arLimits,$arSelect))
+				{
+					foreach($arTmpPosts as $arPost)
+					{
+						if($arPost['depth']>2) $arPost['depth']=2;
+						$arPost['access']=$this->GetPostRights($arPost);
+						if($arPost['parent_id']>0 && (!isset($arTmpPosts[$arPost['parent_id']])&&!isset($arPosts[$arPost['parent_id']])))
+							$iMore++;
+						else
+							$arPosts[$arPost['id']]=$arPost;
+					}
+				}
 			}
 			reset($arPosts);
 			$arItem=current($arPosts);

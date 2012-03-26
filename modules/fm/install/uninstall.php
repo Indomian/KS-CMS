@@ -20,7 +20,7 @@ $sContent='';
 
 include 'description.php';
 require_once MODULES_DIR.'/main/libs/class.CUserGroup.php';
-require_once MODULES_DIR.'/main/libs/class.CAccess.php';
+require_once MODULES_DIR.'/main/libs/class.CModulesAccess.php';
 
 if(!$this->IsModule(''.$module_name.'')) throw new CError('MAIN_MODULE_NOT_REGISTERED');
 
